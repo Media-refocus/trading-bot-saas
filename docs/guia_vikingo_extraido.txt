@@ -1,0 +1,74 @@
+
+===== PÁGINA 1 =====
+GUIA	OPERARIVA	CANAL	DE	SEÑALES	VIKINGO	TRADING	
+Antes	de	explicarte	esta	guı́a	quiero	que	entiendas	una	cosa:	
+El	Canal	de	Señales,	SIEMPRE	será	gratuito	para	la	Comunidad	de	Vikingo	Trading.	
+Esta	guı́a	es	una	recomendación	de	cómo	operar ,	una	forma	“fácil”	de	que	entiendas	cómo	
+promediar	en	caso	de	que	el	precio	se	vaya	en	contra	y	cuándo	recoger	proIits	cuando	se	va	
+a	favor.	
+El	problema	NO	es	que	la	gente	pierda	operando…	el	problema	es	que	casi	nadie	sabe	
+GESTIONAR	lo	que	pierde.	Cada	uno	es	responsable	de	las	operaciones	que	abre,	de	las	
+ganancias	y	de	las	pérdidas.	
+Muchos	hacen	trading	desde	la	emoción:	entran	tarde,	promedian	sin	sentido,	operan	en	
+noticias,	esperan	“un	milagro” …	y	lo	que	terminan	quemando	no	es	la	cuenta:	terminan	
+quemando	su	cabeza.	
+Por	eso	nace	esta	guı́a.	Para	saber	cuándo	cerrar ,	cuándo	ganar	y	si	toca	asumir	una	pérdida,	
+asumirla	sin	perder	la	cuenta	para	ası́	poder	ganar	mañana.	
+📌	¿POR	QUET	ES	IMPORTANTE	ESTA	GUITA?	
+Porque	cuando	empiezas	a	operar	en	cuenta	real	en	dólares,	todo	cambia:	
+✔	Cambia	lo	que	sientes	
+✔	Cambia	tu	forma	de	ver	el	precio	
+✔	Cambia	tu	velocidad	operando	
+✔	Cambia	tu	gestión	
+✔Cambia	tu	autoestima	
+
+===== PÁGINA 2 =====
+📘	¿QUET	ES	EN	REALIDAD	ESTA	GUITA?	
+No	es	una	estrategia	cerrada.	No	es	una	promesa	de	resultados.	No	es	un	camino	para	
+saltarte	el	proceso.	
+👉	Es	una	ORIENTACIOTN	para	empezar	con	seguridad.	
+👉	Es	una	forma	de	aprender	gestión	sin	quemar	la	cuenta.	
+👉	Es	una	manera	de	ordenar	tu	cabeza	antes	de	operar .	
+⚠	Esta	guı́a	NO	te	convierte	en	trader .	Pero	puede	evitar	que	dejes	de	serlo.	
+📏	¿QUET	ES	EL	LOTAJE	Y	POR	QUET	ES	TAN	IMPORTANTE?	
+El	lotaje	es	el	tamaño	REAL	de	tu	operación.	Mide	lo	expuesto	que	estás	dentro	del	mercado.	
+Lote	|	Ganancia/Pérdida	por	100	pips	
+1.00	lote	|	1,000	$	
+0.50	lote	|	500	$	
+0.10	lote	|	100	$	
+0.01	lote	|	10	$	
+⚠	IMPORTANTE	ANTES	DE	EMPEZAR	
+Estas	guı́as	NO	son	un	sistema	Iijo,	ni	una	estrategia	obligatoria.	
+Son	una	orientación	temporal	para	quienes	están	empezando	y	aún	no	dominan	la	gestión	
+de	riesgo.	
+📓	GUITA	1	—	Capital	MENOR	a	$250	(0.01	lote,	promedios	40	pips,	SL	mental	250)	
+📗	GUITA	2	—	Capital	$250-$500	(0.01	lote,	promedios	30	pips,	SL	mental	250)	
+===== PÁGINA 3 =====
+📙	GUITA	3	—	Capital	$500-$1,000	(0.01	lote,	promedios	30	pips,	SL	mental	300)	
+📕	GUITA	4	—	Capital	$1,000-$1,500	(0.01	lote	o	plantearte	subirlo	a	0.02	en	momentos	
+puntuales,	promedios	20	pips,	SL	mental	300)	
+📘	GUITA	5	—	Capital	SUPERIOR	a	$1,500	
+A	partir	de	este	capital,	la	clave	NO	es	abrir	más…	es	abrir	con	mejor	criterio.	
+Se	mantiene	la	estructura	de	la	Guı́a	4,	pero	se	puede	valorar	aumentar	lotaje	(ej.	0.02)	solo	
+si	el	margen	sigue	sano,	lo	ideal	es	mantenerlo	por	encima	de	6000-8000%	aunque	en	
+alguna	ocasión	podamos	bajarlo	en	momentos	puntuales.		
+📈	EL	PROMEDIO	SOLO	SE	USA	CUANDO	EL	PRECIO	VA	EN	CONTRA	
+El	promedio	NO	es	para	aguantar .	Se	abren	operaciones	en	la	misma	dirección	que	la	
+primera	y	del	mismo	tamaño,	salvo	si	ves	puntos	de	reversión.	El	promedio	es	para	
+conseguir	que	nuestro	punto	de	BE	esté	más	cerca	y	de	esa	manera	nos	permita	salir	antes	o	
+tener	beneIicios	al	ir	cerrando	los	promedios	(también	se	pueden	alargar	hasta	punto	de	
+entrada,	eso	ya	depende	de	cada	trader).	
+🎯	CUANDO	EL	PRECIO	VA	A	FAVOR	
+La	señal	se	considera	válida	a	partir	de	+20	pips:	
+-	Opción	1:	Cerrar	en	+20	pips,	+30	pips	o	+40	pips…	
+-Opción	2:	Mover	SL	a	punto	de	entrada	y	dejarla	correr .	
+🧪	ESTRATEGIA	AVANZADA	(solo	si	el	nivel	de	margen	los	permite,	no	te	cargues	con	
+operaciones	al	principio	si	no	puedes):	
+Abrir	2	operaciones:	cerrar	UNA	a	+20	pips,	mover	SL	a	BE	con	la	otra	y	dejarla	correr .	
+===== PÁGINA 4 =====
+⚔	CONVERSIOTN	DE	CUENTA	CENT	A	CUENTA	DOTLAR	
+1.00	lote	CENT	=	0.01	lote	DOTLAR	
+2.00	lotes	CENT	=	0.02	lote	DOTLAR	
+🧘	PRINCIPIO	FINAL	
+El	mercado	no	castiga	al	que	pierde,	castiga	al	que	no	sabe	salir	o	al	que	sobreopera	cuando	
+el	proIit	diario	ya	ha	sido	suIiciente.
