@@ -1,16 +1,16 @@
 //+------------------------------------------------------------------+
-//|                                    Backtester_Xisco_Restrictions |
-//| Con detección de restricciones del canal                         |
-//| - RIESGO → 2 niveles (1 base + 1 promedio)                       |
-//| - SIN PROMEDIOS → 1 nivel (solo base)                            |
-//| - SOLO 1 PROMEDIO → 2 niveles (1 base + 1)                       |
-//| - Por defecto → 4 niveles (1 base + 3 promedios)                 |
-// CSV (MQL5/Files): ts_utc;kind;side;price_hint;range_id;...      |
+//|                                          Backtester_Xisco_Restrictions      |
+//| Guía Vikingo Trading con Restricciones - Capital $250-$500                       |
+//| - 0.01 lotes, 30 pips distancia, SIN SL/TP                        |
+//| - S00 scalper: cierra en +20 pips automáticamente                |
+//| - L00 base: corre hasta range_close (sin SL/TP)                   |
+//| - Grid: promedios sin TP, cierran en range_close                  |
+//| CSV (MQL5/Files): ts_utc;kind;side;price_hint;range_id;...      |
 //+------------------------------------------------------------------+
 #property strict
 #property tester_file "signals_simple.csv"
-#property description "Backtester Xisco con detección de restricciones"
-#property description "Parsea campo 'confidence' para RIESGO/SIN PROMEDIOS/SOLO 1 PROMEDIO"
+#property description "Guía Vikingo Trading con Restricciones (Capital $250-$500)"
+#property description "0.01 lotes, 20 pips step (o según restricción), S00 +20 auto, L00 sin SL/TP"
 
 #include <Trade/Trade.mqh>
 CTrade trade;
@@ -27,24 +27,21 @@ input double  InpPipSize         = 0.10;                 // 1 pip (XAUUSD)=0.10
 input long    InpMagic           = 20250673;             // magic
 input bool    InpRequireHedging  = true;                 // abortar si NETTING
 
-// Lotes
+// Lotes (Guía 2)
 input double  InpLotEntry        = 0.01;                 // L00 - Posición base
-input double  InpLotGrid         = 0.01;                 // L01..Ln - Promedios
+input double  InpLotScalper      = 0.01;                 // S00 - Scalper
+input double  InpLotGrid         = 0.01;                 // L01..L03 - Promedios
 
-// Grid (base)
+// Grid (Guía 2: 30 pips)
 input int     InpStepPips        = 20;                   // distancia entre promedios
-input int     InpDefaultMaxLevels = 4;                   // Por defecto: 1 base + 3
-input double InpSLMentalPips    = 300.0;                // SL mental
+input int     InpMaxLevels       = 4;                    // 1 base + 3 promedios
 
-// Take Profit
-input int     InpTPPips          = 20;                   // TP en pips
-input double  InpPartialClosePct = 50.0;                 // % a cerrar en TP
-input bool    InpUseBreakEven    = true;                 // Mover SL a BE en TP
-input int     InpBEAtPips        = 20;                   // Pips para activar BE
+// S00 Scalper
+input int     InpScalperTPPips   = 20;                   // TP de S00 en pips
 
-// Detección de restricciones
-input bool    InpDetectRestrictions = true;              // Activar detección
-input string  InpRestrictionField   = "confidence";     // Campo del CSV a parsear
+// SL/TP (PARA FUTURO AUTOMEJORA - NO USADOS ACTUALMENTE)
+input double  InpSLMentalPips    = 0.0;                  // NO USADO: SL mental desactivado
+input int     InpTPPips          = 0;                    // NO USADO: TP desactivado
 
 // Simulación
 input double  InpSlippagePips    = 0.5;                  // slippage de fill
@@ -55,6 +52,7 @@ input bool    InpVerbose         = true;                 // logs de depuración
 
 //============================= Constantes ===========================
 #define COMMENT_L00      "Xisco_L00"
+#define COMMENT_S00      "Xisco_S00"
 #define COMMENT_LVL_FMT  "Xisco_L%02d"
 
 //============================= Tipos ================================
@@ -64,11 +62,12 @@ struct EventRow {
   string side;
   string price_hint;
   string range_id;
-  string confidence;   // Campo para detectar restricciones
+  string confidence;     // Campo para detectar restricciones
 };
 EventRow g_events[];
 int g_ev_idx=0;
 
+// Enumeración de restricciones
 enum ENUM_RESTRICTION {
   RESTRICTION_NONE,       // Sin restricción (4 niveles)
   RESTRICTION_RIESGO,     // RIESGO (2 niveles)
@@ -91,12 +90,11 @@ struct RangeState {
   double   entry_price;
   double   mfe_pips;
   double   mae_pips;
-  double   sl_mental_price;
-  int      max_levels;     // Máximos niveles para este rango (según restricción)
-  ENUM_RESTRICTION restriction;
   Leg      legs[10];
   int      legs_n;
-  bool     tp_hit;
+  bool     s00_closed;          // S00 ya cerrado?
+  int      max_levels;         // Máximos niveles para este rango
+  ENUM_RESTRICTION restriction; // Restricción detectada
 };
 RangeState g_rng;
 
@@ -122,35 +120,32 @@ double StopsClamp(){
 string Preview(const string &s, int n=120){
   if(StringLen(s)<=n) return s;
   return StringSubstr(s,0,n) + "...";
-}
 
+//============================= Detección de Restricciones ===========================
 // Detectar restricción en el campo de texto
 ENUM_RESTRICTION DetectRestriction(const string text){
-  if(!InpDetectRestrictions) return RESTRICTION_NONE;
-
   string upper = text;
   StringToUpper(upper);
 
-  if(StringFind(upper, "SIN PROMEDIOS") >= 0 ||
-     StringFind(upper, "SIN_PROMEDIOS") >= 0 ||
-     StringFind(upper, "NO AVERRAGING") >= 0 ||
-     StringFind(upper, "NO PROMEDIOS") >= 0){
-    if(InpVerbose) PrintFormat("RESTRICCIÓN DETECTADA: SIN PROMEDIOS -> 1 nivel");
+  if(StringFind(upper, 'SIN PROMEDIOS') >= 0 ||
+     StringFind(upper, 'SIN_PROMEDIOS') >= 0 ||
+     StringFind(upper, 'NO AVERRAGING') >= 0 ||
+     StringFind(upper, 'NO PROMEDIOS') >= 0){
+    if(InpVerbose) PrintFormat('RESTRICCIÓN DETECTADA: SIN PROMEDIOS -> 1 nivel');
     return RESTRICTION_NO_AVG;
   }
 
-  if(StringFind(upper, "RIESGO") >= 0 ||
-     StringFind(upper, "RISK") >= 0){
-    if(InpVerbose) PrintFormat("RESTRICCIÓN DETECTADA: RIESGO -> 2 niveles");
+  if(StringFind(upper, 'RIESGO') >= 0 ||
+     StringFind(upper, 'RISK') >= 0){
+    if(InpVerbose) PrintFormat('RESTRICCIÓN DETECTADA: RIESGO -> 2 niveles');
     return RESTRICTION_RIESGO;
   }
 
-  if(StringFind(upper, "SOLO 1 PROMEDIO") >= 0 ||
-     StringFind(upper, "SOLO_1_PROMEDIO") >= 0 ||
-     StringFind(upper, "SOLO UN PROMEDIO") >= 0 ||
-     StringFind(upper, "1 PROMEDIO MAX") >= 0 ||
-     StringFind(upper, "SOLO 1 AVG") >= 0){
-    if(InpVerbose) PrintFormat("RESTRICCIÓN DETECTADA: SOLO 1 PROMEDIO -> 2 niveles");
+  if(StringFind(upper, 'SOLO 1 PROMEDIO') >= 0 ||
+     StringFind(upper, 'SOLO_1_PROMEDIO') >= 0 ||
+     StringFind(upper, 'SOLO UN PROMEDIO') >= 0 ||
+     StringFind(upper, '1 PROMEDIO MAX') >= 0){
+    if(InpVerbose) PrintFormat('RESTRICCIÓN DETECTADA: SOLO 1 PROMEDIO -> 2 niveles');
     return RESTRICTION_ONE_AVG;
   }
 
@@ -164,18 +159,19 @@ int GetMaxLevelsForRestriction(ENUM_RESTRICTION restr){
     case RESTRICTION_RIESGO:   return 2;  // Base + 1 promedio
     case RESTRICTION_ONE_AVG:  return 2;  // Base + 1 promedio
     case RESTRICTION_NONE:
-    default:                   return InpDefaultMaxLevels;
+    default:                   return InpMaxLevels;
   }
 }
 
 string GetRestrictionName(ENUM_RESTRICTION restr){
   switch(restr){
-    case RESTRICTION_NO_AVG:   return "SIN_PROMEDIOS";
-    case RESTRICTION_RIESGO:   return "RIESGO";
-    case RESTRICTION_ONE_AVG:  return "SOLO_1_PROMEDIO";
+    case RESTRICTION_NO_AVG:   return 'SIN_PROMEDIOS';
+    case RESTRICTION_RIESGO:   return 'RIESGO';
+    case RESTRICTION_ONE_AVG:  return 'SOLO_1_PROMEDIO';
     case RESTRICTION_NONE:
-    default:                   return "NONE";
+    default:                   return 'NONE';
   }
+}
 }
 
 bool ParseTSFlexible(string src, datetime &out)
@@ -285,9 +281,6 @@ bool LoadEvents()
   bool header_seen = false;
   datetime t_min = 0, t_max = 0;
 
-  // Encontrar columna de restricciones
-  int conf_col_idx = -1;
-
   for(int i=0; i<MathMin(nlines,10) && SEP==0; i++){
     string tmp = lines[i];
     StringReplace(tmp,"\r","");
@@ -299,29 +292,6 @@ bool LoadEvents()
     else if(StringFind(tmp, ",") >= 0) SEP = ',';
   }
   if(SEP==0) { SEP=';'; }
-
-  // Detectar columna de confidence/restricciones
-  for(int i=0; i<MathMin(nlines,20); i++){
-    string ln = lines[i];
-    StringReplace(ln,"\r","");
-    StringTrimLeft(ln);
-    StringTrimRight(ln);
-    if(ln=="" || StringGetCharacter(ln,0)=='#') continue;
-
-    string p[];
-    int cols = StringSplit(ln, SEP, p);
-    for(int k=0;k<cols;k++){
-      StringTrimLeft(p[k]);
-      StringTrimRight(p[k]);
-      StringToLower(p[k]);
-      if(StringFind(p[k], "confidence") >= 0 || StringFind(p[k], "restric") >= 0){
-        conf_col_idx = k;
-        if(InpVerbose) PrintFormat("Columna de restricciones encontrada: índice %d", k);
-        break;
-      }
-    }
-    if(conf_col_idx >= 0) break;
-  }
 
   for(int i=0; i<nlines; i++){
     string ln = lines[i];
@@ -351,7 +321,6 @@ bool LoadEvents()
     string s_side = (cols>=3 ? p[2] : "");
     string s_price = (cols>=4 ? p[3] : "");
     string s_rid = (cols>=5 ? p[4] : "");
-    string s_conf = (conf_col_idx >= 0 && conf_col_idx < cols ? p[conf_col_idx] : "");
 
     StringToUpper(s_side);
 
@@ -398,9 +367,6 @@ bool LoadEvents()
               ArraySize(g_events),
               TimeToString(t_min, TIME_DATE|TIME_MINUTES),
               TimeToString(t_max, TIME_DATE|TIME_MINUTES));
-  if(conf_col_idx < 0 && InpVerbose)
-    PrintFormat("AVISO: No se encontró columna de restricciones, se usarán %d niveles por defecto", InpDefaultMaxLevels);
-
   return true;
 }
 
@@ -445,6 +411,20 @@ bool ExistsOrderByComment(const string cmt){
     if((long)OrderGetInteger(ORDER_MAGIC)!=InpMagic) continue;
     if((string)OrderGetString(ORDER_SYMBOL)!=InpSymbol) continue;
     if((string)OrderGetString(ORDER_COMMENT)==cmt) return true;
+  }
+  return false;
+}
+
+bool ExistsPositionByComment(const string cmt){
+  int total = (int)PositionsTotal();
+  for(int idx=0; idx<total; idx++){
+    if(PosSelectByIndex(idx)){
+      if((long)PositionGetInteger(POSITION_MAGIC) == InpMagic &&
+         (string)PositionGetString(POSITION_SYMBOL) == InpSymbol){
+        string cm = (string)PositionGetString(POSITION_COMMENT);
+        if(cm == cmt) return true;
+      }
+    }
   }
   return false;
 }
@@ -505,9 +485,13 @@ void RebuildGrid(){
   for(int lvl=1; lvl<g_rng.max_levels; ++lvl) PlaceLimitLevel(lvl);
 }
 
-//============================= Break-Even ===========================
-void UpdateBreakEven(){
-  if(!g_rng.open || !InpUseBreakEven) return;
+//============================= S00 Scalper ===========================
+// Cierra S00 cuando alcanza +InpScalperTPPips pips
+void CheckScalperTP(){
+  if(!g_rng.open || g_rng.s00_closed) return;
+
+  // Buscar posición S00
+  if(!ExistsPositionByComment(COMMENT_S00)) return;
 
   int total = (int)PositionsTotal();
   for(int i=0;i<total;i++){
@@ -516,71 +500,20 @@ void UpdateBreakEven(){
     if((string)PositionGetString(POSITION_SYMBOL)!=InpSymbol) continue;
 
     string cm = (string)PositionGetString(POSITION_COMMENT);
-    if(StringFind(cm, "Xisco_", 0)!=0) continue;
+    if(cm != COMMENT_S00) continue;
 
     double open = PositionGetDouble(POSITION_PRICE_OPEN);
     long typ = (long)PositionGetInteger(POSITION_TYPE);
-    int dir = (typ==POSITION_TYPE_BUY? +1: -1);
     double last = (typ==POSITION_TYPE_BUY? PriceBid(): PriceAsk());
-    double prof_pips = (last-open)*dir/g_pip;
+    double gain = (typ==POSITION_TYPE_BUY? last-open : open-last);
 
-    if(prof_pips >= InpBEAtPips){
-      double be_price = open;
-      double cur_sl = PositionGetDouble(POSITION_SL);
-
-      if(dir>0 && be_price > cur_sl + g_pip){
-        trade.SetExpertMagicNumber(InpMagic);
-        trade.PositionModify((ulong)PositionGetInteger(POSITION_TICKET), be_price, PositionGetDouble(POSITION_TP));
-      }
-      else if(dir<0 && (be_price < cur_sl - g_pip || cur_sl==0)){
-        trade.SetExpertMagicNumber(InpMagic);
-        trade.PositionModify((ulong)PositionGetInteger(POSITION_TICKET), be_price, PositionGetDouble(POSITION_TP));
-      }
+    if(gain >= InpScalperTPPips * g_pip){
+      if(InpVerbose) PrintFormat("S00 TP +%.0f pips alcanzado. Cerrando S00.", InpScalperTPPips);
+      trade.SetExpertMagicNumber(InpMagic);
+      trade.PositionClose((ulong)PositionGetInteger(POSITION_TICKET), 100);
+      g_rng.s00_closed = true;
     }
-  }
-}
-
-//============================= TP & SL =============================
-void CheckTPandSL(){
-  if(!g_rng.open) return;
-
-  double last = (g_rng.side=="BUY"? PriceBid(): PriceAsk());
-
-  double unrealized_pnl = Pips(g_rng.entry_price, last);
-  if(g_rng.side=="SELL") unrealized_pnl = -unrealized_pnl;
-
-  if(unrealized_pnl <= -InpSLMentalPips){
-    if(InpVerbose) PrintFormat("SL MENTAL alcanzado: %.1f pips. Cerrando todo.", unrealized_pnl);
-    CloseAll();
-    g_rng.open = false;
-    return;
-  }
-
-  if(!g_rng.tp_hit && unrealized_pnl >= InpTPPips){
-    g_rng.tp_hit = true;
-    if(InpVerbose) PrintFormat("TP +20 alcanzado. Cierre parcial %.0f%%", InpPartialClosePct);
-
-    if(InpPartialClosePct >= 100.0){
-      CloseAll();
-      g_rng.open = false;
-    }
-    else if(InpPartialClosePct > 0){
-      int total = (int)PositionsTotal();
-      for(int i=total-1;i>=0;i--){
-        if(!PosSelectByIndex(i)) continue;
-        if((long)PositionGetInteger(POSITION_MAGIC)!=InpMagic) continue;
-        if((string)PositionGetString(POSITION_SYMBOL)!=InpSymbol) continue;
-
-        double vol = PositionGetDouble(POSITION_VOLUME);
-        double close_vol = vol * (InpPartialClosePct / 100.0);
-        trade.SetExpertMagicNumber(InpMagic);
-        trade.PositionClosePartial((ulong)PositionGetInteger(POSITION_TICKET), close_vol);
-      }
-
-      if(InpUseBreakEven){
-        UpdateBreakEven();
-      }
-    }
+    break;
   }
 }
 
@@ -611,11 +544,6 @@ void OpenL00(const string side){
     g_rng.legs[0].ts_open = g_rng.ts_open_msg;
     g_rng.legs_n++;
 
-    if(g_rng.side=="BUY")
-      g_rng.sl_mental_price = g_rng.entry_price - InpSLMentalPips * g_pip;
-    else
-      g_rng.sl_mental_price = g_rng.entry_price + InpSLMentalPips * g_pip;
-
     string nm_ent = StringFormat("ENT_L00_%s", TimeToString(g_rng.ts_open_msg, TIME_DATE|TIME_SECONDS));
     DrawArrow(nm_ent, g_rng.ts_open_msg, g_rng.entry_price, (side=="BUY"? clrLime: clrRed));
   } else {
@@ -623,26 +551,35 @@ void OpenL00(const string side){
   }
 }
 
+void OpenS00(const string side){
+  double px = FillPrice(side);
+  trade.SetExpertMagicNumber(InpMagic);
+  trade.SetDeviationInPoints(100);
+  bool ok = (side=="BUY" ? trade.Buy(InpLotScalper, InpSymbol, px, 0.0, 0.0, COMMENT_S00)
+                         : trade.Sell(InpLotScalper, InpSymbol, px, 0.0, 0.0, COMMENT_S00));
+  if(ok){
+    g_rng.s00_closed = false;
+    string nm_ent = StringFormat("ENT_S00_%s", TimeToString(g_rng.ts_open_msg, TIME_DATE|TIME_SECONDS));
+    DrawArrow(nm_ent, g_rng.ts_open_msg, px, clrBlue);
+
+    if(InpVerbose) PrintFormat("S00 abierto: %s @ %.1f", side, px);
+  } else {
+    Print("S00 falla: ", _LastError);
+  }
+}
+
 void OpenRange(const EventRow &ev){
   if(g_rng.open) return;
   if(ev.side!="BUY" && ev.side!="SELL") return;
-
-  // Detectar restricción
-  ENUM_RESTRICTION restr = DetectRestriction(ev.confidence);
-  int max_levels = GetMaxLevelsForRestriction(restr);
 
   g_rng.open = true;
   g_rng.side = ev.side;
   g_rng.range_id = ev.range_id;
   g_rng.ts_open_msg = ev.ts + InpLatencySeconds;
-  g_rng.max_levels = max_levels;
-  g_rng.restriction = restr;
-  g_rng.tp_hit = false;
-
-  PrintFormat("OPEN RANGE %s | Restricción: %s | Máx niveles: %d",
-              ev.range_id, GetRestrictionName(restr), max_levels);
+  g_rng.s00_closed = false;
 
   OpenL00(g_rng.side);
+  OpenS00(g_rng.side);
   RebuildGrid();
 
   g_rng.mfe_pips = -1e9;
@@ -654,7 +591,7 @@ void EnsureRangesCSV(){
   if(g_ranges==INVALID_HANDLE){
     g_ranges = FileOpen("ranges_Restrictions.csv",FILE_WRITE|FILE_CSV|FILE_ANSI,';');
     if(FileTell(g_ranges)==0)
-      FileWrite(g_ranges,"range_id,side,open_ts,close_ts,mfe_pips,mae_pips,pnl_total_pips,max_levels,restriction,tp_hit");
+      FileWrite(g_ranges,"range_id,side,open_ts,close_ts,mfe_pips,mae_pips,pnl_total_pips,max_levels,s00_closed");
   }
 }
 
@@ -677,8 +614,7 @@ void ExportRangeClose(){
             DoubleToString(g_rng.mae_pips,2),
             DoubleToString(pnl_tot,2),
             IntegerToString(g_rng.legs_n),
-            GetRestrictionName(g_rng.restriction),
-            (g_rng.tp_hit ? "1" : "0"));
+            (g_rng.s00_closed ? "1" : "0"));
 }
 
 void CloseAll(){
@@ -705,9 +641,6 @@ void CloseRange(const EventRow &ev){
   if(!g_rng.open) return;
   g_rng.ts_close_msg = ev.ts + InpLatencySeconds;
 
-  PrintFormat("CLOSE RANGE %s | Restricción: %s | Niveles usados: %d",
-              g_rng.range_id, GetRestrictionName(g_rng.restriction), g_rng.legs_n);
-
   ExportRangeClose();
   CloseAll();
 
@@ -716,16 +649,8 @@ void CloseRange(const EventRow &ev){
     double p1 = g_rng.entry_price - 50*g_pip;
     string nm = StringFormat("RANGE_%s", TimeToString(g_rng.ts_close_msg, TIME_DATE|TIME_SECONDS));
     ObjectCreate(0,nm,OBJ_RECTANGLE,0, g_rng.ts_open_msg,p0, g_rng.ts_close_msg,p1);
-
-    // Color según restricción
-    color rect_color = clrBlue;
-    if(g_rng.restriction == RESTRICTION_RIESGO) rect_color = clrOrange;
-    else if(g_rng.restriction == RESTRICTION_NO_AVG) rect_color = clrRed;
-    else if(g_rng.restriction == RESTRICTION_ONE_AVG) rect_color = clrYellow;
-    else rect_color = (g_rng.side=="BUY"? clrLime: clrRed);
-
     ObjectSetInteger(0,nm,OBJPROP_BACK,true);
-    ObjectSetInteger(0,nm,OBJPROP_COLOR,rect_color);
+    ObjectSetInteger(0,nm,OBJPROP_COLOR,(g_rng.side=="BUY"?clrLime:clrRed));
     ObjectSetInteger(0,nm,OBJPROP_FILL,true);
     ObjectSetInteger(0,nm,OBJPROP_STYLE,STYLE_SOLID);
     ObjectSetInteger(0,nm,OBJPROP_WIDTH,1);
@@ -767,7 +692,7 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,
     double price = HistoryDealGetDouble(deal, DEAL_PRICE);
     datetime t = (datetime)HistoryDealGetInteger(deal, DEAL_TIME);
 
-    if(StringFind(cm, "Xisco_L", 0)==0){
+    if(StringFind(cm, "Xisco_", 0)==0){
       int n = g_rng.legs_n;
       if(n < ArraySize(g_rng.legs)){
         g_rng.legs[n].name = cm;
@@ -806,8 +731,8 @@ int OnInit(){
     }
   }
 
-  PrintFormat("XISCO RESTRICTIONS INIT: Detección activada | Default: %d niveles | SL %d | TP +20 + BE",
-              InpDefaultMaxLevels, (int)InpSLMentalPips);
+  PrintFormat("XISCO RESTRICTIONS INIT: Guía 2 ($250-$500) | 0.01 lotes | 20 pips step (o según restricción)");
+  PrintFormat("S00 scalper: +%.0f pips auto | L00: sin SL/TP (cierra en range_close)", InpScalperTPPips);
 
   if(!LoadEvents()){
     Print("CSV vacío o inválido");
@@ -850,8 +775,7 @@ void OnTick(){
 
   if(g_rng.open){
     UpdateMFE_MAE();
-    CheckTPandSL();
-    UpdateBreakEven();
+    CheckScalperTP();
     RebuildGrid();
   }
 }

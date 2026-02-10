@@ -1,15 +1,16 @@
 //+------------------------------------------------------------------+
 //|                                          Backtester_Xisco_G4      |
-//| Guía 4 Vikingo Trading - Capital $1000-$1500                      |
-//| - 0.01 lotes, 20 pips distancia, SL 300, TP +20 + BE              |
-//| - 4 niveles máx (1 base + 3 promedios)                           |
-//| - Cierre parcial 50% en +20, resto a Break-Even                  |
-// CSV (MQL5/Files): ts_utc;kind;side;price_hint;range_id;...      |
+//| Guía 4 Vikingo Trading - Capital $1000-$1500                       |
+//| - 0.01 lotes, 30 pips distancia, SIN SL/TP                        |
+//| - S00 scalper: cierra en +20 pips automáticamente                |
+//| - L00 base: corre hasta range_close (sin SL/TP)                   |
+//| - Grid: promedios sin TP, cierran en range_close                  |
+//| CSV (MQL5/Files): ts_utc;kind;side;price_hint;range_id;...      |
 //+------------------------------------------------------------------+
 #property strict
 #property tester_file "signals_simple.csv"
 #property description "Guía 4 Vikingo Trading (Capital $1000-$1500)"
-#property description "0.01 lotes, promedios cada 20 pips, SL 300, TP +20 + BE"
+#property description "0.01 lotes, 20 pips step, S00 +20 auto, L00 sin SL/TP"
 
 #include <Trade/Trade.mqh>
 CTrade trade;
@@ -28,22 +29,19 @@ input bool    InpRequireHedging  = true;                 // abortar si NETTING
 
 // Lotes (Guía 4)
 input double  InpLotEntry        = 0.01;                 // L00 - Posición base
+input double  InpLotScalper      = 0.01;                 // S00 - Scalper
 input double  InpLotGrid         = 0.01;                 // L01..L03 - Promedios
 
-// Grid (Guía 4: 20 pips - más agresivo)
+// Grid (Guía 4: 30 pips)
 input int     InpStepPips        = 20;                   // distancia entre promedios
 input int     InpMaxLevels       = 4;                    // 1 base + 3 promedios
-input double  InpSLMentalPips    = 300.0;                // SL mental - cierre total
 
-// Take Profit & Break-Even (Guía 4: avanzado)
-input int     InpTPPips          = 20;                   // TP en pips
-input double  InpPartialClosePct = 50.0;                 // % a cerrar en TP (50%)
-input bool    InpUseBreakEven    = true;                 // Mover SL a BE en TP
-input int     InpBEAtPips        = 20;                   // Pips para activar BE
-input double  InpBEPipsOffset    = 0.0;                  // BE offset (0 = BE exacto)
+// S00 Scalper
+input int     InpScalperTPPips   = 20;                   // TP de S00 en pips
 
-// Opción de 2 operaciones desde el inicio (estrategia avanzada)
-input bool    InpDualOperations  = false;                // Abrir 2 ops al inicio
+// SL/TP (PARA FUTURO AUTOMEJORA - NO USADOS ACTUALMENTE)
+input double  InpSLMentalPips    = 0.0;                  // NO USADO: SL mental desactivado
+input int     InpTPPips          = 0;                    // NO USADO: TP desactivado
 
 // Simulación
 input double  InpSlippagePips    = 0.5;                  // slippage de fill
@@ -54,7 +52,7 @@ input bool    InpVerbose         = true;                 // logs de depuración
 
 //============================= Constantes ===========================
 #define COMMENT_L00      "Xisco_L00"
-#define COMMENT_L00_B    "Xisco_L00_B"  // Segunda operación (si dual)
+#define COMMENT_S00      "Xisco_S00"
 #define COMMENT_LVL_FMT  "Xisco_L%02d"
 
 //============================= Tipos ================================
@@ -73,8 +71,6 @@ struct Leg {
   double   vol;
   double   open_price;
   datetime ts_open;
-  double   sl_price;      // SL individual
-  bool     be_set;        // BE activado
 };
 struct RangeState {
   bool     open;
@@ -85,10 +81,9 @@ struct RangeState {
   double   entry_price;
   double   mfe_pips;
   double   mae_pips;
-  double   sl_mental_price;
   Leg      legs[10];
   int      legs_n;
-  bool     tp_hit;        // TP ya alcanzado
+  bool     s00_closed;          // S00 ya cerrado?
 };
 RangeState g_rng;
 
@@ -356,6 +351,20 @@ bool ExistsOrderByComment(const string cmt){
   return false;
 }
 
+bool ExistsPositionByComment(const string cmt){
+  int total = (int)PositionsTotal();
+  for(int idx=0; idx<total; idx++){
+    if(PosSelectByIndex(idx)){
+      if((long)PositionGetInteger(POSITION_MAGIC) == InpMagic &&
+         (string)PositionGetString(POSITION_SYMBOL) == InpSymbol){
+        string cm = (string)PositionGetString(POSITION_COMMENT);
+        if(cm == cmt) return true;
+      }
+    }
+  }
+  return false;
+}
+
 bool ExistsPositionByPrefix(const string prefix){
   int total = (int)PositionsTotal();
   for(int idx=0; idx<total; idx++){
@@ -412,9 +421,13 @@ void RebuildGrid(){
   for(int lvl=1; lvl<InpMaxLevels; ++lvl) PlaceLimitLevel(lvl);
 }
 
-//============================= Break-Even ===========================
-void UpdateBreakEven(){
-  if(!g_rng.open || !InpUseBreakEven) return;
+//============================= S00 Scalper ===========================
+// Cierra S00 cuando alcanza +InpScalperTPPips pips
+void CheckScalperTP(){
+  if(!g_rng.open || g_rng.s00_closed) return;
+
+  // Buscar posición S00
+  if(!ExistsPositionByComment(COMMENT_S00)) return;
 
   int total = (int)PositionsTotal();
   for(int i=0;i<total;i++){
@@ -423,123 +436,71 @@ void UpdateBreakEven(){
     if((string)PositionGetString(POSITION_SYMBOL)!=InpSymbol) continue;
 
     string cm = (string)PositionGetString(POSITION_COMMENT);
-    if(StringFind(cm, "Xisco_", 0)!=0) continue;
+    if(cm != COMMENT_S00) continue;
 
     double open = PositionGetDouble(POSITION_PRICE_OPEN);
     long typ = (long)PositionGetInteger(POSITION_TYPE);
-    int dir = (typ==POSITION_TYPE_BUY? +1: -1);
     double last = (typ==POSITION_TYPE_BUY? PriceBid(): PriceAsk());
-    double prof_pips = (last-open)*dir/g_pip;
+    double gain = (typ==POSITION_TYPE_BUY? last-open : open-last);
 
-    if(prof_pips >= InpBEAtPips){
-      double be_price = open + dir*InpBEPipsOffset*g_pip;
-      double cur_sl = PositionGetDouble(POSITION_SL);
-
-      if(dir>0 && be_price > cur_sl + g_pip){
-        trade.SetExpertMagicNumber(InpMagic);
-        trade.PositionModify((ulong)PositionGetInteger(POSITION_TICKET), be_price, PositionGetDouble(POSITION_TP));
-        if(InpVerbose) PrintFormat("BE activado %s: SL -> %.5f", cm, be_price);
-      }
-      else if(dir<0 && (be_price < cur_sl - g_pip || cur_sl==0)){
-        trade.SetExpertMagicNumber(InpMagic);
-        trade.PositionModify((ulong)PositionGetInteger(POSITION_TICKET), be_price, PositionGetDouble(POSITION_TP));
-        if(InpVerbose) PrintFormat("BE activado %s: SL -> %.5f", cm, be_price);
-      }
+    if(gain >= InpScalperTPPips * g_pip){
+      if(InpVerbose) PrintFormat("S00 TP +%.0f pips alcanzado. Cerrando S00.", InpScalperTPPips);
+      trade.SetExpertMagicNumber(InpMagic);
+      trade.PositionClose((ulong)PositionGetInteger(POSITION_TICKET), 100);
+      g_rng.s00_closed = true;
     }
-  }
-}
-
-//============================= TP & SL =============================
-void CheckTPandSL(){
-  if(!g_rng.open) return;
-
-  double last = (g_rng.side=="BUY"? PriceBid(): PriceAsk());
-
-  // SL Mental
-  double unrealized_pnl = Pips(g_rng.entry_price, last);
-  if(g_rng.side=="SELL") unrealized_pnl = -unrealized_pnl;
-
-  if(unrealized_pnl <= -InpSLMentalPips){
-    if(InpVerbose) PrintFormat("SL MENTAL alcanzado: %.1f pips. Cerrando todo.", unrealized_pnl);
-    CloseAll();
-    g_rng.open = false;
-    return;
-  }
-
-  // Take Profit parcial
-  if(!g_rng.tp_hit && unrealized_pnl >= InpTPPips){
-    g_rng.tp_hit = true;
-    if(InpVerbose) PrintFormat("TP +20 alcanzado. Cierre parcial %.0f%%", InpPartialClosePct);
-
-    if(InpPartialClosePct >= 100.0){
-      CloseAll();
-      g_rng.open = false;
-    }
-    else if(InpPartialClosePct > 0){
-      int total = (int)PositionsTotal();
-      for(int i=total-1;i>=0;i--){
-        if(!PosSelectByIndex(i)) continue;
-        if((long)PositionGetInteger(POSITION_MAGIC)!=InpMagic) continue;
-        if((string)PositionGetString(POSITION_SYMBOL)!=InpSymbol) continue;
-
-        double vol = PositionGetDouble(POSITION_VOLUME);
-        double close_vol = vol * (InpPartialClosePct / 100.0);
-        trade.SetExpertMagicNumber(InpMagic);
-        trade.PositionClosePartial((ulong)PositionGetInteger(POSITION_TICKET), close_vol);
-      }
-
-      if(InpUseBreakEven){
-        UpdateBreakEven();
-      }
-    }
+    break;
   }
 }
 
 //============================= Open/Close rango ======================
-void OpenL00(const string side, bool is_second=false){
+void OpenL00(const string side){
   double px = FillPrice(side);
   trade.SetExpertMagicNumber(InpMagic);
   trade.SetDeviationInPoints(100);
-
-  string cmt = (is_second ? COMMENT_L00_B : COMMENT_L00);
-  bool ok = (side=="BUY" ? trade.Buy(InpLotEntry, InpSymbol, px, 0.0, 0.0, cmt)
-                         : trade.Sell(InpLotEntry, InpSymbol, px, 0.0, 0.0, cmt));
+  bool ok = (side=="BUY" ? trade.Buy(InpLotEntry, InpSymbol, px, 0.0, 0.0, COMMENT_L00)
+                         : trade.Sell(InpLotEntry, InpSymbol, px, 0.0, 0.0, COMMENT_L00));
   if(ok){
-    if(!is_second){
-      int total=(int)PositionsTotal();
-      g_rng.entry_price = px;
-      for(int i=0;i<total;i++){
-        if(!PosSelectByIndex(i)) continue;
-        if((long)PositionGetInteger(POSITION_MAGIC)!=InpMagic) continue;
-        if((string)PositionGetString(POSITION_SYMBOL)!=InpSymbol) continue;
-        string cm=(string)PositionGetString(POSITION_COMMENT);
-        if(StringFind(cm,COMMENT_L00,0)==0){
-          g_rng.entry_price = PositionGetDouble(POSITION_PRICE_OPEN);
-          break;
-        }
+    int total=(int)PositionsTotal();
+    g_rng.entry_price = px;
+    for(int i=0;i<total;i++){
+      if(!PosSelectByIndex(i)) continue;
+      if((long)PositionGetInteger(POSITION_MAGIC)!=InpMagic) continue;
+      if((string)PositionGetString(POSITION_SYMBOL)!=InpSymbol) continue;
+      string cm=(string)PositionGetString(POSITION_COMMENT);
+      if(StringFind(cm,COMMENT_L00,0)==0){
+        g_rng.entry_price = PositionGetDouble(POSITION_PRICE_OPEN);
+        break;
       }
-      g_rng.legs_n = 0;
-      g_rng.legs[0].name = "L00";
-      g_rng.legs[0].vol = InpLotEntry;
-      g_rng.legs[0].open_price = g_rng.entry_price;
-      g_rng.legs[0].ts_open = g_rng.ts_open_msg;
-      g_rng.legs[0].be_set = false;
-      g_rng.legs_n++;
-
-      if(g_rng.side=="BUY")
-        g_rng.sl_mental_price = g_rng.entry_price - InpSLMentalPips * g_pip;
-      else
-        g_rng.sl_mental_price = g_rng.entry_price + InpSLMentalPips * g_pip;
-
-      string nm_ent = StringFormat("ENT_L00_%s", TimeToString(g_rng.ts_open_msg, TIME_DATE|TIME_SECONDS));
-      DrawArrow(nm_ent, g_rng.ts_open_msg, g_rng.entry_price, (side=="BUY"? clrLime: clrRed));
     }
-    else{
-      string nm_ent = StringFormat("ENT_L00_B_%s", TimeToString(g_rng.ts_open_msg, TIME_DATE|TIME_SECONDS));
-      DrawArrow(nm_ent, g_rng.ts_open_msg, px, clrBlue);
-    }
+    g_rng.legs_n = 0;
+    g_rng.legs[0].name = "L00";
+    g_rng.legs[0].vol = InpLotEntry;
+    g_rng.legs[0].open_price = g_rng.entry_price;
+    g_rng.legs[0].ts_open = g_rng.ts_open_msg;
+    g_rng.legs_n++;
+
+    string nm_ent = StringFormat("ENT_L00_%s", TimeToString(g_rng.ts_open_msg, TIME_DATE|TIME_SECONDS));
+    DrawArrow(nm_ent, g_rng.ts_open_msg, g_rng.entry_price, (side=="BUY"? clrLime: clrRed));
   } else {
     Print("L00 falla: ", _LastError);
+  }
+}
+
+void OpenS00(const string side){
+  double px = FillPrice(side);
+  trade.SetExpertMagicNumber(InpMagic);
+  trade.SetDeviationInPoints(100);
+  bool ok = (side=="BUY" ? trade.Buy(InpLotScalper, InpSymbol, px, 0.0, 0.0, COMMENT_S00)
+                         : trade.Sell(InpLotScalper, InpSymbol, px, 0.0, 0.0, COMMENT_S00));
+  if(ok){
+    g_rng.s00_closed = false;
+    string nm_ent = StringFormat("ENT_S00_%s", TimeToString(g_rng.ts_open_msg, TIME_DATE|TIME_SECONDS));
+    DrawArrow(nm_ent, g_rng.ts_open_msg, px, clrBlue);
+
+    if(InpVerbose) PrintFormat("S00 abierto: %s @ %.1f", side, px);
+  } else {
+    Print("S00 falla: ", _LastError);
   }
 }
 
@@ -551,14 +512,10 @@ void OpenRange(const EventRow &ev){
   g_rng.side = ev.side;
   g_rng.range_id = ev.range_id;
   g_rng.ts_open_msg = ev.ts + InpLatencySeconds;
-  g_rng.tp_hit = false;
+  g_rng.s00_closed = false;
 
-  OpenL00(g_rng.side, false);
-
-  if(InpDualOperations){
-    OpenL00(g_rng.side, true);
-  }
-
+  OpenL00(g_rng.side);
+  OpenS00(g_rng.side);
   RebuildGrid();
 
   g_rng.mfe_pips = -1e9;
@@ -570,7 +527,7 @@ void EnsureRangesCSV(){
   if(g_ranges==INVALID_HANDLE){
     g_ranges = FileOpen("ranges_G4.csv",FILE_WRITE|FILE_CSV|FILE_ANSI,';');
     if(FileTell(g_ranges)==0)
-      FileWrite(g_ranges,"range_id,side,open_ts,close_ts,mfe_pips,mae_pips,pnl_total_pips,max_levels,tp_hit");
+      FileWrite(g_ranges,"range_id,side,open_ts,close_ts,mfe_pips,mae_pips,pnl_total_pips,max_levels,s00_closed");
   }
 }
 
@@ -593,7 +550,7 @@ void ExportRangeClose(){
             DoubleToString(g_rng.mae_pips,2),
             DoubleToString(pnl_tot,2),
             IntegerToString(g_rng.legs_n),
-            (g_rng.tp_hit ? "1" : "0"));
+            (g_rng.s00_closed ? "1" : "0"));
 }
 
 void CloseAll(){
@@ -671,14 +628,13 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,
     double price = HistoryDealGetDouble(deal, DEAL_PRICE);
     datetime t = (datetime)HistoryDealGetInteger(deal, DEAL_TIME);
 
-    if(StringFind(cm, "Xisco_L", 0)==0){
+    if(StringFind(cm, "Xisco_", 0)==0){
       int n = g_rng.legs_n;
       if(n < ArraySize(g_rng.legs)){
         g_rng.legs[n].name = cm;
         g_rng.legs[n].vol = vol;
         g_rng.legs[n].open_price = price;
         g_rng.legs[n].ts_open = t;
-        g_rng.legs[n].be_set = false;
         g_rng.legs_n = n+1;
       }
     }
@@ -711,8 +667,8 @@ int OnInit(){
     }
   }
 
-  PrintFormat("XISCO G4 INIT: Guía 4 ($1000-$1500) | 0.01 lotes | 20 pips step | SL 300 | TP +20 + BE");
-  if(InpDualOperations) PrintFormat("DUAL OPERATIONS ACTIVADO: 2 posiciones desde el inicio");
+  PrintFormat("XISCO G4 INIT: Guía 4 ($1000-$1500) | 0.01 lotes | 20 pips step");
+  PrintFormat("S00 scalper: +%.0f pips auto | L00: sin SL/TP (cierra en range_close)", InpScalperTPPips);
 
   if(!LoadEvents()){
     Print("CSV vacío o inválido");
@@ -755,8 +711,7 @@ void OnTick(){
 
   if(g_rng.open){
     UpdateMFE_MAE();
-    CheckTPandSL();
-    UpdateBreakEven();
+    CheckScalperTP();
     RebuildGrid();
   }
 }
