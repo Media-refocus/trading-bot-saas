@@ -24,6 +24,8 @@ model Tenant {
   signals         Signal[]
   positions       Position[]
   subscriptions   Subscription[]
+  backtests       Backtest[]
+  simulatedTrades  SimulatedTrade[]
 }
 
 model User {
@@ -170,4 +172,70 @@ model Subscription {
 
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+}
+
+// Backtesting System
+model Backtest {
+  id                String   @id @default(cuid())
+  tenantId          String
+  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name              String?             // Nombre personalizado del backtest
+  strategyName      String              // "Toni G4", "Xisco G2", "Custom"
+  status            String              @default("PENDING") // "PENDING", "RUNNING", "COMPLETED", "ERROR"
+
+  // Parámetros de configuración (JSON)
+  parameters        Json                // { lotaje, pipsDistance, maxLevels, takeProfit, stopLoss, useStopLoss, restrictionType }
+
+  // Resultados
+  totalTrades       Int                 @default(0)
+  totalProfit       Float               @default(0)
+  totalProfitPips   Float               @default(0)
+  winRate          Float               @default(0)
+  maxDrawdown       Float               @default(0)
+  profitFactor      Float               @default(0)
+
+  // Control de ejecución
+  startedAt         DateTime?
+  completedAt       DateTime?
+  error            String?
+
+  // Tiempo de simulación
+  ticksProcessed    Int                 @default(0)
+  totalTicks        Int                 @default(0)
+
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  trades           SimulatedTrade[]
+}
+
+model SimulatedTrade {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  backtestId      String
+  backtest        Backtest  @relation(fields: [backtestId], references: [id], onDelete: Cascade)
+
+  // Referencia a señal original (si existe)
+  signalIndex     Int                 // Índice en el CSV de señales
+
+  // Tipo de evento
+  type            String              // "OPEN", "AVERAGE", "CLOSE", "TAKE_PROFIT", "STOP_LOSS"
+
+  // Datos de la operación
+  side            String              // "BUY", "SELL"
+  price           Float
+  lotSize         Float
+  level           Int                 @default(0) // 0=base, 1=primer promedio, etc.
+
+  // Resultado
+  profit          Float
+  profitPips      Float
+
+  // Timestamp de cuándo ocurrió (simulado)
+  timestamp       DateTime
+
+  createdAt       DateTime             @default(now())
 }
