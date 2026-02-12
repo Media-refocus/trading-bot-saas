@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Multi-tenancy: Cada cliente tiene su tenant
+model Tenant {
+  id              String         @id @default(cuid())
+  name            String
+  email           String         @unique
+  stripeCustomerId String?       @unique
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  users           User[]
+  tradingAccounts TradingAccount[]
+  signals         Signal[]
+  positions       Position[]
+  subscriptions   Subscription[]
+}
+
+model User {
+  id             String    @id @default(cuid())
+  tenantId       String
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  email          String    @unique
+  name           String?
+  emailVerified  DateTime?
+  image          String?
+  password       String    // Hashed con bcrypt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts         Account[]
+  sessions         Session[]
+  tradingAccounts  TradingAccount[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expires      DateTime
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model TradingAccount {
+  id                  String   @id @default(cuid())
+  tenantId            String
+  tenant              Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId              String?
+  user                User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  broker              String              // "VT Markets", "Infinox", etc.
+  accountNumber       String
+  platform            String              // "MT4", "MT5"
+  server              String?
+  encryptedApiKey     String              @db.Text // Encriptado
+  encryptedApiSecret  String?             @db.Text // Encriptado
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  positions           Position[]
+}
+
+model Signal {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Señal original de Telegram
+  side            String              // "BUY", "SELL"
+  price           Float
+  symbol          String              // "XAUUSD"
+  messageText     String              @db.Text
+  receivedAt     DateTime  @default(now())
+
+  // Estado de procesamiento
+  status          String              @default("PENDING") // "PENDING", "EXECUTED", "FAILED", "CANCELLED"
+  executedAt      DateTime?
+
+  // Restricciones del canal
+  restrictionType String?             // "RIESGO", "SIN_PROMEDIOS", "SOLO_1_PROMEDIO", null
+  maxLevels       Int                 @default(4)
+
+  // Resultados
+  positions       Position[]
+  createdAt       DateTime  @default(now())
+}
+
+model Position {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  signalId        String?
+  signal          Signal?  @relation(fields: [signalId], references: [id], onDelete: SetNull)
+  tradingAccountId String?
+  tradingAccount   TradingAccount? @relation(fields: [tradingAccountId], references: [id], onDelete: SetNull)
+
+  side            String              // "BUY", "SELL"
+  symbol          String              // "XAUUSD"
+  lotSize         Float
+  openPrice       Float
+  closePrice      Float?
+  stopLoss        Float?
+  takeProfit      Float?
+
+  // Estado
+  status          String              @default("OPEN") // "OPEN", "CLOSED", "PENDING"
+  openedAt        DateTime  @default(now())
+  closedAt        DateTime?
+
+  // Resultado
+  profitPips      Float?
+  profitMoney     Float?
+
+  // Grid levels
+  level           Int                 @default(0) // 0=base, 1=primer promedio, etc.
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Subscription {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  stripePriceId    String?
+  stripeSubId      String?   @unique
+  status          String              // "ACTIVE", "CANCELED", "PAST_DUE"
+
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
