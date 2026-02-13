@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -52,12 +52,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   @@unique([provider, providerAccountId])
@@ -90,8 +90,8 @@ model TradingAccount {
   accountNumber       String
   platform            String              // "MT4", "MT5"
   server              String?
-  encryptedApiKey     String              @db.Text // Encriptado
-  encryptedApiSecret  String?             @db.Text // Encriptado
+  encryptedApiKey     String              // Encriptado
+  encryptedApiSecret  String?             // Encriptado
   isActive            Boolean  @default(true)
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
@@ -108,7 +108,7 @@ model Signal {
   side            String              // "BUY", "SELL"
   price           Float
   symbol          String              // "XAUUSD"
-  messageText     String              @db.Text
+  messageText     String
   receivedAt     DateTime  @default(now())
 
   // Estado de procesamiento
