@@ -20,6 +20,12 @@ import {
   generateSyntheticTicks,
   TradingSignal,
 } from "@/lib/parsers/signals-csv";
+import {
+  getTicksForSignal,
+  hasTicksData,
+  getTicksInfo,
+  enrichSignalsWithRealPrices,
+} from "@/lib/parsers/ticks-loader";
 import path from "path";
 
 // ==================== SCHEMAS ====================
@@ -34,6 +40,9 @@ const BacktestConfigSchema = z.object({
   stopLossPips: z.number().min(0).max(500).optional(),
   useStopLoss: z.boolean().default(false),
   restrictionType: z.enum(["RIESGO", "SIN_PROMEDIOS", "SOLO_1_PROMEDIO"]).optional(),
+  // Fuente de señales
+  signalsSource: z.enum(["signals_simple.csv", "signals_parsed.csv"]).optional().default("signals_simple.csv"),
+  useRealPrices: z.boolean().optional().default(true), // Enriquecer con precios reales
 });
 
 // ==================== STORE (en memoria por ahora) ====================
@@ -48,6 +57,33 @@ interface BacktestJob {
 }
 
 const backtestJobs = new Map<string, BacktestJob>();
+
+// ==================== HELPERS ====================
+
+/**
+ * Genera ticks sintéticos para una señal (fallback)
+ */
+function generateSyntheticTicksForSignal(
+  signal: TradingSignal,
+  config: { takeProfitPips: number; pipsDistance: number }
+): { timestamp: Date; bid: number; ask: number; spread: number }[] {
+  const durationMs = signal.closeTimestamp
+    ? signal.closeTimestamp.getTime() - signal.timestamp.getTime()
+    : 30 * 60 * 1000; // 30 min por defecto
+
+  // Calcular precio de salida simulado
+  const exitPrice =
+    signal.side === "BUY"
+      ? signal.entryPrice + config.takeProfitPips * 0.1
+      : signal.entryPrice - config.takeProfitPips * 0.1;
+
+  return generateSyntheticTicks(
+    signal.entryPrice,
+    exitPrice,
+    durationMs,
+    config.pipsDistance * 2
+  );
+}
 
 // ==================== ROUTER ====================
 
@@ -75,13 +111,26 @@ export const backtesterRouter = router({
       backtestJobs.set(jobId, job);
 
       try {
-        // Cargar señales
-        const signalsPath = path.join(process.cwd(), "signals_simple.csv");
+        // Verificar si hay ticks reales disponibles
+        const useRealTicks = hasTicksData();
+        console.log(`[Backtester] Usando ticks ${useRealTicks ? "REALES" : "SINTÉTICOS"}`);
+
+        // Cargar señales desde la fuente especificada
+        const signalsSource = input.config.signalsSource || "signals_simple.csv";
+        const signalsPath = path.join(process.cwd(), signalsSource);
         let signals = await loadSignalsFromFile(signalsPath);
 
         // Limitar si se especifica
         if (input.signalLimit) {
           signals = signals.slice(0, input.signalLimit);
+        }
+
+        // Enriquecer con precios reales si está disponible y solicitado
+        if (useRealTicks && input.config.useRealPrices !== false) {
+          console.log(`[Backtester] Enriqueciendo ${signals.length} señales con precios reales...`);
+          signals = await enrichSignalsWithRealPrices(signals);
+          const withPrices = signals.filter(s => s.entryPrice > 0);
+          console.log(`[Backtester] ${withPrices.length} señales con precio real encontrado`);
         }
 
         // Crear motor de backtest
@@ -98,23 +147,31 @@ export const backtesterRouter = router({
           // Abrir operaciones iniciales
           engine.openInitialOrders(signal.entryPrice);
 
-          // Generar ticks sintéticos para simular el movimiento
-          const durationMs = signal.closeTimestamp
-            ? signal.closeTimestamp.getTime() - signal.timestamp.getTime()
-            : 30 * 60 * 1000; // 30 min por defecto
+          // Obtener ticks: reales o sintéticos
+          let ticks: { timestamp: Date; bid: number; ask: number; spread: number }[] = [];
 
-          // Calcular precio de salida (simulado - en producción vendría de ticks reales)
-          const exitPrice =
-            signal.side === "BUY"
-              ? signal.entryPrice + input.config.takeProfitPips * 0.1
-              : signal.entryPrice - input.config.takeProfitPips * 0.1;
+          if (useRealTicks) {
+            // Intentar cargar ticks reales para esta señal
+            try {
+              const realTicks = await getTicksForSignal(
+                signal.timestamp,
+                signal.closeTimestamp
+              );
 
-          const ticks = generateSyntheticTicks(
-            signal.entryPrice,
-            exitPrice,
-            durationMs,
-            input.config.pipsDistance * 2
-          );
+              if (realTicks.length > 0) {
+                ticks = realTicks;
+              } else {
+                // No hay ticks reales para este período, usar sintéticos
+                ticks = generateSyntheticTicksForSignal(signal, input.config);
+              }
+            } catch (error) {
+              console.warn(`[Backtester] Error cargando ticks reales para señal ${i}:`, error);
+              ticks = generateSyntheticTicksForSignal(signal, input.config);
+            }
+          } else {
+            // Fallback a ticks sintéticos
+            ticks = generateSyntheticTicksForSignal(signal, input.config);
+          }
 
           // Procesar cada tick
           for (const tick of ticks) {
@@ -213,5 +270,19 @@ export const backtesterRouter = router({
       winRate: j.results?.winRate,
       maxDrawdown: j.results?.maxDrawdown,
     }));
+  }),
+
+  /**
+   * Obtiene información sobre los datos de ticks disponibles
+   */
+  getTicksInfo: procedure.query(() => {
+    const hasRealTicks = hasTicksData();
+    const info = getTicksInfo();
+
+    return {
+      hasRealTicks,
+      files: info.files,
+      totalSizeMB: info.totalSizeMB,
+    };
   }),
 });

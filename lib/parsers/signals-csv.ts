@@ -89,15 +89,16 @@ export function groupSignalsByRange(rawSignals: RawSignal[]): TradingSignal[] {
   const tradingSignals: TradingSignal[] = [];
 
   for (const [rangeId, { open, close }] of rangeMap) {
-    if (!open.side || !open.priceHint) continue;
+    // Solo requerimos side, el precio puede ser enriquecido después con ticks reales
+    if (!open.side) continue;
 
     tradingSignals.push({
       id: rangeId,
       timestamp: open.timestamp,
       side: open.side,
-      entryPrice: open.priceHint,
+      entryPrice: open.priceHint || 0, // 0 indica que necesita ser enriquecido
       closeTimestamp: close?.timestamp,
-      closePrice: close ? open.priceHint : undefined, // Usamos precio de entrada como referencia
+      closePrice: close ? (open.priceHint || 0) : undefined,
       rangeId,
       confidence: open.confidence || 0.95,
     });
