@@ -1,35 +1,6 @@
 # 🚀 PROMPT PARA NUEVA TERMINAL (Claude Code)
 
-## 📋 ESTADO ACTUAL - 13 FEB 2026 (FIN DE SESION)
-
-### ⚠️ PROBLEMA PENDIENTE - BASE DE DATOS
-
-**Situación:** La base de datos SQLite (`prisma/dev.db`) quedó en estado inconsistente:
-- El archivo existe pero está vacío (0 bytes)
-- No se pudo eliminar porque quedó bloqueado por un proceso
-- El registro de usuarios no funciona hasta que se arregle
-
-**Solución al retomar:**
-```bash
-cd C:\Users\guill\projects\trading-bot-saas
-
-# 1. Asegurarse de que no hay procesos node corriendo
-taskkill /F /IM node.exe
-
-# 2. Eliminar la BD corrupta
-rm -f prisma/dev.db prisma/dev.db-journal
-
-# 3. Recrear la BD
-npx prisma db push
-
-# 4. Regenerar el cliente Prisma
-npx prisma generate
-
-# 5. Arrancar el servidor
-npm run dev
-```
-
----
+## 📋 ESTADO ACTUAL - 13 FEB 2026 (SESIÓN COMPLETADA)
 
 ### ✅ LO QUE ESTÁ FUNCIONANDO
 
@@ -38,46 +9,40 @@ npm run dev
 - Router tRPC en `server/api/trpc/routers/backtester.ts`
 - Motor de simulación en `lib/backtest-engine.ts`
 - Parser de señales en `lib/parsers/signals-csv.ts`
+- **NUEVO:** Loader de ticks reales en `lib/parsers/ticks-loader.ts`
 
-**2. Datos Disponibles**
-- `signals_simple.csv`: 774 señales (Oct 2025 - Feb 2026)
-- `signals_parsed.csv`: 154 señales (Jun 2024 - Ene 2026) - parser básico
-- `docs/telegram_raw_messages.csv`: 38,693 mensajes raw de Telegram
-
-**3. Ticks MT5**
-- Script: `scripts/download_mt5_ticks.py`
-- 96 millones de ticks descargados de XAUUSD (2024-2026)
-- Archivo: `data/ticks/XAUUSD_2024.csv.gz`
-
-**4. Sistema de Autenticación**
+**2. Sistema de Autenticación**
 - Registro: `app/api/register/route.ts`
 - Login: Usa NextAuth con credentials
-- Schema Prisma completo con Tenant, User, Session, etc.
+- Base de datos SQLite funcionando
+
+**3. Datos Disponibles**
+- `signals_simple.csv`: 388 señales (Oct 2025 - Feb 2026)
+- `signals_parsed.csv`: 154 señales (Jun 2024 - Ene 2026)
+- `docs/telegram_raw_messages.csv`: 27,439 mensajes raw
+
+**4. Ticks MT5**
+- `data/ticks/XAUUSD_2024.csv.gz`: Solo 2-5 enero 2024 (incompleto)
 
 ---
 
-## 🎯 PRÓXIMOS PASOS (cuando vuelvas)
+### ⚠️ PROBLEMA PENDIENTE - TICKS INSUFICIENTES
 
-### Paso 1: Arreglar la base de datos
-Ejecutar los comandos de arriba para recrear la BD.
+**Situación:** El archivo de ticks solo tiene datos del 2-5 enero 2024, pero las señales empiezan en junio 2024. No hay superposición temporal.
 
-### Paso 2: Probar el registro
+**Solución:** Descargar más ticks con MT5:
 ```bash
-# Crear usuario de prueba
-curl -X POST http://localhost:3000/api/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Test","email":"test@test.com","password":"123456"}'
+# Con MT5 abierto en el PC:
+python scripts/download_mt5_ticks.py --start 2024-06-01 --end 2026-02-13
 ```
 
-### Paso 3: Probar el backtester
-- Ir a http://localhost:3000/login
-- Crear cuenta / loguearse
-- Ir a http://localhost:3000/backtester
+---
 
-### Mejoras pendientes:
-1. **Integrar ticks reales** en el backtester (ahora usa sintéticos)
-2. **Mejorar parser de señales** - el archivo `signals_simple.csv` tiene 774 señales pero los mensajes raw tienen datos desde Jun 2024
-3. **Probar diferentes configuraciones** de grid/TP/SL
+## 🎯 PRÓXIMOS PASOS
+
+1. **Descargar ticks completos** de MT5 (Jun 2024 - Feb 2026)
+2. **Probar backtest con ticks reales** una vez descargados
+3. **Mejorar parser de señales** para extraer más información
 
 ---
 
@@ -85,12 +50,9 @@ curl -X POST http://localhost:3000/api/register \
 
 | Archivo | Descripción |
 |---------|-------------|
-| `prisma/schema.prisma` | Schema completo: Tenant, User, Signal, Position, Backtest, etc. |
-| `app/api/register/route.ts` | Endpoint de registro de usuarios |
+| `lib/parsers/ticks-loader.ts` | **NUEVO** - Loader de ticks reales desde gzip |
 | `lib/backtest-engine.ts` | Motor de simulación con grid y trailing SL |
-| `lib/parsers/signals-csv.ts` | Parser de CSV de señales |
 | `server/api/trpc/routers/backtester.ts` | Router tRPC con endpoints |
-| `app/(dashboard)/backtester/page.tsx` | UI del backtester |
 | `scripts/download_mt5_ticks.py` | Script para descargar ticks de MT5 |
 | `scripts/parse_telegram_signals.py` | Parser de mensajes de Telegram |
 
@@ -106,43 +68,11 @@ curl -X POST http://localhost:3000/api/register \
 
 ---
 
-## 📊 PARÁMETROS DEL BACKTESTER
-
-| Parámetro | Default | Descripción |
-|-----------|---------|-------------|
-| lotajeBase | 0.1 | Tamaño de lote |
-| numOrders | 1 | Órdenes por señal |
-| pipsDistance | 10 | Distancia entre niveles |
-| maxLevels | 4 | Máximo promedios |
-| takeProfitPips | 20 | TP desde precio promedio |
-| useStopLoss | false | Activar SL de emergencia |
-| restrictionType | - | RIESGO / SIN_PROMEDIOS / SOLO_1_PROMEDIO |
-
----
-
-## 📝 COMMITS DE ESTA SESIÓN
-
-1. `b375cfa` feat: cambiar a SQLite para desarrollo local
-2. `d3d185d` docs: actualizar CLAUDE.md con estado de la sesion 13 Feb 2026
-3. `7f47a3b` feat: parser de senales de Telegram + senales extraidas
-4. `3166a80` feat: script para descargar ticks historicos de MT5
-5. `bd332da` feat: backtester web funcional con grid y promedios
-
----
-
-## 🚀 ¡A CONTINUAR!
+## 🚀 ARRANCAR
 
 ```bash
-cd C:\Users\guill\projects\trading-bot-saas
-
-# Si la BD está rota:
-taskkill /F /IM node.exe
-rm -f prisma/dev.db prisma/dev.db-journal
-npx prisma db push
-npx prisma generate
-
-# Arrancar:
+cd C:\Users\guill\Projects\trading-bot-saas
 npm run dev
 ```
 
-Y abre http://localhost:3000/backtester
+Abrir http://localhost:3000/backtester
