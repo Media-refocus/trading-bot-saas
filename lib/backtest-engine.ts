@@ -48,8 +48,15 @@ export interface BacktestResult {
   profitFactor: number;
 
   // Detalles
-  trades: SimulatedTrade[];
+  trades: any[];
   equityCurve: number[];
+}
+
+export interface PriceTick {
+  timestamp: Date;
+  bid: number;
+  ask: number;
+  spread: number;
 }
 
 export interface SimulatedTrade {
@@ -65,16 +72,9 @@ export interface SimulatedTrade {
   signalIndex?: number; // Índice en el CSV de señales
 }
 
-export interface PriceTick {
-  timestamp: Date;
-  bid: number;
-  ask: number;
-  spread: number;
-}
-
 // ==================== CONSTANTES ====================
 
-const PIP_VALUE = 0.10; // 1 pip = 0.10 para XAUUSD
+const PIP_VALUE = 0.10; // 1 pip ≈ 0.10 USD (XAU/USD típico)
 
 // ==================== CLASE PRINCIPAL ====================
 
@@ -83,7 +83,7 @@ export class BacktestEngine {
   private entryPrice: number | null = null;
   private side: Side | null = null;
   private entryOpen = false;
-  private positions: Map<number, SimulatedTrade[]> = new Map(); // nivel -> array de trades
+  private positions: Map<number, any[]> = new Map(); // nivel -> array de trades
   private pendingLevels: Set<number> = new Set();
   private entrySL: number | null = null; // Trailing SL virtual
   private totalLevels: number = 0;
@@ -91,7 +91,7 @@ export class BacktestEngine {
   private currentTick = 0;
   private totalTicks = 0;
 
-  private trades: SimulatedTrade[] = [];
+  private trades: any[] = [];
   private highEquity: number = 0;
   private lowEquity: number = 0;
   private currentEquity: number = 0;
@@ -105,14 +105,14 @@ export class BacktestEngine {
   /**
    * Inicia una nueva señal
    */
-  startSignal(side: Side, price: number) {
+  startSignal(side: Side, price: number): void {
     this.side = side;
     this.entryPrice = price;
     this.entryOpen = false;
     this.entrySL = null;
     this.positions.clear();
     this.pendingLevels.clear();
-    this.totalLevels = 0;
+    this.totalLevels = this.calculateMaxLevels();
 
     // Calcular cuántos niveles caben según la restricción
     this.totalLevels = this.calculateMaxLevels();
@@ -139,8 +139,8 @@ export class BacktestEngine {
   /**
    * Abre las operaciones iniciales según numOrders
    */
-  openInitialOrders(currentPrice: number): SimulatedTrade[] {
-    const trades: SimulatedTrade[] = [];
+  openInitialOrders(currentPrice: number): any[] {
+    const trades: any[] = [];
     const { lotajeBase, numOrders, takeProfitPips } = this.config;
 
     for (let i = 0; i < numOrders; i++) {
@@ -149,7 +149,7 @@ export class BacktestEngine {
         ? this.entryPrice! + (takeProfitPips * PIP_VALUE * (this.side === "BUY" ? 1 : -1))
         : null; // Segunda operación sin TP (SL dinámico)
 
-      const trade: SimulatedTrade = {
+      const trade: any = {
         id: `trade_${Date.now()}_${i}`,
         type: "OPEN",
         side: this.side!,
@@ -175,13 +175,13 @@ export class BacktestEngine {
   /**
    * Procesa un tick de precio
    */
-  processTick(tick: PriceTick): SimulatedTrade[] | null {
+  processTick(tick: PriceTick): any[] | null {
     if (!this.entryPrice || !this.side) {
       return null;
     }
 
     this.currentTick++;
-    const newTrades: SimulatedTrade[] = [];
+    const newTrades: any[] = [];
 
     const isBuy = this.side === "BUY";
     const closePrice = isBuy ? tick.bid : tick.ask;
@@ -236,11 +236,10 @@ export class BacktestEngine {
 
     // La operación 0 (TP fijo) no tiene SL virtual
     // La operación 1 tiene SL que se mueve
-
-    const activateDistance = takeProfitPips * PIP_VALUE; // Distancia para activar trailing (desde entrada)
-    const backDistance = 20 * PIP_VALUE; // Distancia del SL desde precio actual (20 pips)
-    const stepDistance = 10 * PIP_VALUE; // Cuánto se mueve el SL cada vez
-    const buffer = 1 * PIP_VALUE; // Buffer de seguridad
+    const activateDistance = takeProfitPips * PIP_VALUE;
+    const backDistance = 20 * PIP_VALUE;
+    const stepDistance = 10 * PIP_VALUE;
+    const buffer = 1 * PIP_VALUE;
 
     if (isBuy) {
       // BUY: El SL está por encima (venta)
@@ -342,8 +341,7 @@ export class BacktestEngine {
       }
     }
 
-    // Calcular niveles en el mercado (pendientes)
-    const marketLevels = new Set<number>();
+    // Niveles en el mercado (pendientes)
     // Esto se llenaría con datos del CSV de señales
 
     // Niveles disponibles para abrir
@@ -355,7 +353,7 @@ export class BacktestEngine {
     // Abrir nuevo nivel
     const nextLevel = this.getNextAvailableLevel(liveLevels);
     if (nextLevel !== null && nextLevel < this.totalLevels) {
-      const newTrade: SimulatedTrade = {
+      const newTrade: any = {
         id: `avg_${Date.now()}_${nextLevel}`,
         type: "AVERAGE",
         side: this.side!,
@@ -393,8 +391,8 @@ export class BacktestEngine {
   /**
    * Cierra todas las operaciones en profit (take profit)
    */
-  private closeAllLevelsInProfit(currentPrice: number, avgPrice: number): SimulatedTrade[] {
-    const closingTrades: SimulatedTrade[] = [];
+  private closeAllLevelsInProfit(currentPrice: number, avgPrice: number): any[] {
+    const closingTrades: any[] = [];
     const isBuy = this.side === "BUY";
 
     for (const [level, trades] of this.positions.entries()) {
@@ -410,7 +408,7 @@ export class BacktestEngine {
 
         const profit = profitPips * trade.lotSize / PIP_VALUE;
 
-        const closingTrade: SimulatedTrade = {
+        const closingTrade: any = {
           ...trade,
           type: "CLOSE",
           profit,
@@ -434,8 +432,8 @@ export class BacktestEngine {
   /**
    * Cierra todas las operaciones (cuando SL de entrada o emergencia)
    */
-  private closeAllPositions(currentPrice: number, reason: "STOP_LOSS" | "TAKE_PROFIT"): SimulatedTrade[] {
-    const closingTrades: SimulatedTrade[] = [];
+  private closeAllPositions(currentPrice: number, reason: "TAKE_PROFIT" | "STOP_LOSS"): any[] {
+    const closingTrades: any[] = [];
     const isBuy = this.side === "BUY";
 
     for (const [level, trades] of this.positions.entries()) {
@@ -451,7 +449,7 @@ export class BacktestEngine {
 
         const profit = profitPips * trade.lotSize / PIP_VALUE;
 
-        const closingTrade: SimulatedTrade = {
+        const closingTrade: any = {
           ...trade,
           type: reason,
           profit,
@@ -517,17 +515,18 @@ export class BacktestEngine {
    * Obtiene el resultado final del backtest
    */
   getResults(): BacktestResult {
-    const winningTrades = this.trades.filter(t => t.type === "CLOSE" && t.profit > 0);
-    const losingTrades = this.trades.filter(t => t.type === "CLOSE" && t.profit < 0);
+    const winningTrades = this.trades.filter((t: any) => t.type === "CLOSE" && t.profit > 0);
+    const losingTrades = this.trades.filter((t: any) => t.type === "CLOSE" && t.profit < 0);
+    const totalWinning = winningTrades.reduce((sum: any, t: any) => sum + t.profit, 0);
+    const totalLosing = losingTrades.reduce((sum: any, t: any) => sum + Math.abs(t.profit), 0);
 
     return {
       totalTrades: this.trades.length,
       totalProfit: this.currentEquity - 10000,
-      totalProfitPips: this.trades.reduce((sum, t) => sum + t.profitPips, 0),
+      totalProfitPips: this.trades.reduce((sum: any, t: any) => sum + t.profitPips, 0),
       winRate: this.trades.length > 0 ? (winningTrades.length / this.trades.length) * 100 : 0,
       maxDrawdown: this.maxDrawdown,
-      profitFactor: this.trades.length > 0 ? this.trades.reduce((sum, t) => sum + t.profit, 0) /
-        Math.abs(this.trades.reduce((sum, t) => sum + t.profit, 0)) * losingTrades.reduce((sum, t) => sum + Math.abs(t.profit), 0)) : 0,
+      profitFactor: totalLosing > 0 ? totalWinning / Math.abs(totalLosing) : 0,
       trades: this.trades,
       equityCurve: [], // TODO: Implementar
     };
