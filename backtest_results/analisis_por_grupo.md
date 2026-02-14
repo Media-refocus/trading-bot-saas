@@ -1,0 +1,38 @@
+﻿# Analisis por Grupo
+
+## 
+- Estrategias: 28
+- Profit Promedio: $0
+- Win Rate Promedio: 0%
+- Drawdown Promedio: $0
+- Estrategias:
+  - GRID_8: $2947.44
+  - GRID_10: $2284.27
+  - GRID_12: $1799.60
+  - GRID_15: $1672.59
+  - GRID_20: $1362.86
+  - GRID_SL_50: $1782.54
+  - GRID_SL_100: $1794.80
+  - GRID_SL_200: $1757.88
+  - GRID_SL_DINAMICO: $1515.81
+  - MULTI_2: $965.97
+  - MULTI_3: $574.20
+  - MULTI_2_TIGHT: $1418.69
+  - MULTI_3_TIGHT: $877.62
+  - SCALP_5: $1429.21
+  - SCALP_8: $2961.04
+  - SWING_20: $2077.73
+  - SWING_30: $1621.19
+  - SWING_50: $2259.94
+  - SMART_CLOSE_BASE: $1753.42
+  - SMART_COMPENSATE: $1778.58
+  - SMART_REENTRY: $1789.44
+  - SMART_DYNAMIC_DIST: $1796.00
+  - SMART_RISK_MGMT: $1791.53
+  - CONSERV_5: $720.86
+  - CONSERV_10: $533.50
+  - CONSERV_PROM: $616.52
+  - AGRESIVO_1: $4468.09
+  - AGRESIVO_2: $4374.27
+
+
