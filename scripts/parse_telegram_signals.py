@@ -6,6 +6,11 @@ Parser de señales de Telegram
 Extrae señales estructuradas de los mensajes raw de Telegram.
 Convierte el formato libre a señales BUY/SELL con rangos.
 
+Formatos soportados:
+1. Formato nuevo con ID: "Sell 5016 XAUUSD rango corto"
+2. Formato nuevo sin ID: "SELL XAUUSD rango corto"
+3. Formato antiguo: "XAUUSD SELL" (legacy)
+
 Uso:
     python scripts/parse_telegram_signals.py
 
@@ -34,10 +39,11 @@ class Signal:
     message_id: int
     confidence: float
     raw_text: str
+    signal_number: Optional[int] = None  # Número de señal (ej: 5016)
 
 
 def parse_price(text: str, pattern: str) -> Optional[float]:
-    """Extrae un precio del texto usando un patrón."""
+    """Extrae un precio del texto usando un patr�n."""
     match = re.search(pattern, text, re.IGNORECASE)
     if match:
         try:
@@ -47,70 +53,101 @@ def parse_price(text: str, pattern: str) -> Optional[float]:
     return None
 
 
-def detect_signal_type(text: str) -> tuple[Optional[str], Optional[float], bool]:
+def detect_signal_type(text: str) -> tuple[Optional[str], Optional[float], bool, Optional[int]]:
     """
     Detecta si el mensaje es una señal de entrada o salida.
 
     Returns:
-        (side, price, is_close)
+        (side, price, is_close, signal_number)
         - side: "BUY" o "SELL" si es entrada
         - price: precio si se encuentra
         - is_close: True si es mensaje de cierre
+        - signal_number: número de señal si existe (ej: 5016)
     """
     text_upper = text.upper()
 
-    # Detectar cierre
+    # Detectar cierre de rango
     close_patterns = [
-        r"CERRAMOS",
-        r"CERRAR",
-        r"CLOSE",
-        r"SL\s*\(?",
-        r"STOP\s*LOSS",
-        r"TOCAN\s*SL",
-        r"BREAKEVEN",
-        r"BE\s*$",
+        r"CERRAMOS\s*RANGO",
+        r"CERRAMOS\s*TODO",
+        r"CERRAMOS\s*EN\s*BE",
+        r"CERRAMOS\s*LA\s*OPERACION",
+        r"RANGO\s*INHABILITADO",
+        r"RANGO\s*ANULADO",
+        r"RANGO\s*QUEDA\s*CERRADO",
+        r"RANGO\s*INACTIVO",
+        r"SL\s*DE\s*RANGO",
+        r"CERRAMOS\s*$",
     ]
     for pattern in close_patterns:
         if re.search(pattern, text_upper):
-            return None, None, True
+            return None, None, True, None
 
-    # Detectar entrada BUY
-    if re.search(r"(XAUUSD|ORO|GOLD)?\s*(BUY|COMPRA|LARGO|LONG)", text_upper):
-        # Buscar precio
+    # Formato nuevo con ID: "Sell 5016 XAUUSD rango" o "Buy 4032 XAUUSD rango"
+    match_nuevo_id = re.search(
+        r"(SELL|BUY|VENTA|COMPRA)\s+(\d{3,5})\s+XAUUSD.*RANGO",
+        text_upper
+    )
+    if match_nuevo_id:
+        side = "BUY" if match_nuevo_id.group(1) in ["BUY", "COMPRA"] else "SELL"
+        signal_number = int(match_nuevo_id.group(2))
+
+        # Buscar precio en "Entrada"
+        price = None
+        entrada_match = re.search(r"ENTRADA\s*:?\s*(\d{4}[.,]\d{1,2})", text_upper)
+        if entrada_match:
+            price = float(entrada_match.group(1).replace(",", "."))
+
+        return side, price, False, signal_number
+
+    # Formato nuevo sin ID: "SELL XAUUSD rango corto" o "BUY XAUUSD rango"
+    match_nuevo = re.search(
+        r"(SELL|BUY|VENTA|COMPRA)\s+XAUUSD.*RANGO",
+        text_upper
+    )
+    if match_nuevo:
+        side = "BUY" if match_nuevo.group(1) in ["BUY", "COMPRA"] else "SELL"
+
+        # Buscar precio en el formato "2502-2495" o "Entrada:"
         price = None
 
-        # Patrones de precio
+        # Formato con rango de precios "2502-2495"
+        rango_match = re.search(r"(\d{4})\s*[-–]\s*(\d{4})", text)
+        if rango_match:
+            price = float(rango_match.group(1))  # Usar el primer precio
+
+        # O buscar "Entrada"
+        if not price:
+            entrada_match = re.search(r"ENTRADA\s*:?\s*(\d{4}[.,]\d{1,2})", text_upper)
+            if entrada_match:
+                price = float(entrada_match.group(1).replace(",", "."))
+
+        return side, price, False, None
+
+    # Formato antiguo: "XAUUSD SELL" o "XAUUSD BUY" (sin "rango")
+    match_antiguo = re.search(
+        r"XAUUSD\s+(SELL|BUY|VENTA|COMPRA)",
+        text_upper
+    )
+    if match_antiguo:
+        side = "BUY" if match_antiguo.group(1) in ["BUY", "COMPRA"] else "SELL"
+
+        # Buscar precio
+        price = None
         price_patterns = [
             r"ENTRADA?\s*:?\s*(\d{4}[.,]\d)",
             r"@\s*(\d{4}[.,]\d)",
             r"PRICE?\s*:?\s*(\d{4}[.,]\d)",
-            r"(\d{4}[.,]\d{1,2})\b",
+            r"TP\s*1\s*:?\s*(\d{4}[.,]\d)",
         ]
         for pattern in price_patterns:
             price = parse_price(text, pattern)
             if price:
                 break
 
-        return "BUY", price, False
+        return side, price, False, None
 
-    # Detectar entrada SELL
-    if re.search(r"(XAUUSD|ORO|GOLD)?\s*(SELL|VENTA|CORTO|SHORT)", text_upper):
-        # Buscar precio
-        price = None
-        price_patterns = [
-            r"ENTRADA?\s*:?\s*(\d{4}[.,]\d)",
-            r"@\s*(\d{4}[.,]\d)",
-            r"PRICE?\s*:?\s*(\d{4}[.,]\d)",
-            r"(\d{4}[.,]\d{1,2})\b",
-        ]
-        for pattern in price_patterns:
-            price = parse_price(text, pattern)
-            if price:
-                break
-
-        return "SELL", price, False
-
-    return None, None, False
+    return None, None, False, None
 
 
 def parse_messages(input_file: Path) -> list[Signal]:
@@ -133,13 +170,18 @@ def parse_messages(input_file: Path) -> list[Signal]:
             except ValueError:
                 continue
 
-            side, price, is_close = detect_signal_type(text)
+            side, price, is_close, signal_number = detect_signal_type(text)
 
             if side and not is_close:
                 # Nueva señal de entrada
                 range_counter += 1
                 date_prefix = timestamp.strftime("%Y-%m-%d")
-                current_range_id = f"{date_prefix}-{range_counter}"
+
+                # Incluir número de señal si existe
+                if signal_number:
+                    current_range_id = f"{date_prefix}-{signal_number}"
+                else:
+                    current_range_id = f"{date_prefix}-{range_counter}"
                 current_side = side
 
                 signals.append(Signal(
@@ -150,7 +192,8 @@ def parse_messages(input_file: Path) -> list[Signal]:
                     range_id=current_range_id,
                     message_id=message_id,
                     confidence=0.90,
-                    raw_text=text[:100]
+                    raw_text=text[:100],
+                    signal_number=signal_number
                 ))
 
             elif is_close and current_range_id:
@@ -178,7 +221,7 @@ def save_signals(signals: list[Signal], output_file: Path):
         writer = csv.writer(f, delimiter=";")
         writer.writerow([
             "ts_utc", "kind", "side", "price_hint",
-            "range_id", "message_id", "confidence"
+            "range_id", "message_id", "confidence", "signal_number"
         ])
 
         for s in signals:
@@ -189,7 +232,8 @@ def save_signals(signals: list[Signal], output_file: Path):
                 s.price_hint or "",
                 s.range_id,
                 s.message_id,
-                s.confidence
+                s.confidence,
+                s.signal_number or ""
             ])
 
     print(f"Guardadas {len(signals)} señales en {output_file}")
