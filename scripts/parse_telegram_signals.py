@@ -69,32 +69,58 @@ def detect_cierre_rango(text: str) -> tuple[bool, bool]:
     text_upper = text.upper()
     text_lower = text.lower()
 
-    # Detectar "Cerramos todo" o variantes - cierra TODOS los rangos
-    if re.search(r"CERRAMOS\s*TODO", text_upper):
+    # Ignorar mensajes que son solo avisos (no cierres reales)
+    aviso_patterns = [
+        r"AVISO\s*(PARA|CUANDO)\s*CERRAR",
+        r"OS\s*AVISO\s*(PARA|CUANDO)\s*CERRAR",
+        r"YO\s*(OS\s*)?AVISO\s*(PARA|CUANDO)\s*CERRAR",
+        r"AVISAR.E\s*PARA\s*CERRAR",
+        r"NO\s*CERRAMOS\s*HASTA",
+        r"CERRAR\s*Y\s*ASEGURAR",  # consejo, no cierre
+        r"PODE.S\s*CERRAR",  # consejo
+    ]
+    for pattern in aviso_patterns:
+        if re.search(pattern, text_upper):
+            return False, False
+
+    # Detectar "Cerramos todo" o variantes (incluyendo typos) - cierra TODOS los rangos
+    if re.search(r"CERRAM[OA]S?\s*TOD[OA9P]", text_upper):
         return True, True
 
-    # Detectar "Cerramos rango" o variantes (incluyendo typos como "cerramoa")
-    if re.search(r"CERRAM[OA]S?\s*RANGO", text_upper):
+    # Detectar "Cerramos rango" o variantes (incluyendo typos: rsngo, rwango, etc)
+    # Patrones: rango, rnago, ranog, rsngo, rwango, ranngo, etc.
+    if re.search(r"CERRAM[OA]S?\s*R[A-Z]?N[A-Z]?GO", text_upper):
         return True, False
 
     # Detectar cierres explícitos del rango actual
     close_patterns = [
-        r"CERRAMOS\s*EN\s*BE",
-        r"CERRAMOS\s*LA\s*OPERACION",
+        r"CERRAM[OA]S?\s*EN\s*BE",
+        r"CERRAM[OA]S?\s*LA\s*OPERACION",
+        r"CERRAM[OA]S?\s*SL\b",
+        r"CERRAM[OA]S?\s*POR\s*NOTICI[AO]S?",
+        r"CERRAM[OA]S?\s*XAUUSD",
+        r"CERRAM[OA]S?\s*\d{4}",  # "Cerramos 2430"
         r"RANGO\s*INHABILITADO",
         r"RANGO\s*ANULADO",
         r"RANGO\s*QUEDA\s*CERRADO",
         r"RANGO\s*INACTIVO",
         r"SL\s*DE\s*RANGO",
         r"RANGO\s*CORTO\s*CERRADO",
+        r"DECIDIDO?\s*CERRAR",
     ]
     for pattern in close_patterns:
         if re.search(pattern, text_upper):
             return True, False
 
     # Detectar "+XX pips cerramos rango" (formato inverso)
-    if re.search(r"\d+\s*PIPS?.*CERRAM[OA]S?\s*RANGO", text_upper):
+    if re.search(r"\d+\s*PIPS?.*CERRAM[OA]S?\s*R[WA]NGO", text_upper):
         return True, False
+
+    # Detectar solo "Cerramos" o "Cerramoa" al final de mensaje (sin más contexto)
+    # Solo si es un mensaje corto que claramente es un cierre
+    if len(text) < 50:
+        if re.search(r"CERRAM[OA]S?\s*$", text_upper.strip()):
+            return True, False
 
     return False, False
 
