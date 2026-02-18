@@ -57,6 +57,9 @@ def detect_signal_type(text: str) -> tuple[Optional[str], Optional[float], bool,
     """
     Detecta si el mensaje es una señal de entrada o salida.
 
+    NOTA: Solo detecta señales con formato "rango" (desde agosto 2024).
+    Las señales antiguas sin "rango" son ignoradas por ser inconsistentes.
+
     Returns:
         (side, price, is_close, signal_number)
         - side: "BUY" o "SELL" si es entrada
@@ -124,28 +127,8 @@ def detect_signal_type(text: str) -> tuple[Optional[str], Optional[float], bool,
 
         return side, price, False, None
 
-    # Formato antiguo: "XAUUSD SELL" o "XAUUSD BUY" (sin "rango")
-    match_antiguo = re.search(
-        r"XAUUSD\s+(SELL|BUY|VENTA|COMPRA)",
-        text_upper
-    )
-    if match_antiguo:
-        side = "BUY" if match_antiguo.group(1) in ["BUY", "COMPRA"] else "SELL"
-
-        # Buscar precio
-        price = None
-        price_patterns = [
-            r"ENTRADA?\s*:?\s*(\d{4}[.,]\d)",
-            r"@\s*(\d{4}[.,]\d)",
-            r"PRICE?\s*:?\s*(\d{4}[.,]\d)",
-            r"TP\s*1\s*:?\s*(\d{4}[.,]\d)",
-        ]
-        for pattern in price_patterns:
-            price = parse_price(text, pattern)
-            if price:
-                break
-
-        return side, price, False, None
+    # NOTA: Formato antiguo "XAUUSD SELL" ignorado intencionamente
+    # Las señales sin "rango" tienen cierres confusos y no merece la pena
 
     return None, None, False, None
 
