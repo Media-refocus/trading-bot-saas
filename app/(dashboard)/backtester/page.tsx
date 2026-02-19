@@ -17,6 +17,7 @@ interface BacktestConfig {
   stopLossPips?: number;
   useStopLoss: boolean;
   restrictionType?: "RIESGO" | "SIN_PROMEDIOS" | "SOLO_1_PROMEDIO";
+  signalsSource?: string;
 }
 
 const defaultConfig: BacktestConfig = {
@@ -27,6 +28,7 @@ const defaultConfig: BacktestConfig = {
   maxLevels: 4,
   takeProfitPips: 20,
   useStopLoss: false,
+  signalsSource: "signals_simple.csv",
 };
 
 export default function BacktesterPage() {
@@ -34,9 +36,11 @@ export default function BacktesterPage() {
   const [signalLimit, setSignalLimit] = useState(100);
 
   // tRPC hooks
-  const signalsInfo = trpc.backtester.getSignalsInfo.useQuery();
+  const signalsInfo = trpc.backtester.getSignalsInfo.useQuery({ source: config.signalsSource });
+  const signalSources = trpc.backtester.listSignalSources.useQuery();
+  const cacheStatus = trpc.backtester.getCacheStatus.useQuery();
   const executeBacktest = trpc.backtester.execute.useMutation();
-  const history = trpc.backtester.getHistory.useQuery();
+  const allJobs = trpc.backtester.getAllJobs.useQuery();
 
   const handleExecute = async () => {
     try {
@@ -68,35 +72,68 @@ export default function BacktesterPage() {
         </p>
       </div>
 
-      {/* Stats de señales */}
-      {signalsInfo.data && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-4 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold">{signalsInfo.data.total}</div>
-                <div className="text-sm text-muted-foreground">Señales totales</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-green-500">{signalsInfo.data.bySide.buy}</div>
-                <div className="text-sm text-muted-foreground">BUY</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-red-500">{signalsInfo.data.bySide.sell}</div>
-                <div className="text-sm text-muted-foreground">SELL</div>
-              </div>
-              <div>
-                <div className="text-sm font-medium">
-                  {signalsInfo.data.dateRange.start
-                    ? new Date(signalsInfo.data.dateRange.start).toLocaleDateString()
-                    : "-"}
+      {/* Stats de señales y cache */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {signalsInfo.data && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Señales</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-4 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold">{signalsInfo.data.total}</div>
+                  <div className="text-sm text-muted-foreground">Total</div>
                 </div>
-                <div className="text-sm text-muted-foreground">Desde</div>
+                <div>
+                  <div className="text-2xl font-bold text-green-500">{signalsInfo.data.bySide.buy}</div>
+                  <div className="text-sm text-muted-foreground">BUY</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-red-500">{signalsInfo.data.bySide.sell}</div>
+                  <div className="text-sm text-muted-foreground">SELL</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium">
+                    {signalsInfo.data.dateRange.start
+                      ? new Date(signalsInfo.data.dateRange.start).toLocaleDateString()
+                      : "-"}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Desde</div>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
+
+        {cacheStatus.data && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Cache de Ticks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-4 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold">{cacheStatus.data.isLoaded ? "OK" : "..."}</div>
+                  <div className="text-sm text-muted-foreground">Estado</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{(cacheStatus.data.totalTicks / 1000000).toFixed(1)}M</div>
+                  <div className="text-sm text-muted-foreground">Ticks</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{cacheStatus.data.totalDays}</div>
+                  <div className="text-sm text-muted-foreground">Días</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{cacheStatus.data.memoryMB}MB</div>
+                  <div className="text-sm text-muted-foreground">RAM</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Configuración */}
@@ -108,8 +145,23 @@ export default function BacktesterPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Estrategia y Restricción */}
+            {/* Fuente de señales y Estrategia */}
             <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="signalsSource">Fuente de señales</Label>
+                <select
+                  id="signalsSource"
+                  className="w-full mt-1.5 px-3 py-2 border rounded-md bg-background"
+                  value={config.signalsSource}
+                  onChange={(e) => updateConfig("signalsSource", e.target.value)}
+                >
+                  {signalSources.data?.map((s) => (
+                    <option key={s.file} value={s.file}>
+                      {s.file} ({s.total} señales)
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div>
                 <Label htmlFor="strategy">Estrategia</Label>
                 <select
@@ -123,25 +175,27 @@ export default function BacktesterPage() {
                   <option>Personalizada</option>
                 </select>
               </div>
-              <div>
-                <Label htmlFor="restriction">Restricción</Label>
-                <select
-                  id="restriction"
-                  className="w-full mt-1.5 px-3 py-2 border rounded-md bg-background"
-                  value={config.restrictionType || ""}
-                  onChange={(e) =>
-                    updateConfig(
-                      "restrictionType",
-                      e.target.value as BacktestConfig["restrictionType"]
-                    )
-                  }
-                >
-                  <option value="">Sin restricción</option>
-                  <option value="RIESGO">Riesgo (1 op)</option>
-                  <option value="SIN_PROMEDIOS">Sin promedios</option>
-                  <option value="SOLO_1_PROMEDIO">Solo 1 promedio</option>
-                </select>
-              </div>
+            </div>
+
+            {/* Restricción */}
+            <div>
+              <Label htmlFor="restriction">Restricción</Label>
+              <select
+                id="restriction"
+                className="w-full mt-1.5 px-3 py-2 border rounded-md bg-background"
+                value={config.restrictionType || ""}
+                onChange={(e) =>
+                  updateConfig(
+                    "restrictionType",
+                    e.target.value as BacktestConfig["restrictionType"]
+                  )
+                }
+              >
+                <option value="">Sin restricción</option>
+                <option value="RIESGO">Riesgo (1 op)</option>
+                <option value="SIN_PROMEDIOS">Sin promedios</option>
+                <option value="SOLO_1_PROMEDIO">Solo 1 promedio</option>
+              </select>
             </div>
 
             {/* Parámetros de entrada */}
@@ -376,12 +430,14 @@ export default function BacktesterPage() {
         </Card>
       </div>
 
-      {/* Historial */}
-      {history.data && history.data.length > 0 && (
+      {/* Jobs */}
+      {allJobs.data && (allJobs.data.active.length > 0 || allJobs.data.completed.length > 0) && (
         <Card>
           <CardHeader>
-            <CardTitle>Historial</CardTitle>
-            <CardDescription>Últimos backtests ejecutados</CardDescription>
+            <CardTitle>Jobs de Backtest</CardTitle>
+            <CardDescription>
+              Activos: {allJobs.data.stats.active} | En cola: {allJobs.data.stats.queued} | Completados: {allJobs.data.stats.completed}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -389,31 +445,45 @@ export default function BacktesterPage() {
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-2">ID</th>
-                    <th className="text-left py-2">Estrategia</th>
-                    <th className="text-right py-2">Trades</th>
+                    <th className="text-left py-2">Estado</th>
+                    <th className="text-right py-2">Progreso</th>
                     <th className="text-right py-2">Profit</th>
-                    <th className="text-right py-2">Win Rate</th>
                     <th className="text-right py-2">Drawdown</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {history.data.map((h: {
-                    id: string;
-                    strategyName: string;
-                    totalTrades?: number;
-                    totalProfit?: number;
-                    winRate?: number;
-                    maxDrawdown?: number;
-                  }) => (
-                    <tr key={h.id} className="border-b">
-                      <td className="py-2 font-mono text-xs">{h.id.slice(-8)}</td>
-                      <td className="py-2">{h.strategyName}</td>
-                      <td className="text-right py-2">{h.totalTrades}</td>
-                      <td className={`text-right py-2 ${h.totalProfit && h.totalProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
-                        ${h.totalProfit?.toFixed(2)}
+                  {/* Jobs activos */}
+                  {allJobs.data.active.map((job: any) => (
+                    <tr key={job.id} className="border-b bg-blue-50">
+                      <td className="py-2 font-mono text-xs">{job.id.slice(-8)}</td>
+                      <td className="py-2">
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                          {job.status} ({job.currentSignal}/{job.totalSignals})
+                        </span>
                       </td>
-                      <td className="text-right py-2">{h.winRate?.toFixed(1)}%</td>
-                      <td className="text-right py-2">${h.maxDrawdown?.toFixed(2)}</td>
+                      <td className="text-right py-2">{job.progress}%</td>
+                      <td className="text-right py-2">-</td>
+                      <td className="text-right py-2">-</td>
+                    </tr>
+                  ))}
+                  {/* Jobs completados */}
+                  {allJobs.data.completed.map((job: any) => (
+                    <tr key={job.id} className="border-b">
+                      <td className="py-2 font-mono text-xs">{job.id.slice(-8)}</td>
+                      <td className="py-2">
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          job.status === "completed"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}>
+                          {job.status}
+                        </span>
+                      </td>
+                      <td className="text-right py-2">100%</td>
+                      <td className={`text-right py-2 ${job.results?.totalProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        ${job.results?.totalProfit?.toFixed(2) || "-"}
+                      </td>
+                      <td className="text-right py-2">${job.results?.maxDrawdown?.toFixed(2) || "-"}</td>
                     </tr>
                   ))}
                 </tbody>

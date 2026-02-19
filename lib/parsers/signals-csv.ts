@@ -125,6 +125,7 @@ export async function loadSignalsFromFile(
 /**
  * Genera ticks sintéticos para simular movimiento de precio
  * (Se usa cuando no hay datos reales de ticks)
+ * Optimizado: máximo 100 ticks por señal para backtests rápidos
  */
 export function generateSyntheticTicks(
   entryPrice: number,
@@ -137,7 +138,8 @@ export function generateSyntheticTicks(
 
   const PIP_VALUE = 0.1;
   const spread = 0.1; // 1 pip de spread típico
-  const numTicks = Math.max(10, Math.floor(durationMs / 60000)); // 1 tick por minuto mínimo
+  // Reducir ticks: máximo 100 por señal, 1 tick cada 5 minutos
+  const numTicks = Math.min(100, Math.max(10, Math.floor(durationMs / 300000)));
 
   const startTs = Date.now() - durationMs;
   const priceDiff = exitPrice - entryPrice;
