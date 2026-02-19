@@ -36,16 +36,25 @@ export interface BacktestConfig {
 
   // Restricciones de canal
   restrictionType?: "RIESGO" | "SIN_PROMEDIOS" | "SOLO_1_PROMEDIO";
+
+  // Capital y dinero
+  initialCapital?: number; // Capital inicial en euros (default: 10000)
 }
 
 export interface BacktestResult {
   // Resumen
   totalTrades: number;
-  totalProfit: number;
+  totalProfit: number;        // Profit en la moneda del cálculo (USD)
   totalProfitPips: number;
   winRate: number;
   maxDrawdown: number;
   profitFactor: number;
+
+  // Capital y dinero real
+  initialCapital: number;     // Capital inicial en euros
+  finalCapital: number;       // Capital final = inicial + profit
+  profitPercent: number;      // % de retorno sobre capital inicial
+  maxDrawdownPercent: number; // % de drawdown sobre capital inicial
 
   // Detalles
   trades: any[];
@@ -520,13 +529,34 @@ export class BacktestEngine {
     const totalWinning = winningTrades.reduce((sum: any, t: any) => sum + t.profit, 0);
     const totalLosing = losingTrades.reduce((sum: any, t: any) => sum + Math.abs(t.profit), 0);
 
+    // Capital inicial (del config o default 10000)
+    const initialCapital = this.config.initialCapital || 10000;
+
+    // Profit total (el engine trabaja con equity, así que calculamos la diferencia)
+    const totalProfit = this.currentEquity - initialCapital;
+
+    // Capital final
+    const finalCapital = initialCapital + totalProfit;
+
+    // Porcentaje de retorno
+    const profitPercent = (totalProfit / initialCapital) * 100;
+
+    // Porcentaje de drawdown
+    const maxDrawdownPercent = (this.maxDrawdown / initialCapital) * 100;
+
     return {
       totalTrades: this.trades.length,
-      totalProfit: this.currentEquity - 10000,
+      totalProfit,
       totalProfitPips: this.trades.reduce((sum: any, t: any) => sum + t.profitPips, 0),
       winRate: this.trades.length > 0 ? (winningTrades.length / this.trades.length) * 100 : 0,
       maxDrawdown: this.maxDrawdown,
       profitFactor: totalLosing > 0 ? totalWinning / Math.abs(totalLosing) : 0,
+      // Campos nuevos de capital
+      initialCapital,
+      finalCapital,
+      profitPercent,
+      maxDrawdownPercent,
+      // Detalles
       trades: this.trades,
       equityCurve: [], // TODO: Implementar
     };

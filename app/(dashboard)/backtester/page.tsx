@@ -18,6 +18,7 @@ interface BacktestConfig {
   useStopLoss: boolean;
   restrictionType?: "RIESGO" | "SIN_PROMEDIOS" | "SOLO_1_PROMEDIO";
   signalsSource?: string;
+  initialCapital?: number;
 }
 
 const defaultConfig: BacktestConfig = {
@@ -29,6 +30,7 @@ const defaultConfig: BacktestConfig = {
   takeProfitPips: 20,
   useStopLoss: false,
   signalsSource: "signals_simple.csv",
+  initialCapital: 10000,
 };
 
 export default function BacktesterPage() {
@@ -205,6 +207,18 @@ export default function BacktesterPage() {
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
+                  <Label htmlFor="initialCapital">Capital Inicial (€)</Label>
+                  <Input
+                    id="initialCapital"
+                    type="number"
+                    step="100"
+                    min="100"
+                    max="10000000"
+                    value={config.initialCapital}
+                    onChange={(e) => updateConfig("initialCapital", parseFloat(e.target.value))}
+                  />
+                </div>
+                <div>
                   <Label htmlFor="lotajeBase">Lotaje Base</Label>
                   <Input
                     id="lotajeBase"
@@ -216,6 +230,8 @@ export default function BacktesterPage() {
                     onChange={(e) => updateConfig("lotajeBase", parseFloat(e.target.value))}
                   />
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="numOrders">Órdenes por señal</Label>
                   <Input
@@ -359,16 +375,38 @@ export default function BacktesterPage() {
           <CardContent>
             {results ? (
               <div className="space-y-6">
+                {/* Capital */}
+                <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-sm text-muted-foreground">Capital Inicial</div>
+                      <div className="text-xl font-bold">{results.initialCapital?.toLocaleString()}€</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Capital Final</div>
+                      <div className={`text-xl font-bold ${results.finalCapital >= results.initialCapital ? "text-green-600" : "text-red-600"}`}>
+                        {results.finalCapital?.toLocaleString()}€
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Retorno</div>
+                      <div className={`text-xl font-bold ${results.profitPercent >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        {results.profitPercent >= 0 ? "+" : ""}{results.profitPercent?.toFixed(2)}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Métricas principales */}
                 <div className="grid grid-cols-2 gap-4">
                   <MetricCard
                     label="Profit Total"
-                    value={`$${results.totalProfit.toFixed(2)}`}
+                    value={`${results.totalProfit >= 0 ? "+" : ""}${results.totalProfit.toFixed(2)}€`}
                     positive={results.totalProfit >= 0}
                   />
                   <MetricCard
                     label="Profit (pips)"
-                    value={`${results.totalProfitPips.toFixed(1)} pips`}
+                    value={`${results.totalProfitPips >= 0 ? "+" : ""}${results.totalProfitPips.toFixed(1)} pips`}
                     positive={results.totalProfitPips >= 0}
                   />
                   <MetricCard
@@ -387,8 +425,8 @@ export default function BacktesterPage() {
                   />
                   <MetricCard
                     label="Max Drawdown"
-                    value={`$${results.maxDrawdown.toFixed(2)}`}
-                    positive={results.maxDrawdown < 1000}
+                    value={`${results.maxDrawdown.toFixed(2)}€ (${results.maxDrawdownPercent?.toFixed(1)}%)`}
+                    positive={results.maxDrawdown < results.initialCapital * 0.2}
                   />
                 </div>
 

@@ -66,6 +66,8 @@ const BacktestConfigSchema = z.object({
   // Fuente de señales
   signalsSource: z.string().optional().default("signals_simple.csv"),
   useRealPrices: z.boolean().optional().default(true),
+  // Capital inicial
+  initialCapital: z.number().min(100).max(10000000).optional().default(10000),
 });
 
 // ==================== HELPERS ====================
