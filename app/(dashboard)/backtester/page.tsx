@@ -49,6 +49,12 @@ export default function BacktesterPage() {
   const allJobs = trpc.backtester.getAllJobs.useQuery();
   const clearCache = trpc.backtester.clearCache.useMutation();
 
+  // Optimizer hooks
+  const optimizationPresets = trpc.backtester.getOptimizationPresets.useQuery();
+  const runOptimization = trpc.backtester.optimize.useMutation();
+  const [optimizationResults, setOptimizationResults] = useState<any[]>([]);
+  const [selectedPreset, setSelectedPreset] = useState<number>(1); // Balanceado por defecto
+
   const handleExecute = async () => {
     try {
       await executeBacktest.mutateAsync({
@@ -665,6 +671,129 @@ export default function BacktesterPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Optimizador de Parámetros */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Optimizador de Parámetros</CardTitle>
+          <CardDescription>
+            Encuentra la mejor configuración automáticamente
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Selector de preset */}
+          <div className="grid grid-cols-3 gap-2">
+            {optimizationPresets.data?.map((preset: any) => (
+              <button
+                key={preset.id}
+                onClick={() => setSelectedPreset(preset.id)}
+                className={`p-3 rounded-lg border text-left transition ${
+                  selectedPreset === preset.id
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <div className="font-medium">{preset.name}</div>
+                <div className="text-xs text-muted-foreground">
+                  {preset.combinations} combinaciones
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Botón ejecutar */}
+          <Button
+            className="w-full"
+            onClick={async () => {
+              const preset = optimizationPresets.data?.[selectedPreset];
+              if (!preset) return;
+
+              setOptimizationResults([]);
+              const result = await runOptimization.mutateAsync({
+                params: preset.params,
+                options: {
+                  signalsSource: config.signalsSource,
+                  signalLimit,
+                  metric: "totalProfit",
+                },
+              });
+
+              if (result.topResults) {
+                setOptimizationResults(result.topResults);
+              }
+            }}
+            disabled={runOptimization.isPending}
+          >
+            {runOptimization.isPending ? (
+              <>
+                <span className="animate-spin mr-2">⏳</span>
+                Optimizando...
+              </>
+            ) : (
+              "Ejecutar Optimización"
+            )}
+          </Button>
+
+          {/* Resultados de optimización */}
+          {optimizationResults.length > 0 && (
+            <div>
+              <h4 className="font-semibold mb-3">Top 10 Configuraciones</h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 px-2">#</th>
+                      <th className="text-left py-2 px-2">Config</th>
+                      <th className="text-right py-2 px-2">Profit</th>
+                      <th className="text-right py-2 px-2">Win%</th>
+                      <th className="text-right py-2 px-2">PF</th>
+                      <th className="text-right py-2 px-2">DD%</th>
+                      <th className="text-right py-2 px-2">Sharpe</th>
+                      <th className="text-center py-2 px-2">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {optimizationResults.slice(0, 10).map((opt: any, i: number) => (
+                      <tr key={i} className={`border-b ${i === 0 ? "bg-green-50" : ""}`}>
+                        <td className="py-2 px-2 font-bold">{i + 1}</td>
+                        <td className="py-2 px-2">
+                          <div className="text-xs">
+                            {opt.config.pipsDistance}p / {opt.config.maxLevels}L / {opt.config.takeProfitPips}TP / {opt.config.trailingSLPercent}%Trail
+                          </div>
+                        </td>
+                        <td className={`py-2 px-2 text-right font-mono ${opt.result.totalProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                          {opt.result.totalProfit >= 0 ? "+" : ""}{opt.result.totalProfit?.toFixed(0)}€
+                        </td>
+                        <td className="py-2 px-2 text-right">{opt.result.winRate?.toFixed(0)}%</td>
+                        <td className="py-2 px-2 text-right">{opt.result.profitFactor?.toFixed(2)}</td>
+                        <td className="py-2 px-2 text-right text-red-600">{opt.result.maxDrawdownPercent?.toFixed(1)}%</td>
+                        <td className="py-2 px-2 text-right">{opt.result.sharpeRatio?.toFixed(2)}</td>
+                        <td className="py-2 px-2 text-center">
+                          <button
+                            onClick={() => {
+                              setConfig({
+                                ...config,
+                                pipsDistance: opt.config.pipsDistance,
+                                maxLevels: opt.config.maxLevels,
+                                takeProfitPips: opt.config.takeProfitPips,
+                                trailingSLPercent: opt.config.trailingSLPercent,
+                                strategyName: `Optimized_${i + 1}`,
+                              });
+                            }}
+                            className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
+                          >
+                            Usar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Curva de Equity */}
       {results?.equityCurve && results.equityCurve.length > 0 && (

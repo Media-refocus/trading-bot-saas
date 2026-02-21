@@ -483,4 +483,72 @@ export const backtesterRouter = router({
   getBacktestCacheStats: procedure.query(() => {
     return getCacheStats();
   }),
+
+  /**
+   * Ejecuta optimización de parámetros
+   */
+  optimize: procedure
+    .input(
+      z.object({
+        params: z.object({
+          pipsDistanceRange: z.array(z.number()).optional(),
+          maxLevelsRange: z.array(z.number()).optional(),
+          takeProfitRange: z.array(z.number()).optional(),
+          trailingSLPercentRange: z.array(z.number()).optional(),
+          lotajeBase: z.number().optional(),
+          numOrders: z.number().optional(),
+          useStopLoss: z.boolean().optional(),
+          stopLossPips: z.number().optional(),
+          useTrailingSL: z.boolean().optional(),
+          restrictionType: z.enum(["RIESGO", "SIN_PROMEDIOS", "SOLO_1_PROMEDIO"]).optional(),
+          initialCapital: z.number().optional(),
+        }),
+        options: z.object({
+          signalsSource: z.string().default("signals_simple.csv"),
+          signalLimit: z.number().optional(),
+          metric: z.enum([
+            "totalProfit",
+            "winRate",
+            "profitFactor",
+            "sharpeRatio",
+            "calmarRatio",
+            "expectancy",
+            "minDrawdown"
+          ]).optional(),
+          maxDrawdownPercent: z.number().optional(),
+        }),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { runOptimization } = await import("@/lib/optimizer");
+
+      const results = await runOptimization(input.params, {
+        ...input.options,
+        onProgress: (progress) => {
+          console.log(`[Optimizer] ${progress.current}/${progress.total} - Best: ${progress.bestSoFar?.score.toFixed(2)}`);
+        },
+      });
+
+      return {
+        totalCombinations: results.length,
+        topResults: results.slice(0, 20), // Top 20
+        best: results[0] || null,
+      };
+    }),
+
+  /**
+   * Obtiene presets de optimización rápida
+   */
+  getOptimizationPresets: procedure.query(async () => {
+    const { getQuickOptimizationPresets, generateCombinations } = await import("@/lib/optimizer");
+
+    const presets = getQuickOptimizationPresets();
+
+    return presets.map((preset, i) => ({
+      id: i,
+      name: ["Conservador", "Balanceado", "Agresivo"][i] || `Preset ${i + 1}`,
+      params: preset,
+      combinations: generateCombinations(preset).length,
+    }));
+  }),
 });
