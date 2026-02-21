@@ -194,10 +194,16 @@ export async function getTicksStats(): Promise<{
   }
 
   try {
-    // Solo obtener first y last tick (rápido con índice)
-    const [firstResult, lastResult] = await Promise.all([
-      prisma.$queryRaw<[{ timestamp: Date }]>`SELECT timestamp FROM TickData ORDER BY timestamp ASC LIMIT 1`,
-      prisma.$queryRaw<[{ timestamp: Date }]>`SELECT timestamp FROM TickData ORDER BY timestamp DESC LIMIT 1`,
+    // Usar métodos nativos de Prisma (manejan conversión de timestamps correctamente)
+    const [firstTick, lastTick] = await Promise.all([
+      prisma.tickData.findFirst({
+        orderBy: { timestamp: "asc" },
+        select: { timestamp: true },
+      }),
+      prisma.tickData.findFirst({
+        orderBy: { timestamp: "desc" },
+        select: { timestamp: true },
+      }),
     ]);
 
     // Valores hardcodeados conocidos (116M ticks, 14GB)
@@ -208,8 +214,8 @@ export async function getTicksStats(): Promise<{
 
     statsCache = {
       totalTicks,
-      firstTick: firstResult[0]?.timestamp || null,
-      lastTick: lastResult[0]?.timestamp || null,
+      firstTick: firstTick?.timestamp || null,
+      lastTick: lastTick?.timestamp || null,
       symbols,
       estimatedSizeMB,
     };
