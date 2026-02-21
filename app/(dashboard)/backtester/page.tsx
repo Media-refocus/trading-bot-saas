@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
+import BacktestChart from "@/components/backtest-chart";
 
 interface BacktestFilters {
   dateFrom?: string;
@@ -68,6 +69,9 @@ export default function BacktesterPage() {
   const [savedResults, setSavedResults] = useState<Array<{ name: string; config: BacktestConfig; results: any }>>([]);
   const [compareIndexes, setCompareIndexes] = useState<number[]>([]);
 
+  // Gráfico de trade
+  const [selectedTradeIndex, setSelectedTradeIndex] = useState<number | null>(null);
+
   // Cargar resultados guardados del localStorage
   useState(() => {
     if (typeof window !== "undefined") {
@@ -111,8 +115,17 @@ export default function BacktesterPage() {
 
   const handleExecute = async () => {
     try {
+      // Convertir filtros de string a Date si es necesario
+      const processedConfig = {
+        ...config,
+        filters: config.filters ? {
+          ...config.filters,
+          dateFrom: config.filters.dateFrom ? new Date(config.filters.dateFrom) : undefined,
+          dateTo: config.filters.dateTo ? new Date(config.filters.dateTo) : undefined,
+        } : undefined,
+      };
       await executeBacktest.mutateAsync({
-        config,
+        config: processedConfig,
         signalLimit,
       });
     } catch (error) {
@@ -1212,6 +1225,48 @@ export default function BacktesterPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Gráfico de Trade Tipo MT5 */}
+      {results?.tradeDetails && results.tradeDetails.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Visualización de Trade</CardTitle>
+            <CardDescription>
+              Selecciona un trade para ver el gráfico con reproducción
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Selector de trade */}
+            <div className="mb-4">
+              <select
+                value={selectedTradeIndex ?? ""}
+                onChange={(e) => setSelectedTradeIndex(e.target.value ? Number(e.target.value) : null)}
+                className="w-full px-3 py-2 bg-slate-800 border-slate-700 rounded text-white"
+              >
+                <option value="">Selecciona un trade...</option>
+                {results.tradeDetails.map((trade: any, i: number) => (
+                  <option key={i} value={i}>
+                    #{i + 1} - {new Date(trade.signalTimestamp).toLocaleDateString()} - {trade.signalSide} @ {trade.signalPrice?.toFixed(2)} -
+                    {trade.totalProfit >= 0 ? "+" : ""}{trade.totalProfit?.toFixed(0)}€ ({trade.exitReason === "TAKE_PROFIT" ? "TP" : trade.exitReason === "TRAILING_SL" ? "Trail" : "SL"})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Gráfico */}
+            {selectedTradeIndex !== null && results.tradeDetails[selectedTradeIndex] && (
+              <TradeChartWrapper
+                trade={results.tradeDetails[selectedTradeIndex]}
+                config={{
+                  takeProfitPips: config.takeProfitPips,
+                  pipsDistance: config.pipsDistance,
+                  maxLevels: config.maxLevels,
+                }}
+              />
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
@@ -1319,5 +1374,31 @@ function EquityChart({
         </text>
       </svg>
     </div>
+  );
+}
+
+// Componente wrapper para el gráfico con query de ticks
+function TradeChartWrapper({
+  trade,
+  config,
+}: {
+  trade: any;
+  config: { takeProfitPips: number; pipsDistance: number; maxLevels: number };
+}) {
+  const tradeTicks = trpc.backtester.getTradeTicks.useQuery(
+    {
+      entryTime: new Date(trade.entryTime),
+      exitTime: new Date(trade.exitTime),
+    },
+    { enabled: !!trade }
+  );
+
+  return (
+    <BacktestChart
+      ticks={tradeTicks.data?.ticks || []}
+      trade={trade}
+      config={config}
+      hasRealTicks={tradeTicks.data?.hasRealTicks ?? false}
+    />
   );
 }

@@ -94,6 +94,14 @@ export interface BacktestResult {
   maxConsecutiveLosses: number; // Racha máxima de losses
   profitFactorByMonth: { month: string; profitFactor: number; profit: number }[];
 
+  // Segmentación
+  segmentation?: {
+    byDay: any[];
+    bySession: any[];
+    bySide: any[];
+    byMonth: any[];
+  };
+
   // Detalles
   trades: any[];
   tradeDetails: TradeDetail[];  // Detalle ampliado por señal

@@ -584,4 +584,27 @@ export const backtesterRouter = router({
       combinations: generateCombinations(preset).length,
     }));
   }),
+
+  /**
+   * Obtiene los ticks para un trade específico (para el gráfico)
+   */
+  getTradeTicks: procedure
+    .input(z.object({
+      entryTime: z.date(),
+      exitTime: z.date(),
+    }))
+    .query(async ({ input }) => {
+      const dbReady = await isTicksDBReady();
+
+      if (!dbReady) {
+        return { ticks: [], hasRealTicks: false };
+      }
+
+      const ticks = await getTicksFromDB(input.entryTime, input.exitTime);
+
+      return {
+        ticks,
+        hasRealTicks: ticks.length > 0,
+      };
+    }),
 });
