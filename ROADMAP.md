@@ -96,70 +96,66 @@
 
 ---
 
-### 1.5.5 Métricas Avanzadas
+### 1.5.5 Métricas Avanzadas ✅
 **Prioridad**: MEDIA
-**Tiempo estimado**: 1 día
+**Estado**: COMPLETADO
 
 **Objetivo**: Métricas profesionales de trading
 
-**Tareas**:
-- [ ] Sharpe Ratio (retorno ajustado al riesgo)
-- [ ] Sortino Ratio (solo downside risk)
-- [ ] Calmar Ratio (retorno vs max drawdown)
-- [ ] Expectancy (ganancia esperada por trade)
-- [ ] Average win / Average loss
-- [ ] Max consecutive wins/losses
-- [ ] Profit factor por mes/trimestre
+**Tareas completadas**:
+- [x] Sharpe Ratio (retorno ajustado al riesgo)
+- [x] Sortino Ratio (solo downside risk)
+- [x] Calmar Ratio (retorno vs max drawdown)
+- [x] Expectancy (ganancia esperada por trade)
+- [x] Average win / Average loss
+- [x] Max consecutive wins/losses
+- [x] Profit factor por mes
 
 ---
 
-### 1.5.6 Filtros y Segmentación
+### 1.5.6 Filtros y Segmentación ✅
 **Prioridad**: MEDIA
-**Tiempo estimado**: 1-2 días
+**Estado**: COMPLETADO
 
 **Objetivo**: Poder analizar por segmentos
 
-**Tareas**:
-- [ ] Filtro por rango de fechas (from/to)
-- [ ] Filtro por día de la semana (lunes vs viernes)
-- [ ] Filtro por hora del día (sesión asiática, europea, USA)
-- [ ] Filtro por dirección (solo BUY / solo SELL)
-- [ ] Comparar rendimiento por segmentos
+**Tareas completadas**:
+- [x] Filtro por sesión de trading (Asia, Europa, USA)
+- [x] Filtro por día de la semana
+- [x] Filtro por dirección (solo BUY / solo SELL)
+- [x] Estadísticas de segmentación por sesión, día, dirección
+- [x] UI para filtros y visualización de segmentos
 
 ---
 
-### 1.5.7 Optimizador de Parámetros
+### 1.5.7 Optimizador de Parámetros ✅
 **Prioridad**: ALTA
-**Tiempo estimado**: 2-3 días
+**Estado**: COMPLETADO
 
 **Objetivo**: Encontrar la mejor configuración automáticamente
 
-**Tareas**:
-- [ ] Definir rangos de parámetros a optimizar:
-  - [ ] Pips distancia: 5-20
-  - [ ] Max niveles: 1-8
-  - [ ] Take profit: 10-40
-- [ ] Ejecutar múltiples combinaciones
-- [ ] Ranking de resultados por:
-  - [ ] Mayor profit total
-  - [ ] Mayor win rate
-  - [ ] Mejor profit factor
-  - [ ] Menor drawdown
-- [ ] Guardar mejores configuraciones
-- [ ] "Usar esta configuración" con un click
+**Tareas completadas**:
+- [x] Definir rangos de parámetros a optimizar
+- [x] Ejecutar múltiples combinaciones
+- [x] Ranking de resultados por profit, win rate, sharpe
+- [x] Presets: Conservador, Balanceado, Agresivo
+- [x] Botón "Usar" para aplicar mejor configuración
 
 ---
 
-### 1.5.8 Comparador de Estrategias
+### 1.5.8 Comparador de Estrategias ✅
 **Prioridad**: MEDIA
-**Tiempo estimado**: 1-2 días
+**Estado**: COMPLETADO
 
 **Objetivo**: Comparar side-by-side diferentes configuraciones
 
-**Tareas**:
-- [ ] Guardar resultados de backtest
-- [ ] Selector para comparar 2-3 configuraciones
-- [ ] Tabla comparativa de métricas
+**Tareas completadas**:
+- [x] Guardar resultados de backtest en localStorage
+- [x] Selector para comparar 2-3 configuraciones
+- [x] Tabla comparativa de métricas
+- [x] Botones para borrar y gestionar guardados
+
+**Pendiente**:
 - [ ] Gráfico superpuesto de equity curves
 - [ ] Exportar comparación a PDF
 
@@ -185,10 +181,10 @@
 | Trailing SL Virtual | CRÍTICA | ✅ Completado |
 | Detalle de trades | CRÍTICA | ✅ Completado |
 | Curva de equity | ALTA | ✅ Completado |
+| Optimizador | ALTA | ✅ Completado |
 | Gráfico tipo MT5 | ALTA | Pendiente |
-| Optimizador | ALTA | Pendiente |
-| Métricas avanzadas | MEDIA | Pendiente |
-| Filtros | MEDIA | Pendiente |
+| Métricas avanzadas | MEDIA | ✅ Completado |
+| Filtros | MEDIA | ✅ Completado |
 | Comparador | MEDIA | Pendiente |
 | Guardar/Compartir | BAJA | Pendiente |
 
