@@ -31,11 +31,12 @@ interface Tick {
 }
 
 interface Candle {
-  time: number;
+  time: number; // Unix timestamp en segundos del inicio de la vela
   open: number;
   high: number;
   low: number;
   close: number;
+  isComplete: boolean; // Si la vela ya cerró
 }
 
 type Timeframe = "1" | "5" | "15" | "60";
@@ -47,12 +48,24 @@ const COLORS = {
   text: "#cdd6f4",
   candleUp: "#a6e3a1",
   candleDown: "#f38ba8",
+  wickUp: "#a6e3a1",
+  wickDown: "#f38ba8",
   entryLine: "#2196f3",
   tpLine: "#26a69a",
   slLine: "#f38ba8",
   levelColors: ["#9c27b0", "#ff9800", "#4caf50", "#e91e63"],
+  crosshair: "#89b4fa",
 };
 
+/**
+ * Motor de simulación de velas estilo MT5
+ *
+ * Cada tick actualiza la vela actual:
+ * - Open: primer tick del período (no cambia)
+ * - High: máximo histórico (solo sube)
+ * - Low: mínimo histórico (solo baja)
+ * - Close: siempre el último tick
+ */
 export default function SimpleCandleChart({
   ticks,
   trade,
@@ -70,151 +83,195 @@ export default function SimpleCandleChart({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
   const [timeframe, setTimeframe] = useState<Timeframe>("5");
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(10);
   const [progress, setProgress] = useState(0);
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const [currentTickIndex, setCurrentTickIndex] = useState(0);
+
+  // Estado del gráfico: velas formadas hasta ahora
   const [candles, setCandles] = useState<Candle[]>([]);
-  const [visibleCandles, setVisibleCandles] = useState<Candle[]>([]);
-  const [playIndex, setPlayIndex] = useState(0);
+  const [allTicks, setAllTicks] = useState<Tick[]>([]);
 
   const speedOptions = [1, 2, 5, 10, 20, 50, 100];
 
-  // Convertir ticks a velas
-  const ticksToCandles = useCallback((tickData: Tick[], tf: Timeframe): Candle[] => {
-    if (tickData.length === 0) return [];
-
-    const intervalMs = parseInt(tf) * 60 * 1000;
-    const result: Candle[] = [];
-    let current: Partial<Candle> | null = null;
-
-    for (const tick of tickData) {
-      const timestamp = new Date(tick.timestamp).getTime();
-      const candleTime = Math.floor(timestamp / intervalMs) * intervalMs;
-      const price = (tick.bid + tick.ask) / 2;
-
-      if (!current || current.time !== Math.floor(candleTime / 1000)) {
-        if (current && current.time !== undefined) {
-          result.push(current as Candle);
-        }
-        current = {
-          time: Math.floor(candleTime / 1000),
-          open: price,
-          high: price,
-          low: price,
-          close: price,
-        };
-      } else {
-        current.high = Math.max(current.high!, price);
-        current.low = Math.min(current.low!, price);
-        current.close = price;
-      }
-    }
-
-    if (current && current.time !== undefined) {
-      result.push(current as Candle);
-    }
-
-    return result;
+  // Obtener precio mid de un tick
+  const getMidPrice = useCallback((tick: Tick) => {
+    return (tick.bid + tick.ask) / 2;
   }, []);
 
-  // Generar velas sintéticas
-  const generateSyntheticCandles = useCallback((
+  // Obtener timestamp de vela para un tick (en segundos)
+  const getCandleTime = useCallback((tick: Tick, tf: Timeframe) => {
+    const intervalMs = parseInt(tf) * 60 * 1000;
+    const tickTime = new Date(tick.timestamp).getTime();
+    return Math.floor(tickTime / intervalMs) * (intervalMs / 1000);
+  }, []);
+
+  // Cargar ticks cuando cambia el trade
+  useEffect(() => {
+    if (!trade) {
+      setAllTicks([]);
+      setCandles([]);
+      return;
+    }
+
+    if (ticks.length > 0) {
+      // Usar ticks reales
+      setAllTicks(ticks);
+    } else {
+      // Generar ticks sintéticos si no hay reales
+      const syntheticTicks = generateSyntheticTicks(
+        trade.entryPrice,
+        trade.exitPrice,
+        new Date(trade.entryTime),
+        new Date(trade.exitTime)
+      );
+      setAllTicks(syntheticTicks);
+    }
+
+    // Reset state
+    setCandles([]);
+    setCurrentTickIndex(0);
+    setProgress(0);
+    setIsPlaying(false);
+    setCurrentPrice(null);
+  }, [trade, ticks]);
+
+  // Generar ticks sintéticos para simulación
+  const generateSyntheticTicks = useCallback((
     entryPrice: number,
     exitPrice: number,
     entryTime: Date,
-    exitTime: Date,
-    tf: Timeframe
-  ): Candle[] => {
-    const intervalMs = parseInt(tf) * 60 * 1000;
+    exitTime: Date
+  ): Tick[] => {
     const durationMs = exitTime.getTime() - entryTime.getTime();
-    const numCandles = Math.max(3, Math.ceil(durationMs / intervalMs));
-    const result: Candle[] = [];
+    // Generar aproximadamente 1 tick cada 2 segundos para trades largos
+    // o cada 500ms para trades cortos
+    const tickInterval = Math.max(500, Math.min(2000, durationMs / 500));
+    const numTicks = Math.max(50, Math.ceil(durationMs / tickInterval));
+    const result: Tick[] = [];
     const priceDiff = exitPrice - entryPrice;
-    const variation = Math.abs(priceDiff) * 0.15;
+    const volatility = Math.abs(priceDiff) * 0.02; // 2% de volatilidad
 
-    for (let i = 0; i < numCandles; i++) {
-      const progress = i / Math.max(1, numCandles - 1);
+    let lastPrice = entryPrice;
+
+    for (let i = 0; i < numTicks; i++) {
+      const progress = i / (numTicks - 1);
       const basePrice = entryPrice + priceDiff * progress;
-      const noise = () => (Math.random() - 0.5) * variation;
 
-      const open = basePrice + noise();
-      const close = basePrice + noise();
-      const high = Math.max(open, close) + Math.random() * variation * 0.5;
-      const low = Math.min(open, close) - Math.random() * variation * 0.5;
+      // Añadir algo de "random walk" para hacer más realista
+      const noise = (Math.random() - 0.5) * volatility;
+      const price = basePrice + noise;
+      const spread = 0.02 + Math.random() * 0.03; // Spread variable
 
       result.push({
-        time: Math.floor((entryTime.getTime() + i * intervalMs) / 1000),
-        open,
-        high,
-        low,
-        close,
+        timestamp: new Date(entryTime.getTime() + i * (durationMs / numTicks)),
+        bid: price,
+        ask: price + spread,
+        spread,
       });
     }
 
     return result;
   }, []);
 
-  // Cargar velas cuando cambia trade o timeframe
-  useEffect(() => {
-    if (!trade) {
-      setCandles([]);
-      setVisibleCandles([]);
-      return;
+  // Procesar un tick individual y actualizar velas (estilo MT5)
+  const processTick = useCallback((
+    tick: Tick,
+    currentCandles: Candle[],
+    tf: Timeframe
+  ): Candle[] => {
+    const price = getMidPrice(tick);
+    const candleTime = getCandleTime(tick, tf);
+
+    if (currentCandles.length === 0) {
+      // Primer tick: crear primera vela
+      return [{
+        time: candleTime,
+        open: price,
+        high: price,
+        low: price,
+        close: price,
+        isComplete: false,
+      }];
     }
 
-    let newCandles: Candle[] = [];
+    const lastCandle = currentCandles[currentCandles.length - 1];
 
-    if (ticks.length > 0) {
-      newCandles = ticksToCandles(ticks, timeframe);
+    if (lastCandle.time === candleTime) {
+      // Tick dentro de la vela actual: actualizar OHLC
+      const updatedCandle: Candle = {
+        ...lastCandle,
+        high: Math.max(lastCandle.high, price),
+        low: Math.min(lastCandle.low, price),
+        close: price, // Close siempre es el último precio
+        isComplete: false,
+      };
+
+      return [
+        ...currentCandles.slice(0, -1),
+        updatedCandle,
+      ];
     } else {
-      newCandles = generateSyntheticCandles(
-        trade.entryPrice,
-        trade.exitPrice,
-        new Date(trade.entryTime),
-        new Date(trade.exitTime),
-        timeframe
-      );
+      // Tick de una nueva vela: cerrar anterior y crear nueva
+      const completedLastCandle = { ...lastCandle, isComplete: true };
+      const newCandle: Candle = {
+        time: candleTime,
+        open: price,
+        high: price,
+        low: price,
+        close: price,
+        isComplete: false,
+      };
+
+      return [...currentCandles.slice(0, -1), completedLastCandle, newCandle];
     }
+  }, [getMidPrice, getCandleTime]);
 
-    setCandles(newCandles);
-    setVisibleCandles(newCandles);
-    setPlayIndex(0);
-    setProgress(0);
-    setIsPlaying(false);
-    setCurrentPrice(null);
-  }, [trade, timeframe, ticks, ticksToCandles, generateSyntheticCandles]);
-
-  // Reproducción animada
+  // Reproducción animada tick a tick
   useEffect(() => {
-    if (!isPlaying || candles.length === 0) return;
+    if (!isPlaying || allTicks.length === 0) return;
 
-    const intervalMs = Math.max(50, 300 / speed);
-    let idx = playIndex;
+    const intervalMs = Math.max(5, 100 / speed); // Velocidad ajustada por ticks
+    let idx = currentTickIndex;
 
     const interval = setInterval(() => {
-      if (idx >= candles.length) {
+      if (idx >= allTicks.length) {
         setIsPlaying(false);
         clearInterval(interval);
         return;
       }
 
-      setVisibleCandles(candles.slice(0, idx + 1));
-      setCurrentPrice(candles[idx].close);
-      setProgress(((idx + 1) / candles.length) * 100);
-      setPlayIndex(idx);
+      const tick = allTicks[idx];
+      const price = getMidPrice(tick);
+
+      // Procesar tick y actualizar velas
+      setCandles(prev => processTick(tick, prev, timeframe));
+      setCurrentPrice(price);
+      setProgress(((idx + 1) / allTicks.length) * 100);
+      setCurrentTickIndex(idx);
       idx++;
     }, intervalMs);
 
     return () => clearInterval(interval);
-  }, [isPlaying, speed, candles, playIndex]);
+  }, [isPlaying, speed, allTicks, currentTickIndex, timeframe, getMidPrice, processTick]);
+
+  // Reset
+  const handleReset = useCallback(() => {
+    setIsPlaying(false);
+    setCurrentTickIndex(0);
+    setProgress(0);
+    setCurrentPrice(null);
+    setCandles([]);
+  }, []);
 
   // Dibujar gráfico
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
-    if (!canvas || !container || visibleCandles.length === 0) return;
+    if (!canvas || !container) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -230,7 +287,7 @@ export default function SimpleCandleChart({
 
     const width = rect.width;
     const height = 400;
-    const padding = { top: 20, right: 60, bottom: 30, left: 10 };
+    const padding = { top: 20, right: 70, bottom: 30, left: 10 };
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
 
@@ -238,25 +295,46 @@ export default function SimpleCandleChart({
     ctx.fillStyle = COLORS.background;
     ctx.fillRect(0, 0, width, height);
 
+    // Si no hay velas, mostrar mensaje
+    if (candles.length === 0) {
+      ctx.fillStyle = COLORS.text;
+      ctx.font = "14px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Presiona Play para iniciar la simulación", width / 2, height / 2);
+      return;
+    }
+
     // Calcular rango de precios
-    let minPrice = Math.min(...visibleCandles.map((c) => c.low));
-    let maxPrice = Math.max(...visibleCandles.map((c) => c.high));
+    let minPrice = Math.min(...candles.map((c) => c.low));
+    let maxPrice = Math.max(...candles.map((c) => c.high));
+
+    // Incluir precios del trade si están disponibles
+    if (trade) {
+      minPrice = Math.min(minPrice, trade.entryPrice, trade.exitPrice);
+      maxPrice = Math.max(maxPrice, trade.entryPrice, trade.exitPrice);
+
+      const isBuy = trade.signalSide === "BUY";
+      const tpPrice = isBuy
+        ? trade.entryPrice + config.takeProfitPips * PIP_VALUE
+        : trade.entryPrice - config.takeProfitPips * PIP_VALUE;
+      minPrice = Math.min(minPrice, tpPrice);
+      maxPrice = Math.max(maxPrice, tpPrice);
+    }
 
     // Añadir margen
-    const priceRange = maxPrice - minPrice;
-    minPrice -= priceRange * 0.1;
-    maxPrice += priceRange * 0.1;
+    const priceRange = maxPrice - minPrice || 1;
+    minPrice -= priceRange * 0.08;
+    maxPrice += priceRange * 0.08;
 
     const priceToY = (price: number) =>
       padding.top + chartHeight - ((price - minPrice) / (maxPrice - minPrice)) * chartHeight;
 
-    // Dibujar grid
+    // Dibujar grid horizontal (precios)
     ctx.strokeStyle = COLORS.grid;
     ctx.lineWidth = 0.5;
 
-    // Líneas horizontales (precios)
-    const priceStep = (maxPrice - minPrice) / 5;
-    for (let i = 0; i <= 5; i++) {
+    const priceStep = (maxPrice - minPrice) / 6;
+    for (let i = 0; i <= 6; i++) {
       const price = minPrice + priceStep * i;
       const y = priceToY(price);
 
@@ -272,27 +350,14 @@ export default function SimpleCandleChart({
       ctx.fillText(price.toFixed(2), width - padding.right + 5, y + 4);
     }
 
-    // Líneas verticales (tiempo)
-    const candleWidth = chartWidth / Math.max(visibleCandles.length, 1);
-    const timeStep = Math.max(1, Math.floor(visibleCandles.length / 6));
-
-    for (let i = 0; i < visibleCandles.length; i += timeStep) {
-      const x = padding.left + i * candleWidth + candleWidth / 2;
-
-      ctx.beginPath();
-      ctx.moveTo(x, padding.top);
-      ctx.lineTo(x, height - padding.bottom);
-      ctx.stroke();
-    }
-
     // Dibujar líneas de precio del trade
-    if (trade) {
+    if (trade && candles.length > 0) {
       const isBuy = trade.signalSide === "BUY";
 
       // Entry line
       const entryY = priceToY(trade.entryPrice);
       ctx.strokeStyle = COLORS.entryLine;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.5;
       ctx.setLineDash([5, 5]);
       ctx.beginPath();
       ctx.moveTo(padding.left, entryY);
@@ -302,6 +367,7 @@ export default function SimpleCandleChart({
 
       ctx.fillStyle = COLORS.entryLine;
       ctx.font = "bold 10px sans-serif";
+      ctx.textAlign = "left";
       ctx.fillText(`Entry: ${trade.entryPrice.toFixed(2)}`, padding.left + 5, entryY - 5);
 
       // TP line
@@ -333,41 +399,52 @@ export default function SimpleCandleChart({
           ctx.setLineDash([]);
 
           ctx.fillStyle = COLORS.levelColors[index % COLORS.levelColors.length];
-          ctx.fillText(`L${level.level}: ${level.openPrice.toFixed(2)}`, padding.left + 5, levelY + 12);
+          ctx.fillText(`L${level.level}`, padding.left + 5, levelY + 12);
         }
       });
     }
 
-    // Dibujar velas
-    const barWidth = Math.min(candleWidth * 0.7, 20);
-    const bodyWidth = barWidth * 0.7;
+    // Calcular ancho de vela
+    const candleWidth = Math.max(3, Math.min(30, chartWidth / Math.max(candles.length, 1) * 0.8));
+    const bodyWidth = candleWidth * 0.75;
 
-    visibleCandles.forEach((candle, i) => {
-      const x = padding.left + i * candleWidth + candleWidth / 2;
+    // Dibujar velas
+    candles.forEach((candle, i) => {
+      const x = padding.left + (i + 0.5) * (chartWidth / candles.length);
       const isUp = candle.close >= candle.open;
 
-      // Mecha
-      ctx.strokeStyle = isUp ? COLORS.candleUp : COLORS.candleDown;
+      // Color basado en dirección
+      const bodyColor = isUp ? COLORS.candleUp : COLORS.candleDown;
+      const wickColor = isUp ? COLORS.wickUp : COLORS.wickDown;
+
+      // Dibujar mecha (wick)
+      ctx.strokeStyle = wickColor;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x, priceToY(candle.high));
       ctx.lineTo(x, priceToY(candle.low));
       ctx.stroke();
 
-      // Cuerpo
+      // Dibujar cuerpo
       const bodyTop = priceToY(Math.max(candle.open, candle.close));
       const bodyBottom = priceToY(Math.min(candle.open, candle.close));
       const bodyHeight = Math.max(1, bodyBottom - bodyTop);
 
-      ctx.fillStyle = isUp ? COLORS.candleUp : COLORS.candleDown;
+      ctx.fillStyle = bodyColor;
       ctx.fillRect(x - bodyWidth / 2, bodyTop, bodyWidth, bodyHeight);
+
+      // Si la vela no está completa, dibujar indicador
+      if (!candle.isComplete && i === candles.length - 1) {
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - bodyWidth / 2 - 1, bodyTop - 1, bodyWidth + 2, bodyHeight + 2);
+      }
     });
 
-    // Dibujar flecha de entrada
-    if (trade && visibleCandles.length > 0) {
+    // Dibujar flecha de entrada (en la primera vela)
+    if (trade && candles.length > 0) {
       const isBuy = trade.signalSide === "BUY";
-      const firstCandleIdx = 0;
-      const x = padding.left + firstCandleIdx * candleWidth + candleWidth / 2;
+      const x = padding.left + 0.5 * (chartWidth / candles.length);
       const y = priceToY(trade.entryPrice);
 
       ctx.fillStyle = isBuy ? COLORS.candleUp : COLORS.candleDown;
@@ -375,71 +452,60 @@ export default function SimpleCandleChart({
 
       if (isBuy) {
         // Flecha hacia arriba
-        ctx.moveTo(x, y + 15);
-        ctx.lineTo(x - 8, y + 25);
-        ctx.lineTo(x + 8, y + 25);
+        ctx.moveTo(x, y + 12);
+        ctx.lineTo(x - 8, y + 22);
+        ctx.lineTo(x + 8, y + 22);
         ctx.closePath();
       } else {
         // Flecha hacia abajo
-        ctx.moveTo(x, y - 15);
-        ctx.lineTo(x - 8, y - 25);
-        ctx.lineTo(x + 8, y - 25);
+        ctx.moveTo(x, y - 12);
+        ctx.lineTo(x - 8, y - 22);
+        ctx.lineTo(x + 8, y - 22);
         ctx.closePath();
       }
       ctx.fill();
 
-      // Etiqueta
-      ctx.font = "bold 9px sans-serif";
-      ctx.fillText(trade.signalSide, x + 12, isBuy ? y + 22 : y - 18);
+      ctx.font = "bold 10px sans-serif";
+      ctx.fillText(isBuy ? "BUY" : "SELL", x + 12, isBuy ? y + 18 : y - 15);
     }
 
-    // Dibujar marcador de salida
-    if (trade && visibleCandles.length > 0) {
-      const lastCandleIdx = visibleCandles.length - 1;
-      const x = padding.left + lastCandleIdx * candleWidth + candleWidth / 2;
-      const y = priceToY(trade.exitPrice);
-
-      ctx.fillStyle =
-        trade.exitReason === "TAKE_PROFIT"
-          ? COLORS.candleUp
-          : trade.exitReason === "TRAILING_SL"
-          ? "#f9e2af"
-          : COLORS.candleDown;
-
+    // Dibujar precio actual (línea horizontal punteada)
+    if (currentPrice !== null && candles.length > 0) {
+      const currentY = priceToY(currentPrice);
+      ctx.strokeStyle = COLORS.crosshair;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
       ctx.beginPath();
-      ctx.arc(x, y, 6, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(padding.left, currentY);
+      ctx.lineTo(width - padding.right, currentY);
+      ctx.stroke();
+      ctx.setLineDash([]);
 
-      ctx.font = "bold 9px sans-serif";
-      const label =
-        trade.exitReason === "TAKE_PROFIT"
-          ? "TP"
-          : trade.exitReason === "TRAILING_SL"
-          ? "Trail"
-          : "SL";
-      ctx.fillText(label, x + 10, y + 4);
+      ctx.fillStyle = COLORS.crosshair;
+      ctx.font = "bold 10px monospace";
+      ctx.textAlign = "right";
+      ctx.fillText(currentPrice.toFixed(2), width - 5, currentY - 5);
     }
-  }, [visibleCandles, trade, config]);
 
-  // Reset
-  const handleReset = useCallback(() => {
-    setIsPlaying(false);
-    setPlayIndex(0);
-    setProgress(0);
-    setCurrentPrice(null);
-    setVisibleCandles(candles);
-  }, [candles]);
+  }, [candles, trade, config, currentPrice]);
 
   // Resize handler
   useEffect(() => {
     const handleResize = () => {
-      // Forzar re-render del canvas
-      setVisibleCandles([...visibleCandles]);
+      // Forzar re-render
+      setCandles(c => [...c]);
     };
-
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [visibleCandles]);
+  }, []);
+
+  // Información de ticks
+  const tickInfo = allTicks.length > 0 ? (
+    <div className="text-xs text-gray-500">
+      {allTicks.length.toLocaleString()} ticks disponibles
+      {currentTickIndex > 0 && ` • Procesados: ${currentTickIndex.toLocaleString()}`}
+    </div>
+  ) : null;
 
   if (!trade) {
     return (
@@ -458,7 +524,10 @@ export default function SimpleCandleChart({
           <span className="text-sm text-gray-400">TF:</span>
           <select
             value={timeframe}
-            onChange={(e) => setTimeframe(e.target.value as Timeframe)}
+            onChange={(e) => {
+              setTimeframe(e.target.value as Timeframe);
+              handleReset();
+            }}
             className="px-2 py-1 bg-slate-700 rounded text-sm border-0 text-white"
           >
             <option value="1">M1</option>
@@ -504,7 +573,7 @@ export default function SimpleCandleChart({
           ⟲ Reset
         </button>
 
-        {/* Info precio actual */}
+        {/* Precio actual */}
         {currentPrice && (
           <div className="ml-auto text-sm">
             <span className="text-gray-400">Precio: </span>
@@ -514,11 +583,14 @@ export default function SimpleCandleChart({
       </div>
 
       {/* Barra de progreso */}
-      <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-blue-500 transition-all duration-75"
-          style={{ width: `${progress}%` }}
-        />
+      <div className="space-y-1">
+        <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-blue-500 transition-all duration-50"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        {tickInfo}
       </div>
 
       {/* Gráfico Canvas */}
@@ -580,7 +652,7 @@ export default function SimpleCandleChart({
       {/* Mensaje si no hay ticks reales */}
       {!hasRealTicks && ticks.length === 0 && (
         <p className="text-yellow-400 text-sm text-center py-2">
-          Sin ticks reales - mostrando velas sintéticas
+          Sin ticks reales - simulando con ticks sintéticos
         </p>
       )}
     </div>
