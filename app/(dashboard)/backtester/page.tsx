@@ -64,6 +64,51 @@ export default function BacktesterPage() {
   const [optimizationResults, setOptimizationResults] = useState<any[]>([]);
   const [selectedPreset, setSelectedPreset] = useState<number>(1); // Balanceado por defecto
 
+  // Comparador de estrategias
+  const [savedResults, setSavedResults] = useState<Array<{ name: string; config: BacktestConfig; results: any }>>([]);
+  const [compareIndexes, setCompareIndexes] = useState<number[]>([]);
+
+  // Cargar resultados guardados del localStorage
+  useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("backtest-saved-results");
+      if (saved) {
+        try {
+          setSavedResults(JSON.parse(saved));
+        } catch (e) {
+          console.error("Error loading saved results:", e);
+        }
+      }
+    }
+  });
+
+  const saveCurrentResult = () => {
+    if (!executeBacktest.data?.results) return;
+    const name = `${config.strategyName} - ${new Date().toLocaleDateString()}`;
+    const newSaved = [...savedResults, {
+      name,
+      config: { ...config },
+      results: executeBacktest.data.results,
+    }];
+    setSavedResults(newSaved);
+    localStorage.setItem("backtest-saved-results", JSON.stringify(newSaved));
+  };
+
+  const deleteSavedResult = (index: number) => {
+    const newSaved = savedResults.filter((_, i) => i !== index);
+    setSavedResults(newSaved);
+    setCompareIndexes(compareIndexes.filter(i => i !== index));
+    localStorage.setItem("backtest-saved-results", JSON.stringify(newSaved));
+  };
+
+  const toggleCompare = (index: number) => {
+    if (compareIndexes.includes(index)) {
+      setCompareIndexes(compareIndexes.filter(i => i !== index));
+    } else if (compareIndexes.length < 3) {
+      setCompareIndexes([...compareIndexes, index]);
+    }
+  };
+
   const handleExecute = async () => {
     try {
       await executeBacktest.mutateAsync({
@@ -1051,6 +1096,122 @@ export default function BacktesterPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Comparador de Estrategias */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Comparador de Estrategias</CardTitle>
+          <CardDescription>
+            Guarda resultados y compáralos side-by-side
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Guardar resultado actual */}
+          {results && (
+            <Button onClick={saveCurrentResult} variant="outline" className="w-full">
+              Guardar resultado actual
+            </Button>
+          )}
+
+          {/* Lista de resultados guardados */}
+          {savedResults.length > 0 && (
+            <div>
+              <h4 className="font-semibold mb-2">Resultados Guardados ({savedResults.length})</h4>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {savedResults.map((saved, index) => (
+                  <div
+                    key={index}
+                    className={`p-2 rounded border flex items-center justify-between ${
+                      compareIndexes.includes(index) ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                    }`}
+                  >
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{saved.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {saved.config.pipsDistance}p | {saved.config.maxLevels}L | {saved.config.takeProfitPips}TP
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`font-mono font-bold ${saved.results.totalProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        {saved.results.totalProfit >= 0 ? "+" : ""}{saved.results.totalProfit?.toFixed(0)}€
+                      </span>
+                      <button
+                        onClick={() => toggleCompare(index)}
+                        disabled={!compareIndexes.includes(index) && compareIndexes.length >= 3}
+                        className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200 disabled:opacity-50"
+                      >
+                        {compareIndexes.includes(index) ? "Quitar" : "Comparar"}
+                      </button>
+                      <button
+                        onClick={() => deleteSavedResult(index)}
+                        className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200"
+                      >
+                        Borrar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tabla comparativa */}
+          {compareIndexes.length >= 2 && (
+            <div>
+              <h4 className="font-semibold mb-2">Comparación</h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 px-2">Métrica</th>
+                      {compareIndexes.map(i => (
+                        <th key={i} className="text-right py-2 px-2">{savedResults[i]?.name?.slice(0, 20)}...</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { label: "Profit", key: "totalProfit", format: (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(0)}€` },
+                      { label: "Win Rate", key: "winRate", format: (v: number) => `${v.toFixed(1)}%` },
+                      { label: "Profit Factor", key: "profitFactor", format: (v: number) => v.toFixed(2) },
+                      { label: "Max DD %", key: "maxDrawdownPercent", format: (v: number) => `${v.toFixed(1)}%` },
+                      { label: "Sharpe", key: "sharpeRatio", format: (v: number) => v.toFixed(2) },
+                      { label: "Sortino", key: "sortinoRatio", format: (v: number) => v.toFixed(2) },
+                      { label: "Expectancy", key: "expectancy", format: (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}€` },
+                      { label: "Trades", key: "totalTrades", format: (v: number) => v.toString() },
+                    ].map(metric => (
+                      <tr key={metric.key} className="border-b">
+                        <td className="py-2 px-2 font-medium">{metric.label}</td>
+                        {compareIndexes.map(i => {
+                          const value = savedResults[i]?.results?.[metric.key];
+                          const isProfit = metric.key === "totalProfit";
+                          return (
+                            <td
+                              key={i}
+                              className={`py-2 px-2 text-right font-mono ${
+                                isProfit ? (value >= 0 ? "text-green-600" : "text-red-600") : ""
+                              }`}
+                            >
+                              {metric.format(value || 0)}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Mensaje si no hay resultados */}
+          {savedResults.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Ejecuta un backtest y guárdalo para poder comparar estrategias
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
