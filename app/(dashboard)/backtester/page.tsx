@@ -1382,6 +1382,23 @@ function EquityChart({
   );
 }
 
+// Función helper para validar que un trade tiene todos los datos necesarios
+function isValidTradeForChart(trade: any): boolean {
+  if (!trade) return false;
+  if (trade.entryPrice == null || isNaN(trade.entryPrice)) return false;
+  if (trade.exitPrice == null || isNaN(trade.exitPrice)) return false;
+  if (!trade.entryTime) return false;
+  if (!trade.exitTime) return false;
+  if (!trade.signalSide) return false;
+
+  // Verificar que las fechas son válidas
+  const entryDate = new Date(trade.entryTime);
+  const exitDate = new Date(trade.exitTime);
+  if (isNaN(entryDate.getTime()) || isNaN(exitDate.getTime())) return false;
+
+  return true;
+}
+
 // Componente wrapper para el gráfico con query de ticks
 function TradeChartWrapper({
   trade,
@@ -1390,17 +1407,29 @@ function TradeChartWrapper({
   trade: any;
   config: { takeProfitPips: number; pipsDistance: number; maxLevels: number };
 }) {
-  // Convertir fechas de forma segura
-  const entryTime = trade?.entryTime ? new Date(trade.entryTime) : null;
-  const exitTime = trade?.exitTime ? new Date(trade.exitTime) : null;
+  // Validar que el trade tiene todos los datos necesarios ANTES de hacer cualquier cosa
+  if (!isValidTradeForChart(trade)) {
+    return (
+      <div className="text-center py-12 text-gray-400">
+        <div className="mb-2">Datos del trade incompletos o inválidos</div>
+        <div className="text-xs text-gray-500">
+          Verifica que el trade tenga entryPrice, exitPrice, entryTime y exitTime válidos
+        </div>
+      </div>
+    );
+  }
+
+  // Convertir fechas de forma segura (solo si pasamos la validación)
+  const entryTime = new Date(trade.entryTime);
+  const exitTime = new Date(trade.exitTime);
 
   const tradeTicks = trpc.backtester.getTradeTicks.useQuery(
     {
-      entryTime: entryTime || new Date(),
-      exitTime: exitTime || new Date(),
+      entryTime,
+      exitTime,
     },
     {
-      enabled: !!trade && !!entryTime && !!exitTime,
+      enabled: true,
       retry: 1,
     }
   );
@@ -1420,15 +1449,6 @@ function TradeChartWrapper({
     return (
       <div className="text-center py-12 text-red-400">
         Error al cargar datos: {tradeTicks.error?.message || "Unknown error"}
-      </div>
-    );
-  }
-
-  // Validar que el trade tiene los datos necesarios
-  if (!trade || trade.entryPrice == null || trade.exitPrice == null) {
-    return (
-      <div className="text-center py-12 text-gray-400">
-        Datos del trade incompletos
       </div>
     );
   }
