@@ -193,35 +193,43 @@ export default function SimpleCandleChart({
       return;
     }
 
-    if (ticks.length > 0) {
-      setAllTicks(ticks);
-    } else {
-      const syntheticTicks = generateSyntheticTicks(
-        trade.entryPrice,
-        trade.exitPrice,
-        new Date(trade.entryTime),
-        new Date(trade.exitTime)
-      );
-      setAllTicks(syntheticTicks);
-    }
+    try {
+      if (ticks && ticks.length > 0) {
+        setAllTicks(ticks);
+      } else if (trade.entryPrice != null && trade.exitPrice != null && trade.entryTime && trade.exitTime) {
+        const syntheticTicks = generateSyntheticTicks(
+          trade.entryPrice,
+          trade.exitPrice,
+          new Date(trade.entryTime),
+          new Date(trade.exitTime)
+        );
+        setAllTicks(syntheticTicks);
+      } else {
+        setAllTicks([]);
+      }
 
-    // Reset
-    setCandles([]);
-    setCurrentTickIndex(0);
-    setProgress(0);
-    setIsPlaying(false);
-    setCurrentPrice(null);
-    setCurrentTick(null);
-    setPosition(null);
-    setAccount({
-      balance: 10000,
-      equity: 10000,
-      floatingPL: 0,
-      usedMargin: 0,
-      freeMargin: 10000,
-      marginLevel: 0,
-      realizedPL: 0,
-    });
+      // Reset
+      setCandles([]);
+      setCurrentTickIndex(0);
+      setProgress(0);
+      setIsPlaying(false);
+      setCurrentPrice(null);
+      setCurrentTick(null);
+      setPosition(null);
+      setAccount({
+        balance: 10000,
+        equity: 10000,
+        floatingPL: 0,
+        usedMargin: 0,
+        freeMargin: 10000,
+        marginLevel: 0,
+        realizedPL: 0,
+      });
+    } catch (error) {
+      console.error("Error loading ticks:", error);
+      setAllTicks([]);
+      setCandles([]);
+    }
   }, [trade, ticks]);
 
   // Generar ticks sintéticos realistas
@@ -332,28 +340,32 @@ export default function SimpleCandleChart({
   useEffect(() => {
     if (!trade || !currentTick || position) return;
 
-    const tickTime = new Date(currentTick.timestamp).getTime();
-    const entryTime = new Date(trade.entryTime).getTime();
+    try {
+      const tickTime = new Date(currentTick.timestamp).getTime();
+      const entryTime = new Date(trade.entryTime).getTime();
 
-    // Si llegamos al momento de entrada, abrir posición
-    if (tickTime >= entryTime && !position) {
-      const entryPrice = getExecutionPrice(currentTick, trade.signalSide);
+      // Si llegamos al momento de entrada, abrir posición
+      if (tickTime >= entryTime && !position) {
+        const entryPrice = getExecutionPrice(currentTick, trade.signalSide);
 
-      // Calcular volúmen total basado en los niveles
-      const totalVolume = config.maxLevels * 0.1; // 0.1 lote por nivel
+        // Calcular volúmen total basado en los niveles
+        const totalVolume = (config.maxLevels || 1) * 0.1; // 0.1 lote por nivel
 
-      setPosition({
-        side: trade.signalSide,
-        entryPrice,
-        entryTime: new Date(currentTick.timestamp),
-        volume: totalVolume,
-        stopLoss: trade.signalSide === "BUY"
-          ? entryPrice - 50 * PIP_VALUE // SL 50 pips
-          : entryPrice + 50 * PIP_VALUE,
-        takeProfit: trade.signalSide === "BUY"
-          ? entryPrice + config.takeProfitPips * PIP_VALUE
-          : entryPrice - config.takeProfitPips * PIP_VALUE,
-      });
+        setPosition({
+          side: trade.signalSide,
+          entryPrice,
+          entryTime: new Date(currentTick.timestamp),
+          volume: totalVolume,
+          stopLoss: trade.signalSide === "BUY"
+            ? entryPrice - 50 * PIP_VALUE // SL 50 pips
+            : entryPrice + 50 * PIP_VALUE,
+          takeProfit: trade.signalSide === "BUY"
+            ? entryPrice + (config.takeProfitPips || 20) * PIP_VALUE
+            : entryPrice - (config.takeProfitPips || 20) * PIP_VALUE,
+        });
+      }
+    } catch (error) {
+      console.error("Error opening position:", error);
     }
   }, [currentTick, trade, position, config, getExecutionPrice]);
 
@@ -361,32 +373,39 @@ export default function SimpleCandleChart({
   useEffect(() => {
     if (!trade || !currentTick || !position) return;
 
-    const tickTime = new Date(currentTick.timestamp).getTime();
-    const exitTime = new Date(trade.exitTime).getTime();
+    try {
+      const tickTime = new Date(currentTick.timestamp).getTime();
+      const exitTime = trade.exitTime ? new Date(trade.exitTime).getTime() : Date.now();
 
-    if (tickTime >= exitTime && position) {
-      const exitPrice = getExecutionPrice(currentTick, position.side === "BUY" ? "SELL" : "BUY");
+      if (tickTime >= exitTime && position) {
+        const exitPrice = getExecutionPrice(currentTick, position.side === "BUY" ? "SELL" : "BUY");
 
-      // Calcular P/L realizado
-      const priceDiff = position.side === "BUY"
-        ? exitPrice - position.entryPrice
-        : position.entryPrice - exitPrice;
+        // Calcular P/L realizado
+        const priceDiff = position.side === "BUY"
+          ? exitPrice - position.entryPrice
+          : position.entryPrice - exitPrice;
 
-      const pips = priceDiff / PIP_VALUE;
-      const realizedPL = pips * LOT_VALUE * position.volume;
+        const pips = priceDiff / PIP_VALUE;
+        const realizedPL = pips * LOT_VALUE * position.volume;
 
-      setAccount(prev => ({
-        ...prev,
-        balance: prev.balance + realizedPL,
-        equity: prev.balance + realizedPL,
-        floatingPL: 0,
-        usedMargin: 0,
-        freeMargin: prev.balance + realizedPL,
-        marginLevel: 0,
-        realizedPL: prev.realizedPL + realizedPL,
-      }));
+        setAccount(prev => {
+          const newBalance = prev.balance + realizedPL;
+          return {
+            ...prev,
+            balance: newBalance,
+            equity: newBalance,
+            floatingPL: 0,
+            usedMargin: 0,
+            freeMargin: newBalance,
+            marginLevel: 0,
+            realizedPL: prev.realizedPL + realizedPL,
+          };
+        });
 
-      setPosition(null);
+        setPosition(null);
+      }
+    } catch (error) {
+      console.error("Error closing position:", error);
     }
   }, [currentTick, trade, position, getExecutionPrice]);
 
@@ -473,58 +492,63 @@ export default function SimpleCandleChart({
     const container = containerRef.current;
     if (!canvas || !container) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    try {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-    // Configurar tamaño
-    const dpr = window.devicePixelRatio || 1;
-    const rect = container.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = 400 * dpr;
-    canvas.style.width = `${rect.width}px`;
-    canvas.style.height = "400px";
-    ctx.scale(dpr, dpr);
+      // Configurar tamaño
+      const dpr = window.devicePixelRatio || 1;
+      const rect = container.getBoundingClientRect();
 
-    const width = rect.width;
-    const height = 400;
-    const padding = { top: 20, right: 70, bottom: 30, left: 10 };
-    const chartWidth = width - padding.left - padding.right;
-    const chartHeight = height - padding.top - padding.bottom;
+      if (rect.width === 0) return; // Evitar renderizado con width 0
 
-    // Limpiar
-    ctx.fillStyle = COLORS.background;
-    ctx.fillRect(0, 0, width, height);
+      canvas.width = rect.width * dpr;
+      canvas.height = 400 * dpr;
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = "400px";
+      ctx.scale(dpr, dpr);
 
-    // Si no hay velas
-    if (candles.length === 0) {
-      ctx.fillStyle = COLORS.text;
-      ctx.font = "14px sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("Presiona Play para iniciar la simulación", width / 2, height / 2);
-      return;
-    }
+      const width = rect.width;
+      const height = 400;
+      const padding = { top: 20, right: 70, bottom: 30, left: 10 };
+      const chartWidth = width - padding.left - padding.right;
+      const chartHeight = height - padding.top - padding.bottom;
 
-    // Calcular rango de precios
-    let minPrice = Math.min(...candles.map(c => c.low));
-    let maxPrice = Math.max(...candles.map(c => c.high));
+      // Limpiar
+      ctx.fillStyle = COLORS.background;
+      ctx.fillRect(0, 0, width, height);
 
-    // Incluir niveles del trade
-    if (trade) {
-      minPrice = Math.min(minPrice, trade.entryPrice, trade.exitPrice);
-      maxPrice = Math.max(maxPrice, trade.entryPrice, trade.exitPrice);
-
-      const isBuy = trade.signalSide === "BUY";
-      const tpPrice = isBuy
-        ? trade.entryPrice + config.takeProfitPips * PIP_VALUE
-        : trade.entryPrice - config.takeProfitPips * PIP_VALUE;
-      minPrice = Math.min(minPrice, tpPrice);
-      maxPrice = Math.max(maxPrice, tpPrice);
-
-      if (position?.stopLoss) {
-        minPrice = Math.min(minPrice, position.stopLoss);
-        maxPrice = Math.max(maxPrice, position.stopLoss);
+      // Si no hay velas
+      if (!candles || candles.length === 0) {
+        ctx.fillStyle = COLORS.text;
+        ctx.font = "14px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Presiona Play para iniciar la simulación", width / 2, height / 2);
+        return;
       }
-    }
+
+      // Calcular rango de precios
+      let minPrice = Math.min(...candles.map(c => c.low));
+      let maxPrice = Math.max(...candles.map(c => c.high));
+
+      // Incluir niveles del trade (con null checks)
+      if (trade && trade.entryPrice != null && trade.exitPrice != null) {
+        minPrice = Math.min(minPrice, trade.entryPrice, trade.exitPrice);
+        maxPrice = Math.max(maxPrice, trade.entryPrice, trade.exitPrice);
+
+        const isBuy = trade.signalSide === "BUY";
+        const takeProfitPips = config?.takeProfitPips || 20;
+        const tpPrice = isBuy
+          ? trade.entryPrice + takeProfitPips * PIP_VALUE
+          : trade.entryPrice - takeProfitPips * PIP_VALUE;
+        minPrice = Math.min(minPrice, tpPrice);
+        maxPrice = Math.max(maxPrice, tpPrice);
+
+        if (position?.stopLoss) {
+          minPrice = Math.min(minPrice, position.stopLoss);
+          maxPrice = Math.max(maxPrice, position.stopLoss);
+        }
+      }
 
     // Margen
     const priceRange = maxPrice - minPrice || 1;
@@ -674,7 +698,9 @@ export default function SimpleCandleChart({
       ctx.textAlign = "right";
       ctx.fillText(currentPrice.toFixed(2), width - 5, currentY - 5);
     }
-
+    } catch (error) {
+      console.error("Error rendering chart:", error);
+    }
   }, [candles, trade, config, currentPrice, position]);
 
   // Resize
