@@ -131,7 +131,8 @@ export function generateSyntheticTicks(
   entryPrice: number,
   exitPrice: number,
   durationMs: number,
-  volatilityPips: number = 50
+  volatilityPips: number = 50,
+  startTimestamp?: Date
 ): { timestamp: Date; bid: number; ask: number; spread: number }[] {
   const ticks: { timestamp: Date; bid: number; ask: number; spread: number }[] =
     [];
@@ -141,7 +142,8 @@ export function generateSyntheticTicks(
   // Reducir ticks: máximo 100 por señal, 1 tick cada 5 minutos
   const numTicks = Math.min(100, Math.max(10, Math.floor(durationMs / 300000)));
 
-  const startTs = Date.now() - durationMs;
+  // Usar el timestamp de inicio proporcionado, o calcular uno relativo a "ahora" (legacy)
+  const startTs = startTimestamp ? startTimestamp.getTime() : Date.now() - durationMs;
   const priceDiff = exitPrice - entryPrice;
   const volatility = volatilityPips * PIP_VALUE;
 

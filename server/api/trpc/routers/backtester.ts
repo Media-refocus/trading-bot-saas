@@ -113,7 +113,8 @@ function generateSyntheticTicksForSignal(
     signal.entryPrice,
     exitPrice,
     durationMs,
-    config.pipsDistance * 2
+    config.pipsDistance * 2,
+    signal.timestamp // Pasar el timestamp real de la señal
   );
 }
 
