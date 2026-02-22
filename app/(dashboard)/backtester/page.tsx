@@ -540,8 +540,11 @@ export default function BacktesterPage() {
                 type="number"
                 min="1"
                 max="10000"
-                value={signalLimit}
-                onChange={(e) => setSignalLimit(parseInt(e.target.value))}
+                value={signalLimit ?? ""}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  setSignalLimit(isNaN(val) ? 0 : val);
+                }}
               />
               <p className="text-xs text-muted-foreground mt-1">
                 Máximo: {signalsInfo.data?.total || 0} señales disponibles

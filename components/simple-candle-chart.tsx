@@ -239,7 +239,23 @@ export default function SimpleCandleChart({
     entryTime: Date,
     exitTime: Date
   ): Tick[] => {
-    const durationMs = exitTime.getTime() - entryTime.getTime();
+    // Validar datos de entrada
+    if (entryPrice == null || exitPrice == null || isNaN(entryPrice) || isNaN(exitPrice)) {
+      return [];
+    }
+
+    const entryTimeMs = entryTime instanceof Date ? entryTime.getTime() : new Date(entryTime).getTime();
+    const exitTimeMs = exitTime instanceof Date ? exitTime.getTime() : new Date(exitTime).getTime();
+
+    if (isNaN(entryTimeMs) || isNaN(exitTimeMs)) {
+      return [];
+    }
+
+    const durationMs = exitTimeMs - entryTimeMs;
+    if (durationMs <= 0) {
+      return [];
+    }
+
     // En XAUUSD, los ticks llegan aproximadamente cada 100-500ms en mercado activo
     const avgTickInterval = 300; // 300ms promedio
     const numTicks = Math.max(100, Math.ceil(durationMs / avgTickInterval));
@@ -248,10 +264,10 @@ export default function SimpleCandleChart({
     const baseSpread = 0.02;
 
     let currentPrice = entryPrice;
-    let lastTime = entryTime.getTime();
+    let lastTime = entryTimeMs;
 
     for (let i = 0; i < numTicks; i++) {
-      const progress = i / (numTicks - 1);
+      const progress = numTicks > 1 ? i / (numTicks - 1) : 0;
       const targetPrice = entryPrice + priceDiff * progress;
 
       // Random walk con tendencia hacia el precio objetivo
@@ -595,9 +611,10 @@ export default function SimpleCandleChart({
       ctx.fillText(`Entry: ${trade.entryPrice.toFixed(2)}`, padding.left + 5, entryY - 5);
 
       // TP
+      const takeProfitPips = config?.takeProfitPips ?? 20;
       const tpPrice = isBuy
-        ? trade.entryPrice + config.takeProfitPips * PIP_VALUE
-        : trade.entryPrice - config.takeProfitPips * PIP_VALUE;
+        ? trade.entryPrice + takeProfitPips * PIP_VALUE
+        : trade.entryPrice - takeProfitPips * PIP_VALUE;
       const tpY = priceToY(tpPrice);
       ctx.strokeStyle = COLORS.tpLine;
       ctx.setLineDash([3, 3]);
