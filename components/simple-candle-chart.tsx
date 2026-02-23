@@ -72,6 +72,100 @@ const PIP_VALUE = 0.10;
 const LOT_VALUE = 10; // 1 lote = $10 por pip aproximado en XAUUSD
 const LEVERAGE = 100; // Apalancamiento 1:100
 
+// ==================== COMPONENTE LEVELS STATUS ====================
+
+function LevelsStatus({
+  levels,
+  currentTick,
+  isBuy,
+  pipValue,
+  levelColors,
+}: {
+  levels: TradeLevel[];
+  currentTick: Tick | null;
+  isBuy: boolean;
+  pipValue: number;
+  levelColors: string[];
+}) {
+  const currentTimeMs = currentTick
+    ? new Date(currentTick.timestamp).getTime()
+    : Date.now();
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
+      {levels.map((level) => {
+        // Si no hay openTime, asumimos que el nivel abre al inicio (level 0)
+        // Para niveles > 0, si no hay openTime, usar la fecha de entrada como base
+        const entryTimeMs = levels[0]?.openTime ? new Date(levels[0].openTime).getTime() : 0;
+        const openTimeMs = level.openTime
+          ? new Date(level.openTime).getTime()
+          : (level.level === 0 ? entryTimeMs : Infinity);
+        const closeTimeMs = level.closeTime ? new Date(level.closeTime).getTime() : Infinity;
+
+        const isOpened = currentTimeMs >= openTimeMs && !isNaN(openTimeMs);
+        const isClosed = (currentTimeMs >= closeTimeMs && closeTimeMs !== Infinity) ||
+                         (level.closePrice != null && level.closePrice !== 0);
+        const isPending = !isOpened && !isClosed;
+
+        const levelColor = level.level === 0
+          ? (isBuy ? "#00c853" : "#ff1744")
+          : levelColors[(level.level - 1) % levelColors.length];
+
+        // Calcular pips ganados si está cerrado
+        let pipsGained = 0;
+        if (isClosed && level.closePrice) {
+          pipsGained = isBuy
+            ? (level.closePrice - level.openPrice) / pipValue
+            : (level.openPrice - level.closePrice) / pipValue;
+        }
+
+        return (
+          <div
+            key={level.level}
+            className={`p-2 rounded text-xs border ${
+              isPending
+                ? "border-gray-700 bg-gray-800/50 opacity-50"
+                : isClosed
+                ? "border-gray-600 bg-gray-800"
+                : "border-current"
+            }`}
+            style={{ borderColor: isClosed || isPending ? undefined : levelColor }}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span
+                className="font-bold"
+                style={{ color: levelColor }}
+              >
+                {level.level === 0 ? "ENTRY" : `L${level.level}`}
+              </span>
+              <span className={`px-1.5 py-0.5 rounded text-[10px] ${
+                isPending
+                  ? "bg-gray-700 text-gray-400"
+                  : isClosed
+                  ? "bg-green-900/50 text-green-400"
+                  : "bg-blue-900/50 text-blue-400 animate-pulse"
+              }`}>
+                {isPending ? "PENDIENTE" : isClosed ? "CERRADO" : "ACTIVO"}
+              </span>
+            </div>
+            <div className="font-mono text-gray-300">{level.openPrice.toFixed(2)}</div>
+            {isClosed && (
+              <div className="text-green-400 font-mono mt-1">
+                +{pipsGained.toFixed(1)} pips
+              </div>
+            )}
+            {!isPending && !isClosed && (
+              <div className="text-gray-500 text-[10px] mt-1">
+                Esperando TP...
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ==================== COMPONENTE PRINCIPAL ====================
 
 // Función helper para validar trade
@@ -609,7 +703,7 @@ export default function SimpleCandleChart({
     if (trade && candles.length > 0) {
       const isBuy = trade.signalSide === "BUY";
 
-      // Entry
+      // Entry (Level 0)
       const entryY = priceToY(trade.entryPrice);
       ctx.strokeStyle = colors.entryLine;
       ctx.lineWidth = 1.5;
@@ -621,7 +715,101 @@ export default function SimpleCandleChart({
       ctx.setLineDash([]);
       ctx.fillStyle = colors.entryLine;
       ctx.font = "bold 10px sans-serif";
-      ctx.fillText(`Entry: ${trade.entryPrice.toFixed(2)}`, padding.left + 5, entryY - 5);
+      ctx.fillText(`L0 Entry: ${trade.entryPrice.toFixed(2)}`, padding.left + 5, entryY - 5);
+
+      // ============== NIVELES DE PROMEDIO (GRID) - PROGRESIVO ==============
+      if (trade.levels && trade.levels.length > 0) {
+        const gridDistance = (config?.pipsDistance ?? 10) * PIP_VALUE;
+        const currentTimeMs = currentTick
+          ? new Date(currentTick.timestamp).getTime()
+          : Date.now();
+
+        // Usar el tiempo del nivel 0 como referencia si no hay openTime
+        const entryTimeMs = trade.levels[0]?.openTime
+          ? new Date(trade.levels[0].openTime).getTime()
+          : 0;
+
+        trade.levels.forEach((level) => {
+          // Solo dibujar niveles de promedio (level > 0)
+          if (level.level === 0) return;
+
+          const openTimeMs = level.openTime
+            ? new Date(level.openTime).getTime()
+            : (level.level === 0 ? entryTimeMs : Infinity);
+          const closeTimeMs = level.closeTime ? new Date(level.closeTime).getTime() : Infinity;
+
+          // Solo mostrar si el nivel ya se ha abierto según el tiempo actual
+          const isOpened = currentTimeMs >= openTimeMs && !isNaN(openTimeMs);
+          const isClosed = (currentTimeMs >= closeTimeMs && closeTimeMs !== Infinity) ||
+                           (level.closePrice != null && level.closePrice !== 0);
+
+          if (!isOpened && !isClosed) return;
+          const levelColor = colors.levelColors[(level.level - 1) % colors.levelColors.length];
+
+          const levelY = priceToY(level.openPrice);
+
+          // Línea del nivel
+          ctx.strokeStyle = isClosed ? `${levelColor}60` : levelColor;
+          ctx.lineWidth = isClosed ? 1 : 2;
+          ctx.setLineDash(isClosed ? [3, 3] : []);
+          ctx.beginPath();
+          ctx.moveTo(padding.left, levelY);
+          ctx.lineTo(width - padding.right, levelY);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Etiqueta del nivel con precio y estado
+          ctx.fillStyle = isClosed ? `${levelColor}80` : levelColor;
+          ctx.font = `${isClosed ? 'normal' : 'bold'} 10px sans-serif`;
+
+          let label: string;
+          if (isClosed && level.closePrice) {
+            // Calcular pips ganados en este nivel
+            const pipsGained = isBuy
+              ? (level.closePrice - level.openPrice) / PIP_VALUE
+              : (level.openPrice - level.closePrice) / PIP_VALUE;
+            label = `L${level.level}: +${pipsGained.toFixed(1)} pips`;
+          } else {
+            label = `L${level.level} @ ${level.openPrice.toFixed(2)}`;
+          }
+          ctx.fillText(label, padding.left + 5, levelY + (isBuy ? 12 : -3));
+
+          // Flecha indicadora de nivel activo
+          if (!isClosed) {
+            const arrowX = padding.left + 15;
+            ctx.beginPath();
+            if (isBuy) {
+              ctx.moveTo(arrowX, levelY - 8);
+              ctx.lineTo(arrowX - 5, levelY - 3);
+              ctx.lineTo(arrowX + 5, levelY - 3);
+            } else {
+              ctx.moveTo(arrowX, levelY + 8);
+              ctx.lineTo(arrowX - 5, levelY + 3);
+              ctx.lineTo(arrowX + 5, levelY + 3);
+            }
+            ctx.closePath();
+            ctx.fill();
+
+            // Círculo pulsante para nivel activo
+            const pulseRadius = 4 + Math.sin(Date.now() / 200) * 1.5;
+            ctx.beginPath();
+            ctx.arc(padding.left + 25, levelY, pulseRadius, 0, Math.PI * 2);
+            ctx.fillStyle = `${levelColor}40`;
+            ctx.fill();
+            ctx.strokeStyle = levelColor;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+
+          // Marca de cierre si está cerrado
+          if (isClosed && level.closePrice) {
+            const closeY = priceToY(level.closePrice);
+            ctx.fillStyle = levelColor;
+            ctx.font = "bold 8px sans-serif";
+            ctx.fillText(`×`, width - padding.right - 10, closeY + 3);
+          }
+        });
+      }
 
       // TP
       const takeProfitPips = config?.takeProfitPips ?? 20;
@@ -731,7 +919,7 @@ export default function SimpleCandleChart({
     } catch (error) {
       console.error("Error rendering chart:", error);
     }
-  }, [candles, trade, config, currentPrice, position]);
+  }, [candles, trade, config, currentPrice, position, currentTick]);
 
   // Resize
   useEffect(() => {
@@ -924,6 +1112,20 @@ export default function SimpleCandleChart({
           </div>
         </div>
       </div>
+
+      {/* Panel de Niveles de Grid */}
+      {trade.levels && trade.levels.length > 0 && (
+        <div className="bg-slate-800 rounded-lg p-3">
+          <div className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Niveles de Grid</div>
+          <LevelsStatus
+            levels={trade.levels}
+            currentTick={currentTick}
+            isBuy={trade.signalSide === "BUY"}
+            pipValue={PIP_VALUE}
+            levelColors={colors.levelColors}
+          />
+        </div>
+      )}
 
       {!hasRealTicks && ticks.length === 0 && (
         <p className="text-yellow-400 text-sm text-center py-2">
