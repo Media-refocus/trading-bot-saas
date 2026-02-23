@@ -192,6 +192,7 @@ export default function SimpleCandleChart({
       setAllTicks([]);
       setCandles([]);
       setPosition(null);
+      positionClosedRef.current = false; // Resetear flag
       setAccount({
         balance: 10000,
         equity: 10000,
@@ -227,6 +228,7 @@ export default function SimpleCandleChart({
       setCurrentPrice(null);
       setCurrentTick(null);
       setPosition(null);
+      positionClosedRef.current = false; // Resetear flag
       setAccount({
         balance: 10000,
         equity: 10000,
@@ -397,14 +399,20 @@ export default function SimpleCandleChart({
   }, [currentTick, trade, position, config, getExecutionPrice]);
 
   // Cerrar posición cuando llega el momento de salida
+  // Usar ref para prevenir cierres duplicados
+  const positionClosedRef = useRef(false);
+
   useEffect(() => {
-    if (!trade || !currentTick || !position) return;
+    if (!trade || !currentTick || !position || positionClosedRef.current) return;
 
     try {
       const tickTime = new Date(currentTick.timestamp).getTime();
       const exitTime = trade.exitTime ? new Date(trade.exitTime).getTime() : Date.now();
 
       if (tickTime >= exitTime && position) {
+        // Marcar como cerrado para prevenir duplicados
+        positionClosedRef.current = true;
+
         const exitPrice = getExecutionPrice(currentTick, position.side === "BUY" ? "SELL" : "BUY");
 
         // Calcular P/L realizado
@@ -430,6 +438,8 @@ export default function SimpleCandleChart({
         });
 
         setPosition(null);
+        // Detener la reproducción cuando se cierra la posición
+        setIsPlaying(false);
       }
     } catch (error) {
       console.error("Error closing position:", error);
@@ -501,6 +511,7 @@ export default function SimpleCandleChart({
     setCurrentTick(null);
     setCandles([]);
     setPosition(null);
+    positionClosedRef.current = false; // Resetear flag de cierre
     setAccount({
       balance: 10000,
       equity: 10000,
