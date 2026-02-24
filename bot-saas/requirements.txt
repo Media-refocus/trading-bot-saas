@@ -1,0 +1,14 @@
+# Trading Bot SaaS - Dependencias Python
+# =======================================
+
+# MetaTrader5
+MetaTrader5>=5.0.45
+
+# HTTP requests
+requests>=2.28.0
+
+# YAML parsing (solo para modo legacy)
+PyYAML>=6.0
+
+# Optional: Telegram (solo si se quiere modo híbrido)
+# telethon>=1.28.0

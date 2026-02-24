@@ -1,0 +1,35 @@
+# Configuración de ejemplo para Trading Bot SaaS (modo legacy)
+# =============================================================
+# Copia este archivo como 'copiador.yml' y modifica los valores
+
+platform: MT5
+
+telegram:  # Solo necesario si se usa modo híbrido
+  api_id: 20993460
+  api_hash: "tu_api_hash"
+  session: "bot_session.session"
+  channels:
+    - {id: 1234567890}
+
+# ─────────────  CUENTAS (una por bloque)  ─────────────
+accounts:
+  - login: 12345678                # ← Login MT5
+    password: "tu_password"        # ← Contraseña
+    server: "VTMarkets-Live"       # ← Nombre exacto del servidor
+    path: "C:/Program Files/VTMarkets/MetaTrader5/terminal64.exe"  # ← Ruta al terminal
+    symbol: XAUUSD                 # ← Símbolo
+    magic: 20250224                # ← Magic Number único
+
+    entry:
+      lot: 0.01                    # Lote de entrada
+      num_orders: 1                # Órdenes en entrada
+      trailing:
+        activate: 30               # Activar trailing a +30 pips
+        step: 10                   # Mover SL cada +10 pips
+        back: 20                   # SL queda 20 pips atrás
+
+    promedios:
+      step_pips: 10                # Distancia entre niveles
+      lot: 0.01                    # Lote por promedio
+      max: 3                       # Máximo niveles de promedio
+      num_orders: 1                # Órdenes por nivel
