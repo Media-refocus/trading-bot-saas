@@ -26,6 +26,7 @@ model Tenant {
   subscriptions   Subscription[]
   backtests       Backtest[]
   simulatedTrades  SimulatedTrade[]
+  strategies       Strategy[]
 }
 
 model User {
@@ -264,3 +265,46 @@ model TickData {
   @@index([symbol, timestamp])
   @@index([timestamp])
 }
+
+// ============================================
+// STRATEGIES - Estrategias guardadas por el usuario
+// ============================================
+
+model Strategy {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Nombre descriptivo
+  name            String              // "Mi estrategia conservadora"
+  description     String?             // Descripción opcional
+
+  // Parámetros de configuración
+  strategyName    String              @default("Custom") // "Toni G4", "Xisco G2", "Custom"
+  lotajeBase      Float               @default(0.1)
+  numOrders       Int                 @default(1)
+  pipsDistance    Int                 @default(10)
+  maxLevels       Int                 @default(4)
+  takeProfitPips  Int                 @default(20)
+  stopLossPips    Int?
+  useStopLoss     Boolean             @default(false)
+  useTrailingSL   Boolean             @default(true)
+  trailingSLPercent Int              @default(50)
+  restrictionType String?             // "RIESGO", "SIN_PROMEDIOS", "SOLO_1_PROMEDIO"
+
+  // Resultados del último backtest (para referencia)
+  lastTotalTrades Int?
+  lastTotalProfit Float?
+  lastWinRate     Float?
+  lastMaxDrawdown Float?
+  lastTestedAt    DateTime?
+
+  // Metadatos
+  isFavorite      Boolean             @default(false)
+  isActive        Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([tenantId])
+}
+
