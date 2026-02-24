@@ -10,12 +10,16 @@
  *   - 1 consulta por dia en lugar de 3 por senal
  *   - Con 3032 senales en ~600 dias: de 9096 consultas a ~600
  *   - Tiempo esperado: de 45 min a ~5-8 min
+ *
+ * MEJORA v2: LRU Cache con limite de memoria
+ *   - Cache limitado a 100MB para evitar OOM
+ *   - Auto-eviccion de dias antiguos cuando se llena
+ *   - Preparado para produccion con multiples usuarios
  */
 
-import { PrismaClient } from "@prisma/client";
 import type { TradingSignal } from "./parsers/signals-csv";
-
-const prisma = new PrismaClient();
+import { prisma } from "./prisma"; // Usar singleton en lugar de nueva instancia
+import { ticksLRUCache } from "./ticks-lru-cache";
 
 export interface Tick {
   timestamp: Date;
@@ -23,11 +27,6 @@ export interface Tick {
   ask: number;
   spread: number;
 }
-
-// Cache global de ticks por dia (compartido entre llamadas)
-const globalTicksByDay = new Map<string, Tick[]>();
-let lastCacheClear = Date.now();
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutos
 
 /**
  * Agrupa senales por dia
@@ -90,6 +89,8 @@ export function getDaysNeededForSignals(signals: TradingSignal[]): Set<string> {
  *
  * OPTIMIZACION: Usa una unica consulta SQL con rango amplio
  * en lugar de N consultas individuales
+ *
+ * v2: Usa LRU cache con limite de memoria
  */
 export async function loadTicksByDayGrouped(
   daysNeeded: Set<string>,
@@ -97,78 +98,101 @@ export async function loadTicksByDayGrouped(
 ): Promise<Map<string, Tick[]>> {
   const startTime = Date.now();
 
-  // Verificar TTL del cache global
-  if (Date.now() - lastCacheClear > CACHE_TTL_MS) {
-    globalTicksByDay.clear();
-    lastCacheClear = Date.now();
-    console.log("[BatchLoader] Cache global limpiado por TTL");
+  // Filtrar dias ya en cache LRU
+  const daysToLoad: string[] = [];
+  const result = new Map<string, Tick[]>();
+
+  for (const day of daysNeeded) {
+    const cached = ticksLRUCache.get(day);
+    if (cached) {
+      result.set(day, cached);
+    } else {
+      daysToLoad.push(day);
+    }
   }
 
-  // Filtrar dias ya cargados
-  const daysToLoad = Array.from(daysNeeded).filter(d => !globalTicksByDay.has(d));
-
   if (daysToLoad.length === 0) {
-    console.log(`[BatchLoader] Todos los ${daysNeeded.size} dias ya en cache`);
-    return new Map(globalTicksByDay);
+    console.log(`[BatchLoader] Todos los ${daysNeeded.size} dias en cache LRU`);
+    return result;
   }
 
   console.log(`[BatchLoader] Cargando ${daysToLoad.length} dias (${daysNeeded.size - daysToLoad.length} en cache)`);
 
-  // Calcular rango de fechas
+  // Podar entradas muy antiguas del cache (opcional)
+  ticksLRUCache.pruneOldEntries(30 * 60 * 1000); // 30 min
+
+  // Cargar dias en batches para evitar consultas muy grandes
+  // Cada batch cubre ~5 dias max
+  const BATCH_SIZE_DAYS = 5;
   const sortedDays = daysToLoad.sort();
-  const minDate = new Date(sortedDays[0] + "T00:00:00.000Z");
-  const maxDate = new Date(sortedDays[sortedDays.length - 1] + "T23:59:59.999Z");
 
-  // UNICA consulta SQL para todos los dias
-  const ticks = await prisma.tickData.findMany({
-    where: {
-      symbol,
-      timestamp: {
-        gte: minDate,
-        lte: maxDate,
+  let totalTicksLoaded = 0;
+
+  for (let i = 0; i < sortedDays.length; i += BATCH_SIZE_DAYS) {
+    const batchDays = sortedDays.slice(i, i + BATCH_SIZE_DAYS);
+    const minDate = new Date(batchDays[0] + "T00:00:00.000Z");
+    const maxDate = new Date(batchDays[batchDays.length - 1] + "T23:59:59.999Z");
+
+    // Consulta SQL para este batch
+    const ticks = await prisma.tickData.findMany({
+      where: {
+        symbol,
+        timestamp: {
+          gte: minDate,
+          lte: maxDate,
+        },
       },
-    },
-    orderBy: {
-      timestamp: "asc",
-    },
-    select: {
-      timestamp: true,
-      bid: true,
-      ask: true,
-      spread: true,
-    },
-  });
-
-  console.log(`[BatchLoader] Consulta SQL: ${ticks.length} ticks en ${Date.now() - startTime}ms`);
-
-  // Agrupar por dia
-  let groupedCount = 0;
-  for (const tick of ticks) {
-    const dayKey = tick.timestamp.toISOString().slice(0, 10);
-
-    if (!globalTicksByDay.has(dayKey)) {
-      globalTicksByDay.set(dayKey, []);
-    }
-    globalTicksByDay.get(dayKey)!.push({
-      timestamp: tick.timestamp,
-      bid: tick.bid,
-      ask: tick.ask,
-      spread: tick.spread,
+      orderBy: {
+        timestamp: "asc",
+      },
+      select: {
+        timestamp: true,
+        bid: true,
+        ask: true,
+        spread: true,
+      },
     });
-    groupedCount++;
+
+    totalTicksLoaded += ticks.length;
+
+    // Agrupar por dia y almacenar en LRU cache
+    for (const tick of ticks) {
+      const dayKey = tick.timestamp.toISOString().slice(0, 10);
+
+      if (!result.has(dayKey)) {
+        result.set(dayKey, []);
+      }
+      result.get(dayKey)!.push({
+        timestamp: tick.timestamp,
+        bid: tick.bid,
+        ask: tick.ask,
+        spread: tick.spread,
+      });
+    }
+
+    // Almacenar en LRU cache
+    for (const [dayKey, dayTicks] of result) {
+      if (dayTicks.length > 0) {
+        ticksLRUCache.set(dayKey, dayTicks);
+      }
+    }
   }
 
-  // Asegurar que todos los dias solicitados existan en el mapa (aunque sea vacio)
+  console.log(`[BatchLoader] Consultas SQL: ${totalTicksLoaded} ticks en ${Math.ceil(sortedDays.length / BATCH_SIZE_DAYS)} batches`);
+
+  // Asegurar que todos los dias solicitados existan en el resultado (aunque sea vacio)
   for (const day of daysNeeded) {
-    if (!globalTicksByDay.has(day)) {
-      globalTicksByDay.set(day, []);
+    if (!result.has(day)) {
+      result.set(day, []);
+      ticksLRUCache.set(day, []); // Cache negativo para evitar re-queries
     }
   }
 
   const elapsed = Date.now() - startTime;
-  console.log(`[BatchLoader] Cargados ${daysToLoad.length} dias, ${groupedCount} ticks en ${elapsed}ms`);
+  const stats = ticksLRUCache.getStats();
+  console.log(`[BatchLoader] Cargados ${daysToLoad.length} dias en ${elapsed}ms | Cache: ${stats.entries} dias, ${stats.currentSizeMB}MB`);
 
-  return new Map(globalTicksByDay);
+  return result;
 }
 
 /**
@@ -301,33 +325,31 @@ export async function preloadTicksForSignals(
 }
 
 /**
- * Limpia el cache global
+ * Limpia el cache LRU
  */
 export function clearBatchCache(): void {
-  globalTicksByDay.clear();
-  lastCacheClear = Date.now();
-  console.log("[BatchLoader] Cache global limpiado");
+  ticksLRUCache.clear();
+  console.log("[BatchLoader] Cache LRU limpiado");
 }
 
 /**
- * Obtiene estadisticas del cache
+ * Obtiene estadisticas del cache LRU
  */
 export function getBatchCacheStats(): {
   cachedDays: number;
   totalTicks: number;
   estimatedMemoryMB: number;
+  hits: number;
+  misses: number;
+  evictions: number;
 } {
-  let totalTicks = 0;
-  for (const ticks of globalTicksByDay.values()) {
-    totalTicks += ticks.length;
-  }
-
-  // Estimacion: cada tick ~100 bytes
-  const estimatedMemoryMB = Math.round(totalTicks * 100 / 1024 / 1024 * 100) / 100;
-
+  const stats = ticksLRUCache.getStats();
   return {
-    cachedDays: globalTicksByDay.size,
-    totalTicks,
-    estimatedMemoryMB,
+    cachedDays: stats.entries,
+    totalTicks: stats.totalTicks,
+    estimatedMemoryMB: stats.currentSizeMB,
+    hits: stats.hits,
+    misses: stats.misses,
+    evictions: stats.evictions,
   };
 }

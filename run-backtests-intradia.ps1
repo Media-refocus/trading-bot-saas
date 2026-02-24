@@ -67,7 +67,7 @@ function Run-Backtest {
     $body = @{
         json = @{
             config = $Config
-            signalLimit = 50  # Limitar a 50 señales para evitar crash
+            signalLimit = 200  # Probar con 200 señales con nuevo LRU cache
         }
     } | ConvertTo-Json -Depth 10
 
