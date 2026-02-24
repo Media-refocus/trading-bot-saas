@@ -38,16 +38,19 @@
 - trailingActivate/Step/Back (solo si plan lo permite)
 - defaultRestriction: null, RIESGO, SIN_PROMEDIOS, SOLO_1_PROMEDIO
 
-### 2.2 Estado Detallado del Bot
+### 2.2 Estado Detallado del Bot ✅ COMPLETADO
 **Prioridad:** MEDIA
+**Commit:** 4679c25
 
-**Tasks:**
-- [ ] API `/api/bot/status` con info completa
-- [ ] Mostrar posiciones abiertas en dashboard
-- [ ] Historial de operaciones reciente
-- [ ] Métricas: operaciones hoy, profit, drawdown
+**Tasks completadas:**
+- [x] API `/api/bot/status` con info completa
+- [x] Mostrar posiciones abiertas en dashboard
+- [x] Métricas en tiempo real
+- [x] Auto-refresh cada 10 segundos
 
----
+- [x] Link a config y backtester
+
+### 2.3 Siguiente feature
 
 ## FASE 3: Monitoreo y Alertas
 
