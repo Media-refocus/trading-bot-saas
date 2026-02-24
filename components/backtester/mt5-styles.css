@@ -1,0 +1,170 @@
+/* MT5-style form elements */
+
+/* Select dropdown */
+.mt5-select {
+  width: 100%;
+  padding: 6px 10px;
+  background-color: #333333;
+  border: 1px solid #3C3C3C;
+  border-radius: 4px;
+  color: #CCCCCC;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.mt5-select:hover {
+  border-color: #555555;
+}
+
+.mt5-select:focus {
+  border-color: #0078D4;
+}
+
+.mt5-select option {
+  background-color: #2D2D2D;
+  color: #CCCCCC;
+}
+
+/* Input text/number */
+.mt5-input {
+  width: 100%;
+  padding: 6px 10px;
+  background-color: #333333;
+  border: 1px solid #3C3C3C;
+  border-radius: 4px;
+  color: #CCCCCC;
+  font-size: 13px;
+  font-family: monospace;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.mt5-input:hover {
+  border-color: #555555;
+}
+
+.mt5-input:focus {
+  border-color: #0078D4;
+}
+
+.mt5-input::placeholder {
+  color: #666666;
+}
+
+/* Checkbox */
+.mt5-checkbox {
+  width: 14px;
+  height: 14px;
+  background-color: #333333;
+  border: 1px solid #3C3C3C;
+  border-radius: 3px;
+  cursor: pointer;
+  appearance: none;
+  outline: none;
+  transition: all 0.15s;
+}
+
+.mt5-checkbox:hover {
+  border-color: #555555;
+}
+
+.mt5-checkbox:checked {
+  background-color: #0078D4;
+  border-color: #0078D4;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
+  background-size: 12px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Button styles */
+.mt5-button {
+  padding: 8px 16px;
+  background-color: #0078D4;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.mt5-button:hover {
+  background-color: #1E90FF;
+}
+
+.mt5-button:active {
+  background-color: #0066B3;
+}
+
+.mt5-button:disabled {
+  background-color: #555555;
+  cursor: not-allowed;
+}
+
+.mt5-button-secondary {
+  background-color: #333333;
+}
+
+.mt5-button-secondary:hover {
+  background-color: #444444;
+}
+
+/* Scrollbar styling */
+.mt5-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.mt5-scrollbar::-webkit-scrollbar-track {
+  background: #1E1E1E;
+}
+
+.mt5-scrollbar::-webkit-scrollbar-thumb {
+  background: #3C3C3C;
+  border-radius: 4px;
+}
+
+.mt5-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555555;
+}
+
+/* Table styling */
+.mt5-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mt5-table th {
+  padding: 8px 12px;
+  background-color: #2D2D2D;
+  border-bottom: 1px solid #3C3C3C;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #888888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mt5-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #333333;
+  font-size: 12px;
+}
+
+.mt5-table tr:hover {
+  background-color: #2A2A2A;
+}
+
+/* Animation for loading states */
+@keyframes mt5-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.mt5-loading {
+  animation: mt5-pulse 1.5s ease-in-out infinite;
+}

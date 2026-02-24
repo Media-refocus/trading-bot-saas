@@ -742,6 +742,27 @@ export class BacktestEngine {
   }
 
   /**
+   * Cierra posiciones que quedaron abiertas al final de una señal
+   * Se llama cuando se acaban los ticks y el trade sigue abierto
+   * Esto representa el cierre real cuando llega el mensaje "cerramos rango" de Telegram
+   */
+  closeRemainingPositions(lastPrice: number, closeTimestamp: Date): any[] {
+    if (!this.entryOpen || this.positions.size === 0) {
+      return [];
+    }
+
+    console.log(`[Engine] Cerrando posiciones pendientes al final de señal - precio: ${lastPrice.toFixed(2)}`);
+    return this.closeAllPositions(lastPrice, "STOP_LOSS", closeTimestamp);
+  }
+
+  /**
+   * Verifica si hay posiciones abiertas
+   */
+  hasOpenPositions(): boolean {
+    return this.entryOpen && this.positions.size > 0;
+  }
+
+  /**
    * Actualiza métricas de equity y drawdown
    */
   private updateEquityMetrics(currentPrice: number, timestamp: Date = new Date()): void {

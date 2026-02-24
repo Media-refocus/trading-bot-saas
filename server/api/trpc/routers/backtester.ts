@@ -311,6 +311,14 @@ export const backtesterRouter = router({
           for (const tick of ticks) {
             engine.processTick(tick);
           }
+
+          // Si el trade sigue abierto después de procesar todos los ticks,
+          // cerrarlo al último precio (representa el mensaje "cerramos rango" de Telegram)
+          if (engine.hasOpenPositions() && ticks.length > 0) {
+            const lastTick = ticks[ticks.length - 1];
+            const closePrice = signal.side === "BUY" ? lastTick.bid : lastTick.ask;
+            engine.closeRemainingPositions(closePrice, signal.closeTimestamp || lastTick.timestamp);
+          }
         }
 
         console.log(`[Backtester] Procesadas ${signalsProcessed} senales, ${totalTicksProcessed} ticks`);
