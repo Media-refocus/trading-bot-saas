@@ -20,36 +20,23 @@
 
 ## FASE 2: Configuración desde el SaaS ⏳ ACTUAL
 
-### 2.1 Página de Configuración del Bot
+### 2.1 Página de Configuración del Bot ✅ COMPLETADO
 **Prioridad:** ALTA
-**Objetivo:** Permitir que el usuario configure su bot desde el SaaS web
+**Commit:** 28b9e5b, a3ad7ec
 
 **Tasks:**
-- [ ] Página `/settings` con formulario de configuración
-- [ ] Guardar config en BotConfig (Prisma)
-- [ ] API `GET/PUT /api/bot/config` para leer/guardar
-- [ ] Bot lee config del SaaS al iniciar y periódicamente
-- [ ] Validación de límites según plan
+- [x] Página `/settings` con formulario de configuración
+- [x] API `GET/PUT /api/bot/settings` para usuarios autenticados
+- [x] Bot lee config del SaaS al iniciar y cada 60 segundos
+- [x] Validación de límites según plan
 
-**Campos a configurar:**
-```yaml
-Trading:
-  - lotSize: 0.01 - 1.0
-  - maxLevels: 1 - 5
-  - gridDistance: 5 - 50 pips
-  - takeProfit: 10 - 100 pips
-
-Gestión de Riesgo:
-  - stopLoss: 0 (disabled) - 200 pips
-  - trailingActivate: 0 - 100 pips
-  - trailingStep: 5 - 50 pips
-  - trailingBack: 10 - 100 pips
-
-Restricciones:
-  - allowPromedios: true/false
-  - maxPromedios: 0 - 3
-  - riskMode: normal/conservativo/agresivo
-```
+**Campos configurables:**
+- lotSize: 0.01 - 1.0
+- maxLevels: 1 - 5 (limitado por plan)
+- gridDistance: 5 - 100 pips
+- takeProfit: 5 - 200 pips
+- trailingActivate/Step/Back (solo si plan lo permite)
+- defaultRestriction: null, RIESGO, SIN_PROMEDIOS, SOLO_1_PROMEDIO
 
 ### 2.2 Estado Detallado del Bot
 **Prioridad:** MEDIA
