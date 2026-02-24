@@ -1,0 +1,11 @@
+# Signal Ingestor - Dependencias
+# ===============================
+
+# Telegram client
+telethon>=1.28.0
+
+# HTTP requests
+requests>=2.28.0
+
+# YAML config
+PyYAML>=6.0

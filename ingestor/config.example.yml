@@ -1,0 +1,20 @@
+# Signal Ingestor - Configuración
+# ================================
+
+telegram:
+  api_id: 20993460                    # Tu API ID de Telegram
+  api_hash: "tu_api_hash_aqui"        # Tu API Hash de Telegram
+  session: "ingestor_session"         # Nombre del archivo de sesión
+
+  # Canales a escuchar
+  channels:
+    - id: 2164511324                  # ID del canal
+      access_hash: -4688926061597264256  # Access hash (opcional para canales públicos)
+
+saas:
+  url: "http://localhost:3000"        # URL del SaaS
+  api_key: ""                         # API key del admin (para autorizar ingestión)
+
+options:
+  dry_run: false                      # Si true, no envía señales al SaaS
+  log_signals: true                   # Log detallado de señales
