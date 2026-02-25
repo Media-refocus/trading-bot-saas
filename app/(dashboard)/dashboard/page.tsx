@@ -36,12 +36,20 @@ interface Metrics {
   currentSide: string | null;
 }
 
+interface SecurityInfo {
+  apiKeyStatus: string;
+  apiKeyCreatedAt: string | null;
+  lastRotation: string | null;
+  requestCount: number;
+}
+
 interface BotStatus {
   configured: boolean;
   isOnline: boolean;
   connection: ConnectionStatus;
   positions: Position[];
   metrics: Metrics;
+  security?: SecurityInfo;
   config: {
     lotSize: number;
     maxLevels: number;
@@ -59,7 +67,7 @@ export default function DashboardPage() {
     fetchBotStatus();
     const interval = setInterval(fetchBotStatus, 10000); // Refresh every 10s
     return () => {
-      fetchBotStatus();
+      clearInterval(interval);
     };
   }, []);
 
@@ -241,6 +249,32 @@ export default function DashboardPage() {
         </Card>
       )}
 
+      {/* Security Info */}
+      {botStatus?.security && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Seguridad</CardTitle>
+            <CardDescription>
+              Estado de la API key y seguridad
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Estado API Key</p>
+                <Badge variant={botStatus.security.apiKeyStatus === "ACTIVE" ? "default" : "secondary"}>
+                  {botStatus.security.apiKeyStatus}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Requests (esta hora)</p>
+                <p className="font-medium">{botStatus.security.requestCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Quick Actions */}
       <div className="flex gap-4">
         <Button variant="outline" onClick={fetchBotStatus}>
@@ -248,6 +282,9 @@ export default function DashboardPage() {
         </Button>
         <Button variant="outline" asChild>
           <Link href="/setup">Setup</Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link href="/settings">Configuracion</Link>
         </Button>
         <Button variant="outline" asChild>
           <Link href="/backtester">Backtester</Link>
