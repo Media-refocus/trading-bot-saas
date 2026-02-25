@@ -9,6 +9,8 @@
  * Referencia: codigo-existente/señales_toni_v3_MONOCUENTA.py
  */
 
+import { Finance, Decimal } from "./decimal-utils";
+
 // ==================== TIPOS ====================
 
 export type Side = "BUY" | "SELL";
@@ -361,9 +363,12 @@ export class BacktestEngine {
 
     // 2b. Verificar Stop Loss fijo de emergencia (si está configurado)
     if (this.config.stopLossPips && this.config.stopLossPips > 0) {
-      const lossPips = isBuy
-        ? (this.entryPrice! - closePrice) / PIP_VALUE
-        : (closePrice - this.entryPrice!) / PIP_VALUE;
+      // Usar Decimal para precisión financiera
+      const lossPips = Finance.toNumber(
+        isBuy
+          ? Finance.div(Finance.sub(this.entryPrice!, closePrice), PIP_VALUE)
+          : Finance.div(Finance.sub(closePrice, this.entryPrice!), PIP_VALUE)
+      );
 
       // Debug: log cada 1000 ticks
       if (this.currentTick % 1000 === 0 && lossPips > 0) {
@@ -388,9 +393,11 @@ export class BacktestEngine {
     // El TP se calcula desde el precio promedio de las posiciones abiertas
     // BUY: TP = avgPrice + (takeProfitPips * PIP_VALUE) -> cerramos cuando price >= TP
     // SELL: TP = avgPrice - (takeProfitPips * PIP_VALUE) -> cerramos cuando price <= TP
-    const tpPrice = isBuy
-      ? avgPrice + (this.config.takeProfitPips * PIP_VALUE)
-      : avgPrice - (this.config.takeProfitPips * PIP_VALUE);
+    const tpPrice = Finance.toNumber(
+      isBuy
+        ? Finance.add(avgPrice, Finance.mul(this.config.takeProfitPips, PIP_VALUE))
+        : Finance.sub(avgPrice, Finance.mul(this.config.takeProfitPips, PIP_VALUE))
+    );
 
     const tpHit = isBuy
       ? closePrice >= tpPrice
@@ -608,12 +615,16 @@ export class BacktestEngine {
           continue;
         }
 
-        // Calcular profit de esta operación
-        const profitPips = isBuy
-          ? (currentPrice - trade.price) / PIP_VALUE
-          : (trade.price - currentPrice) / PIP_VALUE;
+        // Calcular profit de esta operación con precisión Decimal
+        const profitPips = Finance.toNumber(
+          isBuy
+            ? Finance.div(Finance.sub(currentPrice, trade.price), PIP_VALUE)
+            : Finance.div(Finance.sub(trade.price, currentPrice), PIP_VALUE)
+        );
 
-        const profit = profitPips * trade.lotSize / PIP_VALUE;
+        const profit = Finance.toNumber(
+          Finance.div(Finance.mul(profitPips, trade.lotSize), PIP_VALUE)
+        );
 
         const closingTrade: SimulatedTrade = {
           ...trade,
@@ -700,12 +711,16 @@ export class BacktestEngine {
           continue;
         }
 
-        // Calcular profit/loss
-        const profitPips = isBuy
-          ? (currentPrice - trade.price) / PIP_VALUE
-          : (trade.price - currentPrice) / PIP_VALUE;
+        // Calcular profit/loss con precisión Decimal
+        const profitPips = Finance.toNumber(
+          isBuy
+            ? Finance.div(Finance.sub(currentPrice, trade.price), PIP_VALUE)
+            : Finance.div(Finance.sub(trade.price, currentPrice), PIP_VALUE)
+        );
 
-        const profit = profitPips * trade.lotSize / PIP_VALUE;
+        const profit = Finance.toNumber(
+          Finance.div(Finance.mul(profitPips, trade.lotSize), PIP_VALUE)
+        );
 
         const closingTrade: SimulatedTrade = {
           ...trade,
@@ -806,7 +821,7 @@ export class BacktestEngine {
    * Actualiza métricas de equity y drawdown
    */
   private updateEquityMetrics(currentPrice: number, timestamp: Date = new Date()): void {
-    // Calcular equity actual
+    // Calcular equity actual con precisión Decimal
     let floatingProfit = 0;
 
     for (const [level, trades] of this.positions.entries()) {
@@ -816,11 +831,15 @@ export class BacktestEngine {
         }
 
         const isBuy = this.side === "BUY";
-        const profitPips = isBuy
-          ? (currentPrice - trade.price) / PIP_VALUE
-          : (trade.price - currentPrice) / PIP_VALUE;
+        const profitPips = Finance.toNumber(
+          isBuy
+            ? Finance.div(Finance.sub(currentPrice, trade.price), PIP_VALUE)
+            : Finance.div(Finance.sub(trade.price, currentPrice), PIP_VALUE)
+        );
 
-        floatingProfit += profitPips * trade.lotSize / PIP_VALUE;
+        floatingProfit += Finance.toNumber(
+          Finance.div(Finance.mul(profitPips, trade.lotSize), PIP_VALUE)
+        );
       }
     }
 
