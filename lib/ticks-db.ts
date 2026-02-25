@@ -8,9 +8,7 @@
  * - Uso de memoria: ~50MB (solo Prisma client), no ~1GB como antes
  */
 
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "./prisma";
 
 export interface Tick {
   timestamp: Date;

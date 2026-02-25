@@ -95,15 +95,10 @@ export interface BacktestResult {
   profitFactorByMonth: { month: string; profitFactor: number; profit: number }[];
 
   // Segmentación
-  segmentation?: {
-    byDay: any[];
-    bySession: any[];
-    bySide: any[];
-    byMonth: any[];
-  };
+  segmentation?: Segmentation;
 
   // Detalles
-  trades: any[];
+  trades: SimulatedTrade[];
   tradeDetails: TradeDetail[];  // Detalle ampliado por señal
   equityCurve: EquityPoint[];   // Curva de equity con timestamps
 }
@@ -126,6 +121,44 @@ export interface SimulatedTrade {
   profitPips: number;
   timestamp: Date;
   signalIndex?: number; // Índice en el CSV de señales
+}
+
+// ==================== TIPOS PARA SEGMENTACIÓN ====================
+
+export interface SegmentationByDay {
+  day: number;           // 0-6 (domingo-sábado)
+  dayName: string;       // "Lunes", "Martes", etc.
+  trades: number;
+  profit: number;
+  winRate: number;
+}
+
+export interface SegmentationBySession {
+  session: TradingSession;
+  trades: number;
+  profit: number;
+  winRate: number;
+}
+
+export interface SegmentationBySide {
+  side: Side;
+  trades: number;
+  profit: number;
+  winRate: number;
+}
+
+export interface SegmentationByMonth {
+  month: string;         // "YYYY-MM"
+  trades: number;
+  profit: number;
+  winRate: number;
+}
+
+export interface Segmentation {
+  byDay: SegmentationByDay[];
+  bySession: SegmentationBySession[];
+  bySide: SegmentationBySide[];
+  byMonth: SegmentationByMonth[];
 }
 
 // ==================== NUEVOS TIPOS PARA DETALLE ====================
@@ -186,7 +219,7 @@ export class BacktestEngine {
   private entryPrice: number | null = null;
   private side: Side | null = null;
   private entryOpen = false;
-  private positions: Map<number, any[]> = new Map(); // nivel -> array de trades
+  private positions: Map<number, SimulatedTrade[]> = new Map(); // nivel -> array de trades
   private pendingLevels: Set<number> = new Set();
   private entrySL: number | null = null; // Trailing SL virtual
   private totalLevels: number = 0;
@@ -194,7 +227,7 @@ export class BacktestEngine {
   private currentTick = 0;
   private totalTicks = 0;
 
-  private trades: any[] = [];
+  private trades: SimulatedTrade[] = [];
   private tradeDetails: TradeDetail[] = []; // Detalle ampliado por señal
   private equityCurve: EquityPoint[] = []; // Curva de equity
 
@@ -260,8 +293,8 @@ export class BacktestEngine {
   /**
    * Abre las operaciones iniciales según numOrders
    */
-  openInitialOrders(currentPrice: number, tickTimestamp: Date = new Date()): any[] {
-    const trades: any[] = [];
+  openInitialOrders(currentPrice: number, tickTimestamp: Date = new Date()): SimulatedTrade[] {
+    const trades: SimulatedTrade[] = [];
     const { lotajeBase, numOrders, takeProfitPips } = this.config;
 
     // Guardar tiempo de entrada
@@ -273,7 +306,7 @@ export class BacktestEngine {
         ? this.entryPrice! + (takeProfitPips * PIP_VALUE * (this.side === "BUY" ? 1 : -1))
         : null; // Segunda operación sin TP (SL dinámico)
 
-      const trade: any = {
+      const trade: SimulatedTrade = {
         id: `trade_${Date.now()}_${i}`,
         type: "OPEN",
         side: this.side!,
@@ -299,13 +332,13 @@ export class BacktestEngine {
   /**
    * Procesa un tick de precio
    */
-  processTick(tick: PriceTick): any[] | null {
+  processTick(tick: PriceTick): SimulatedTrade[] | null {
     if (!this.entryPrice || !this.side) {
       return null;
     }
 
     this.currentTick++;
-    const newTrades: any[] = [];
+    const newTrades: SimulatedTrade[] = [];
 
     // Debug: Log del primer tick de cada señal
     if (this.currentTick === 1) {
@@ -352,11 +385,18 @@ export class BacktestEngine {
     }
 
     // 4. Verificar Take Profit (cierre escalonado)
-    const profitPips = isBuy
-      ? (avgPrice - this.entryPrice) / PIP_VALUE
-      : (this.entryPrice - avgPrice) / PIP_VALUE;
+    // El TP se calcula desde el precio promedio de las posiciones abiertas
+    // BUY: TP = avgPrice + (takeProfitPips * PIP_VALUE) -> cerramos cuando price >= TP
+    // SELL: TP = avgPrice - (takeProfitPips * PIP_VALUE) -> cerramos cuando price <= TP
+    const tpPrice = isBuy
+      ? avgPrice + (this.config.takeProfitPips * PIP_VALUE)
+      : avgPrice - (this.config.takeProfitPips * PIP_VALUE);
 
-    if (profitPips >= this.config.takeProfitPips) {
+    const tpHit = isBuy
+      ? closePrice >= tpPrice
+      : closePrice <= tpPrice;
+
+    if (tpHit) {
       newTrades.push(...this.closeAllLevelsInProfit(closePrice, avgPrice, tick.timestamp));
       return newTrades;
     }
@@ -515,7 +555,7 @@ export class BacktestEngine {
     // Abrir nuevo nivel
     const nextLevel = this.getNextAvailableLevel(liveLevels);
     if (nextLevel !== null && nextLevel < this.totalLevels) {
-      const newTrade: any = {
+      const newTrade: SimulatedTrade = {
         id: `avg_${Date.now()}_${nextLevel}`,
         type: "AVERAGE",
         side: this.side!,
@@ -553,8 +593,8 @@ export class BacktestEngine {
   /**
    * Cierra todas las operaciones en profit (take profit)
    */
-  private closeAllLevelsInProfit(currentPrice: number, avgPrice: number, closeTimestamp: Date = new Date()): any[] {
-    const closingTrades: any[] = [];
+  private closeAllLevelsInProfit(currentPrice: number, avgPrice: number, closeTimestamp: Date = new Date()): SimulatedTrade[] {
+    const closingTrades: SimulatedTrade[] = [];
     const isBuy = this.side === "BUY";
     const levels: TradeLevel[] = [];
     let totalProfit = 0;
@@ -575,7 +615,7 @@ export class BacktestEngine {
 
         const profit = profitPips * trade.lotSize / PIP_VALUE;
 
-        const closingTrade: any = {
+        const closingTrade: SimulatedTrade = {
           ...trade,
           type: "CLOSE",
           profit,
@@ -645,8 +685,8 @@ export class BacktestEngine {
   /**
    * Cierra todas las operaciones (cuando SL de entrada o emergencia)
    */
-  private closeAllPositions(currentPrice: number, reason: "TAKE_PROFIT" | "STOP_LOSS", closeTimestamp: Date = new Date()): any[] {
-    const closingTrades: any[] = [];
+  private closeAllPositions(currentPrice: number, reason: "TAKE_PROFIT" | "STOP_LOSS", closeTimestamp: Date = new Date()): SimulatedTrade[] {
+    const closingTrades: SimulatedTrade[] = [];
     const isBuy = this.side === "BUY";
     const levels: TradeLevel[] = [];
     let totalProfit = 0;
@@ -667,7 +707,7 @@ export class BacktestEngine {
 
         const profit = profitPips * trade.lotSize / PIP_VALUE;
 
-        const closingTrade: any = {
+        const closingTrade: SimulatedTrade = {
           ...trade,
           type: reason,
           profit,
@@ -746,7 +786,7 @@ export class BacktestEngine {
    * Se llama cuando se acaban los ticks y el trade sigue abierto
    * Esto representa el cierre real cuando llega el mensaje "cerramos rango" de Telegram
    */
-  closeRemainingPositions(lastPrice: number, closeTimestamp: Date): any[] {
+  closeRemainingPositions(lastPrice: number, closeTimestamp: Date): SimulatedTrade[] {
     if (!this.entryOpen || this.positions.size === 0) {
       return [];
     }
@@ -819,10 +859,10 @@ export class BacktestEngine {
    * Obtiene el resultado final del backtest
    */
   getResults(): BacktestResult {
-    const winningTrades = this.trades.filter((t: any) => t.type === "CLOSE" && t.profit > 0);
-    const losingTrades = this.trades.filter((t: any) => t.type === "CLOSE" && t.profit < 0);
-    const totalWinning = winningTrades.reduce((sum: any, t: any) => sum + t.profit, 0);
-    const totalLosing = losingTrades.reduce((sum: any, t: any) => sum + Math.abs(t.profit), 0);
+    const winningTrades = this.trades.filter((t) => t.type === "CLOSE" && t.profit > 0);
+    const losingTrades = this.trades.filter((t) => t.type === "CLOSE" && t.profit < 0);
+    const totalWinning = winningTrades.reduce((sum, t) => sum + t.profit, 0);
+    const totalLosing = losingTrades.reduce((sum, t) => sum + Math.abs(t.profit), 0);
 
     // Capital inicial (del config o default 10000)
     const initialCapital = this.config.initialCapital || 10000;
