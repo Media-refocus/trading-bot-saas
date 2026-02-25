@@ -5,6 +5,9 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ProfitChart } from "@/components/charts/profit-chart";
+import { TradesChart } from "@/components/charts/trades-chart";
+import { WinRateCard } from "@/components/charts/win-rate-card";
 
 interface ConnectionStatus {
   isOnline: boolean;
@@ -43,6 +46,19 @@ interface SecurityInfo {
   requestCount: number;
 }
 
+interface ChartData {
+  profit: Array<{ date: string; profit: number; cumulative: number }>;
+  trades: Array<{ date: string; trades: number; wins: number; losses: number }>;
+  winRate: {
+    winRate: number;
+    totalTrades: number;
+    winningTrades: number;
+    losingTrades: number;
+    avgProfit: number;
+    avgLoss: number;
+  };
+}
+
 interface BotStatus {
   configured: boolean;
   isOnline: boolean;
@@ -50,6 +66,7 @@ interface BotStatus {
   positions: Position[];
   metrics: Metrics;
   security?: SecurityInfo;
+  charts?: ChartData;
   config: {
     lotSize: number;
     maxLevels: number;
@@ -391,6 +408,33 @@ export default function DashboardPage() {
           </Card>
         </TooltipWrapper>
       </div>
+
+      {/* Seccion de Rendimiento - Graficos */}
+      {botStatus?.charts && (
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold">Rendimiento</h2>
+
+          {/* Grid de 2 columnas para graficos principales */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            <ProfitChart data={botStatus.charts.profit} />
+            <TradesChart data={botStatus.charts.trades} />
+          </div>
+
+          {/* Win Rate Card centrada */}
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-start-2">
+              <WinRateCard
+                winRate={botStatus.charts.winRate.winRate}
+                totalTrades={botStatus.charts.winRate.totalTrades}
+                winningTrades={botStatus.charts.winRate.winningTrades}
+                losingTrades={botStatus.charts.winRate.losingTrades}
+                avgProfit={botStatus.charts.winRate.avgProfit}
+                avgLoss={botStatus.charts.winRate.avgLoss}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Positions table o estado vacio */}
       <Card>
