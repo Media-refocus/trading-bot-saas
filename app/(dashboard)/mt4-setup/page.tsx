@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Copy,
   Check,
@@ -34,24 +33,7 @@ export default function MT4SetupPage() {
   const [showKey, setShowKey] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
 
-  const fetchApiKey = useCallback(async () => {
-    try {
-      const res = await fetch("/api/mt4-setup/api-key");
-      const data = await res.json();
-      if (data.success) {
-        setApiKeyInfo(data);
-      } else if (data.error === "No API key") {
-        // Crear API key automáticamente
-        await generateApiKey();
-      }
-    } catch (error) {
-      console.error("Error fetching API key:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function generateApiKey() {
+  const generateApiKey = useCallback(async () => {
     setRegenerating(true);
     try {
       const res = await fetch("/api/mt4-setup/api-key", { method: "POST" });
@@ -64,7 +46,27 @@ export default function MT4SetupPage() {
     } finally {
       setRegenerating(false);
     }
-  }
+  }, []);
+
+  const fetchApiKey = useCallback(async () => {
+    try {
+      const res = await fetch("/api/mt4-setup/api-key");
+      const data = await res.json();
+      if (data.success) {
+        setApiKeyInfo(data);
+      } else if (data.error === "No API key") {
+        await generateApiKey();
+      }
+    } catch (error) {
+      console.error("Error fetching API key:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [generateApiKey]);
+
+  useEffect(() => {
+    fetchApiKey();
+  }, [fetchApiKey]);
 
   function copyToClipboard(text: string) {
     navigator.clipboard.writeText(text);
@@ -80,7 +82,7 @@ export default function MT4SetupPage() {
       action: (
         <Button variant="outline" className="w-full" disabled>
           <Download className="w-4 h-4 mr-2" />
-          Próximamente
+          Proximamente
         </Button>
       ),
     },
@@ -93,7 +95,7 @@ export default function MT4SetupPage() {
     {
       number: 3,
       title: "Configurar URLs",
-      description: "Herramientas → Opciones → Expertos → Permitir WebRequest",
+      description: "Herramientas - Opciones - Expertos - Permitir WebRequest",
       action: null,
     },
     {
@@ -105,7 +107,7 @@ export default function MT4SetupPage() {
     {
       number: 5,
       title: "Activar el EA",
-      description: "Arrastra el EA al gráfico y configura los parámetros",
+      description: "Arrastra el EA al grafico y configura los parametros",
       action: null,
     },
   ];
@@ -115,7 +117,7 @@ export default function MT4SetupPage() {
       <div className="p-8 max-w-4xl mx-auto">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4" />
-          <p>Cargando configuración...</p>
+          <p>Cargando configuracion...</p>
         </div>
       </div>
     );
@@ -202,7 +204,7 @@ export default function MT4SetupPage() {
               <Alert>
                 <AlertDescription className="text-sm">
                   <strong>Importante:</strong> Nunca compartas tu API Key. Si la has compartido,
-                  regénala inmediatamente.
+                  regenala inmediatamente.
                 </AlertDescription>
               </Alert>
             </div>
@@ -220,7 +222,7 @@ export default function MT4SetupPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="w-5 h-5" />
-            Pasos de Instalación
+            Pasos de Instalacion
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -248,7 +250,7 @@ export default function MT4SetupPage() {
         <CardHeader>
           <CardTitle>Configurar URLs Permitidas en MT4</CardTitle>
           <CardDescription>
-            MT4 bloquea conexiones externas por defecto. Debes añadir esta URL:
+            MT4 bloquea conexiones externas por defecto. Debes anadir esta URL:
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -264,10 +266,10 @@ export default function MT4SetupPage() {
           </div>
           <ol className="mt-4 text-sm text-muted-foreground space-y-2 list-decimal list-inside">
             <li>Abre MetaTrader 4</li>
-            <li>Ve a <strong>Herramientas → Opciones</strong></li>
-            <li>Pestaña <strong>Expertos asesores</strong></li>
+            <li>Ve a <strong>Herramientas - Opciones</strong></li>
+            <li>Pestana <strong>Expertos asesores</strong></li>
             <li>Marca <strong>&quot;Permitir WebRequest para las siguientes URL&quot;</strong></li>
-            <li>Añade la URL de arriba y haz clic en OK</li>
+            <li>Anade la URL de arriba y haz clic en OK</li>
           </ol>
         </CardContent>
       </Card>
@@ -275,9 +277,9 @@ export default function MT4SetupPage() {
       {/* Parameters Reference */}
       <Card>
         <CardHeader>
-          <CardTitle>Parámetros del EA</CardTitle>
+          <CardTitle>Parametros del EA</CardTitle>
           <CardDescription>
-            Configura estos parámetros al añadir el EA al gráfico
+            Configura estos parametros al anadir el EA al grafico
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -285,9 +287,9 @@ export default function MT4SetupPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2">Parámetro</th>
+                  <th className="text-left py-2">Parametro</th>
                   <th className="text-left py-2">Valor</th>
-                  <th className="text-left py-2">Descripción</th>
+                  <th className="text-left py-2">Descripcion</th>
                 </tr>
               </thead>
               <tbody>
@@ -319,7 +321,7 @@ export default function MT4SetupPage() {
                 <tr>
                   <td className="py-2 font-mono">EnableTrailing</td>
                   <td className="py-2">false/true</td>
-                  <td className="py-2">Según tu plan</td>
+                  <td className="py-2">Segun tu plan</td>
                 </tr>
               </tbody>
             </table>
@@ -329,9 +331,9 @@ export default function MT4SetupPage() {
 
       {/* Help */}
       <div className="mt-8 p-6 bg-muted/50 rounded-lg">
-        <h3 className="font-semibold mb-2">¿Necesitas ayuda?</h3>
+        <h3 className="font-semibold mb-2">Necesitas ayuda?</h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Si tienes problemas con la configuración, contacta con soporte:
+          Si tienes problemas con la configuracion, contacta con soporte:
         </p>
         <div className="flex gap-4">
           <Button variant="outline" asChild>

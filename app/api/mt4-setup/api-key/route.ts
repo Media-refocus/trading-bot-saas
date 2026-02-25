@@ -25,7 +25,11 @@ export async function GET() {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { tenant: { include: { botConfig: true } } },
+      include: {
+        tenant: {
+          include: { botConfigs: true },
+        },
+      },
     });
 
     if (!user?.tenant) {
@@ -33,13 +37,14 @@ export async function GET() {
     }
 
     // Si ya tiene BotConfig, devolver la API key
-    if (user.tenant.botConfig) {
+    const botConfig = user.tenant.botConfigs?.[0];
+    if (botConfig) {
       return NextResponse.json({
         success: true,
-        apiKey: user.tenant.botConfig.apiKeyPlain,
-        status: user.tenant.botConfig.apiKeyStatus,
-        createdAt: user.tenant.botConfig.apiKeyCreatedAt,
-        lastUsed: user.tenant.botConfig.lastHeartbeat,
+        apiKey: botConfig.apiKeyPlain,
+        status: botConfig.apiKeyStatus,
+        createdAt: botConfig.apiKeyCreatedAt,
+        lastUsed: botConfig.lastHeartbeat,
       });
     }
 
@@ -66,7 +71,11 @@ export async function POST() {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { tenant: { include: { botConfig: true } } },
+      include: {
+        tenant: {
+          include: { botConfigs: true },
+        },
+      },
     });
 
     if (!user?.tenant) {
@@ -74,11 +83,12 @@ export async function POST() {
     }
 
     const newApiKey = generateApiKey();
+    const existingConfig = user.tenant.botConfigs?.[0];
 
     // Si ya tiene BotConfig, actualizar
-    if (user.tenant.botConfig) {
+    if (existingConfig) {
       const updated = await prisma.botConfig.update({
-        where: { id: user.tenant.botConfig.id },
+        where: { id: existingConfig.id },
         data: {
           apiKeyPlain: newApiKey,
           apiKeyStatus: "ACTIVE",
