@@ -21,38 +21,33 @@ Branch: feature/bot-operativa
 | Pro | 197€/mes | 5 | 6 | Incluido |
 | Enterprise | 497€/mes | 10 | 10 | Incluido |
 
-**Archivos clave:**
-- `prisma/schema.prisma` - Modelo Plan con 15+ campos
-- `lib/plans.ts` - Funciones de verificación de límites + `validateMt4Access()`
-- `app/(dashboard)/pricing/page.tsx` - UI de pricing
-- `prisma/seed.ts` - 4 planes en EUR
-
 ### 2. Sistema de Onboarding
 - Página `/onboarding` con 5 pasos
 - APIs: `/api/onboarding/status`, `/api/onboarding/vps`, `/api/onboarding/mt5`
-- Modelo `VpsAccess` en schema
 
 ### 3. Soporte MT4 (EA Receptor)
-**Sin coste adicional, usuario instala EA**
+- EA `BotOperativaReceiver.mq4` (~400 líneas)
+- 5 APIs de comunicación con validación de suscripción
 
+### 4. Validación de Suscripción Activa
+- Función `validateMt4Access()` en `lib/plans.ts`
+- Códigos: 401 (auth), 403 (revocado), 402 (sin pago)
+
+### 5. Integración Stripe Completa (NUEVO 26 Feb)
 | Archivo | Descripción |
 |---------|-------------|
-| `mt4-ea/BotOperativaReceiver.mq4` | EA completo (~400 líneas) |
-| `mt4-ea/README.md` | Instrucciones de instalación |
-| `app/(dashboard)/mt4-setup/page.tsx` | Página de configuración |
-| `app/api/mt4/*.ts` | 5 APIs de comunicación |
+| `lib/stripe.ts` | Helper con checkout, portal, webhooks |
+| `app/api/stripe/checkout/route.ts` | Crear sesión de pago |
+| `app/api/stripe/webhook/route.ts` | Recibir eventos de Stripe |
+| `app/api/stripe/portal/route.ts` | Portal de cliente |
 
-**Flujo:** EA hace HTTP polling → SaaS valida suscripción → Devuelve señales
+**Eventos manejados:**
+- `checkout.session.completed` → Activar plan
+- `customer.subscription.updated` → Cambios de estado
+- `customer.subscription.deleted` → Revocar acceso
+- `invoice.payment_failed` → Alertas
 
-### 4. Validación de Suscripción Activa (NUEVO 26 Feb)
-- Función `validateMt4Access()` en `lib/plans.ts`
-- Valida: API Key + apiKeyStatus === "ACTIVE" + Subscription activa
-- Código 402 (Payment Required) si suscripción inactiva
-- Código 403 si API Key revocada
-- Aplicado a todas las APIs MT4: health, signals, signals/confirm, status, positions
-
-### 5. Soporte MT5 (API Oficial)
-**Ya funcional via Python**
+### 6. Soporte MT5 (API Oficial)
 - Librería `MetaTrader5` Python
 - Conexión directa sin instalación del usuario
 
@@ -63,15 +58,16 @@ Branch: feature/bot-operativa
 ### Prioridad Alta
 | Tarea | Descripción | Esfuerzo |
 |-------|-------------|----------|
-| ~~planStatus en APIs MT4~~ | ✅ Completado | - |
+| ~~Stripe Integration~~ | ✅ Completado | - |
 | Compilar EA a .ex4 | El usuario necesita el archivo compilado | 5 min |
-| Stripe Integration | Webhooks para pagos reales | 4-6h |
+| Configurar Stripe Dashboard | Crear productos/precios, configurar webhook | 30 min |
 
 ### Prioridad Media
 | Tarea | Descripción |
 |-------|-------------|
 | Encriptación credenciales | VPS y MT5 en texto plano |
 | Testing EA | Probar en cuenta demo MT4 |
+| Testing pagos Stripe | Probar flujo completo end-to-end |
 
 ### Prioridad Baja
 | Tarea | Descripción |
@@ -81,34 +77,51 @@ Branch: feature/bot-operativa
 
 ---
 
-## 🏗️ Arquitectura de Protección MT4
+## 🏗️ Arquitectura de Pagos
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    FLUJO DE VALIDACIÓN MT4                       │
+│                    FLUJO DE PAGO STRIPE                         │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
               ┌───────────────────────────────┐
-              │  1. EA envía API Key          │
+              │  Usuario hace click en plan   │
               └───────────────────────────────┘
                               │
                               ▼
               ┌───────────────────────────────┐
-              │  2. validateMt4Access()       │
-              │  - Busca botConfig por apiKey │
-              │  - Verifica apiKeyStatus      │
-              │  - Verifica Subscription      │
+              │  POST /api/stripe/checkout    │
+              │  → Crea sesión de Stripe      │
               └───────────────────────────────┘
                               │
-          ┌───────────────────┼───────────────────┐
-          │                   │                   │
-          ▼                   ▼                   ▼
-   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-   │ API Key     │    │ API Key     │    │ Sin suscrip-│
-   │ inválida    │    │ revocada    │    │ ción activa │
-   │ 401         │    │ 403         │    │ 402         │
-   └─────────────┘    └─────────────┘    └─────────────┘
+                              ▼
+              ┌───────────────────────────────┐
+              │  Redirige a Stripe Checkout   │
+              │  (pago con tarjeta)           │
+              └───────────────────────────────┘
+                              │
+                              ▼
+              ┌───────────────────────────────┐
+              │  Stripe envía webhook         │
+              │  POST /api/stripe/webhook     │
+              └───────────────────────────────┘
+                              │
+                              ▼
+              ┌───────────────────────────────┐
+              │  Actualiza DB:                │
+              │  - Tenant.planId              │
+              │  - Subscription.status        │
+              │  - implementationFeePaid      │
+              └───────────────────────────────┘
+```
+
+---
+
+## 📋 Commits de la Sesión
+```
+101fe98 feat: integración completa de Stripe para pagos
+c25f272 feat: validación de suscripción activa en APIs MT4
 ```
 
 ---
@@ -118,9 +131,23 @@ Branch: feature/bot-operativa
 cd /c/Users/guill/Projects/trading-bot-saas-bot
 npm run dev          # Arrancar dev server
 npm run build        # Build producción
-npx tsx scripts/check-plans.ts  # Ver planes en DB
 git log --oneline -5  # Ver commits
 ```
+
+---
+
+## 🔧 Configuración Stripe (Pendiente)
+
+1. **Crear cuenta Stripe** → Obtener keys
+2. **Configurar .env.local:**
+   ```
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_xxx
+   STRIPE_SECRET_KEY=sk_xxx
+   STRIPE_WEBHOOK_SECRET=whsec_xxx
+   ```
+3. **Configurar webhook en Stripe Dashboard:**
+   - URL: `https://bot.refuelparts.com/api/stripe/webhook`
+   - Eventos: `checkout.session.completed`, `customer.subscription.*`, `invoice.payment_failed`
 
 ---
 
@@ -135,4 +162,4 @@ git log --oneline -5  # Ver commits
 ## 🔗 URLs Importantes
 - Repo: `feature/bot-operativa` branch
 - SaaS (prod): https://bot.refuelparts.com
-- MetaApi docs: https://metaapi.cloud/docs/api/
+- Stripe Dashboard: https://dashboard.stripe.com
