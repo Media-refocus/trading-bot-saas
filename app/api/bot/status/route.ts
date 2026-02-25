@@ -144,6 +144,7 @@ export async function GET() {
         gridDistance: botConfig.gridDistance,
         takeProfit: botConfig.takeProfit,
         isActive: botConfig.isActive,
+        paperTradingMode: botConfig.paperTradingMode,
       },
     });
   } catch (error) {
