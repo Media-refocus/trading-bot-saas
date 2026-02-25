@@ -1,6 +1,6 @@
 # Roadmap - Bot de Operativa SaaS
 
-> Estado: 2026-02-24
+> Estado: 2026-02-25
 > Objetivo: Sistema completo para que clientes operen automáticamente siguiendo señales de Telegram
 
 ---
@@ -18,7 +18,7 @@
 
 ---
 
-## FASE 2: Configuración desde el SaaS ⏳ ACTUAL
+## FASE 2: Configuración desde el SaaS ✅ COMPLETADA
 
 ### 2.1 Página de Configuración del Bot ✅ COMPLETADO
 **Prioridad:** ALTA
@@ -47,12 +47,44 @@
 - [x] Mostrar posiciones abiertas en dashboard
 - [x] Métricas en tiempo real
 - [x] Auto-refresh cada 10 segundos
-
 - [x] Link a config y backtester
 
-### 2.3 Siguiente feature
+---
 
-## FASE 3: Monitoreo y Alertas
+## FASE 2.5: Sistema de Seguridad ✅ COMPLETADO
+**Prioridad:** CRÍTICA
+**Commits:** c10f0fd, 11bb213, 33c2d22
+
+### 2.5.1 Diseño y Documentación ✅
+- [x] Documento de diseño (docs/SECURITY_DESIGN.md)
+- [x] Definición de estados de API key (ACTIVE, PAUSED, REVOKED, EXPIRED)
+- [x] Rate limits por endpoint
+- [x] Flujo de validación
+
+### 2.5.2 Implementación Backend ✅
+- [x] Schema Prisma con campos de seguridad
+- [x] Modelos: ApiKeyAudit, SecurityEvent
+- [x] lib/security/api-key.ts - Generación, hash, validación
+- [x] lib/security/auth-middleware.ts - Middleware de autenticación
+- [x] Rate limiting por endpoint
+- [x] Logs de auditoría
+
+### 2.5.3 Endpoints Protegidos ✅
+- [x] /api/bot/auth - Autenticación inicial
+- [x] /api/bot/signals - Con middleware
+- [x] /api/bot/heartbeat - Con middleware
+- [x] /api/bot/config - Con middleware
+- [x] /api/bot/apikey - Gestión de keys (rotación, revocación)
+
+### 2.5.4 Bot Python Robusto ✅
+- [x] Manejo de errores HTTP (401, 403, 429)
+- [x] Backoff automático en rate limit
+- [x] Detención graceful en errores críticos
+- [x] Comandos remotos (STOP, RESTART)
+
+---
+
+## FASE 3: Monitoreo y Alertas ⏳ SIGUIENTE
 
 ### 3.1 Logs del Bot en Tiempo Real
 **Prioridad:** MEDIA
