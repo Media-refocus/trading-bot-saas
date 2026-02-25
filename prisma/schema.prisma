@@ -15,19 +15,35 @@ datasource db {
 // ============================================
 model Plan {
   id              String   @id @default(cuid())
-  name            String              // "Basic", "Pro", "Enterprise"
-  price           Float               // 49, 99, 249
-  currency        String              @default("USD")
+  name            String              // "Starter", "Trader", "Pro", "Enterprise"
+  price           Float               // 57, 97, 197, 497
+  currency        String              @default("EUR")
+
+  // Fee de implementación
+  implementationFee Float?            @default(97)   // null = incluido en el plan
 
   // Límites del plan
   maxPositions    Int                 @default(1)    // Operaciones simultáneas
   maxBrokers      Int                 @default(1)    // Brokers permitidos
-  maxLevels       Int                 @default(3)    // Niveles de promedio
+  maxLevels       Int                 @default(2)    // Niveles de promedio
+  maxBacktestsMonth Int               @default(5)    // Backtests por mes (0 = ilimitado)
 
-  // Features
-  hasTrailingSL   Boolean  @default(true)
-  hasAdvancedGrid Boolean  @default(false)
-  hasPriority     Boolean  @default(false)  // Soporte prioritario
+  // Features por plan
+  hasTrailingSL     Boolean  @default(false)
+  hasAdvancedGrid   Boolean  @default(false)
+  hasOptimizador    Boolean  @default(false)  // Optimizador de parámetros automático
+  hasBacktestsIlimitados Boolean @default(false)
+  hasPaperTrading   Boolean  @default(true)   // Paper trading disponible
+  hasMetricsDashboard Boolean @default(false) // Dashboard de métricas avanzado
+
+  // Features Enterprise
+  hasMultiCuenta    Boolean  @default(false)  // Multi-cuenta MT5
+  hasApiAccess      Boolean  @default(false)  // API access
+  hasVpsDedicado    Boolean  @default(false)  // VPS dedicado
+
+  // Soporte
+  hasPriority       Boolean  @default(false)  // Soporte prioritario (<4h)
+  hasSoporte247     Boolean  @default(false)  // Soporte 24/7 (<1h)
 
   stripePriceId   String?  @unique
 
@@ -49,6 +65,11 @@ model Tenant {
   planId          String?
   plan            Plan?          @relation(fields: [planId], references: [id])
 
+  // Onboarding e implementación
+  implementationFeePaid Boolean @default(false)   // Si ha pagado el fee de 97€
+  onboardingCompletedAt DateTime?                 // Cuándo completó el onboarding
+  vpsAccessGranted      Boolean @default(false)   // Si tiene acceso al VPS
+
   // Telegram notifications
   telegramChatId              String?
   telegramNotificationsEnabled Boolean @default(false)
@@ -65,6 +86,7 @@ model Tenant {
   signalDeliveries SignalDelivery[]
   securityEvents  SecurityEvent[]
   alerts          Alert[]
+  vpsAccess       VpsAccess?
 }
 
 model User {
@@ -506,7 +528,7 @@ model Alert {
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   // Tipo de alerta
-  type        String              // "BOT_OFFLINE", "BOT_ERROR", "HIGH_DRAWDOWN", "SUBSCRIPTION_EXPIRING"
+  type        String              // "BOT_OFFLINE", "BOT_ERROR", "HIGH_DRAWDOWN", "SUBSCRIPTION_EXPIRING", "VPS_ACCESS_GRANTED"
 
   // Mensaje y estado
   message     String
@@ -520,4 +542,26 @@ model Alert {
 
   @@index([tenantId, read])
   @@index([tenantId, createdAt])
+}
+
+// ============================================
+// VPS ACCESS - Datos de acceso al VPS del cliente
+// ============================================
+
+model VpsAccess {
+  id          String   @id @default(cuid())
+  tenantId    String   @unique
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Datos de conexión
+  host        String              // IP o hostname
+  username    String              // Usuario RDP/SSH
+  password    String              // Contraseña (encriptada)
+
+  // Estado
+  installed   Boolean  @default(false)   // Si el bot ya está instalado
+  installedAt DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

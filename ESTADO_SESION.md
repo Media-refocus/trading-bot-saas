@@ -1,61 +1,96 @@
-# Estado de Sesión - 25 Febrero 2026
+# Estado de Sesión - 25 Febrero 2026 (Actualizado)
 
 ## Últimos Commits
 ```
-8eeda7c feat: sistema de planes y limites para monetizacion
-e189f32 fix: errores de build - exports en route handler y comillas JSX
+[pendiente commit] feat: nuevo sistema de planes en EUR con 4 tiers y onboarding
 ```
 
-## Completado Hoy
+## Completado Hoy (Sesión 2)
 
-### 1. Fixes de Build
-- Arreglado error de exports en `app/api/alerts/route.ts`
-- Movido `ALERT_TYPES` y `createAlert` a `lib/alerts.ts`
-- Arreglado comillas JSX en `setup/page.tsx`
+### 1. Sistema de Planes Actualizado a EUR
+- **Starter** - 57€/mes + 97€ implementación
+  - 1 posición, 2 niveles, 5 backtests/mes
+  - Paper Trading básico
+- **Trader** - 97€/mes (implementación incluida)
+  - 3 posiciones, 4 niveles, 20 backtests/mes
+  - + Trailing SL, Grid Avanzado
+- **Pro** - 197€/mes (implementación incluida)
+  - 5 posiciones, 6 niveles, backtests ilimitados
+  - + Optimizador automático, Dashboard métricas, Soporte prioritario
+- **Enterprise** - 497€/mes (implementación incluida)
+  - 10 posiciones, 10 niveles, todo ilimitado
+  - + Multi-cuenta MT5, API Access, VPS dedicado, Soporte 24/7
 
-### 2. Sistema de Planes y Límites (FASE 4.1)
-- **lib/plans.ts** - Funciones de verificación de límites
-- **app/api/plans/route.ts** - API para listar/cambiar planes
-- **app/(dashboard)/pricing/page.tsx** - Página de pricing
-- **Seed ejecutado** - 3 planes en DB: Basic ($49), Pro ($99), Enterprise ($249)
+### 2. Schema Actualizado
+- Modelo `Plan` con nuevos campos:
+  - `implementationFee` - Fee de implementación (null = incluido)
+  - `hasOptimizador` - Optimizador de parámetros automático
+  - `hasBacktestsIlimitados` - Backtests ilimitados
+  - `hasPaperTrading` - Paper trading disponible
+  - `hasMetricsDashboard` - Dashboard de métricas avanzado
+  - `hasMultiCuenta` - Multi-cuenta MT5
+  - `hasApiAccess` - API access
+  - `hasVpsDedicado` - VPS dedicado
+  - `hasSoporte247` - Soporte 24/7
+- Modelo `Tenant` actualizado:
+  - `implementationFeePaid` - Si ha pagado el fee
+  - `onboardingCompletedAt` - Fecha de completado
+  - `vpsAccessGranted` - Si tiene acceso VPS
+- Nuevo modelo `VpsAccess` - Datos de acceso al VPS del cliente
 
-### 3. Planes Actuales en DB
-| Plan | Precio | Niveles | Posiciones |
-|------|--------|---------|------------|
-| Basic | $49/mes | 2 | 1 |
-| Pro | $99/mes | 4 | 3 |
-| Enterprise | $249/mes | 10 | 10 |
+### 3. Página de Onboarding
+- `/onboarding` - Proceso de configuración en 5 pasos:
+  1. Seleccionar plan
+  2. Pagar implementación (solo Starter)
+  3. Proporcionar acceso VPS
+  4. Configurar MT5
+  5. Bot activado
+
+### 4. APIs de Onboarding
+- `GET /api/onboarding/status` - Estado del proceso
+- `POST /api/onboarding/vps` - Guardar datos VPS
+- `POST /api/onboarding/mt5` - Guardar credenciales MT5
+
+### 5. lib/plans.ts Actualizado
+- Nuevas funciones de verificación:
+  - `canUseOptimizador()` - Verifica acceso al optimizador
+  - `canRunBacktest()` - Verifica límite de backtests
+  - `canUseMultiCuenta()` - Verifica multi-cuenta
+  - `canUseApi()` - Verifica API access
+  - `needsImplementationFee()` - Verifica si necesita pagar fee
+  - `markImplementationFeePaid()` - Marca fee como pagado
 
 ---
 
-## Pendiente: Revisar Contrato con Xisco
+## Contrato con Xisco - Resumen
 
-Guillermo iba a pasar el contrato PDF para revisar precios reales acordados.
-
-**Archivo:** `C:\Users\guill\Downloads\CONTRATO XISCO.pdf`
+| Concepto | Acordado |
+|----------|----------|
+| Precio base Bot | 57€/mes (IVA incl.) |
+| Implementación | 97€ (IVA incl.) |
+| Ventas en Comunidad | 60% Agencia / 40% Xisco |
+| Ventas fuera | 100% Agencia |
+| Royalty estrategia Xisco | 15% |
 
 ---
 
-## PRÓXIMO: Propuesta de Pricing Premium
+## Pendiente
 
-### Ideas para features premium que justifiquen precios más altos:
+### MT4 Support
+- MT4 no tiene API como MT5
+- Opciones:
+  1. Solo MT5 (documentar)
+  2. Copier externo MT5→MT4
+  3. EA receptor para MT4 (WebSocket)
+  4. Bridge DLL
 
-| Tier | Target Capital | Precio | Features Premium |
-|------|----------------|--------|------------------|
-| **Starter** | €500 - €5,000 | €49/mes | Básico, 1 posición, 2 niveles |
-| **Trader** | €5,000 - €25,000 | €99/mes | Trailing SL, Grid avanzado, 3 posiciones |
-| **Pro** | €25,000 - €100,000 | €199/mes | + Optimizador auto, Backtests ilimitados |
-| **Enterprise** | €100,000+ | €499/mes | + Multi-cuenta, API, Soporte 24/7 |
+### Stripe Integration
+- Webhooks para pagos
+- Gestión de suscripciones
+- Prorateo al cambiar de plan
 
-### Features Premium para monetizar:
-1. **Optimizador de parámetros automático** (Pro+) - Buscar mejor config auto
-2. **Backtests ilimitados** (Pro+) - Sin límite mensual
-3. **Multi-cuenta MT5** (Enterprise) - Varios brokers a la vez
-4. **Alertas por SMS/WhatsApp** (Pro+) - Notificaciones urgentes
-5. **Paper Trading avanzado** (Todos) - Probar antes de operar real
-6. **Dashboard métricas avanzado** (Pro+) - Sharpe, drawdown, correlaciones
-7. **API access** (Enterprise) - Integraciones propias
-8. **Soporte prioritario 24/7** (Enterprise)
+### Encriptación
+- Credenciales VPS y MT5 en texto plano (TODO: encriptar)
 
 ---
 
@@ -73,16 +108,23 @@ git log --oneline -5
 npm run dev
 
 # Ver planes en DB
-npx tsx -e "import { prisma } from './lib/prisma'; prisma.plan.findMany().then(console.log).finally(() => prisma.\$disconnect())"
+npx tsx scripts/check-plans.ts
+
+# Regenerar Prisma Client
+npx prisma generate
 ```
 
 ---
 
-## Archivos Clave Modificados Hoy
-- `lib/plans.ts` (nuevo)
-- `lib/alerts.ts` (nuevo)
-- `app/api/plans/route.ts` (nuevo)
-- `app/(dashboard)/pricing/page.tsx` (nuevo)
-- `app/api/bot/settings/route.ts` (actualizado)
-- `app/api/alerts/route.ts` (actualizado)
-- `components/navigation.tsx` (actualizado)
+## Archivos Modificados Hoy
+- `prisma/schema.prisma` - Nuevo modelo Plan y VpsAccess
+- `prisma/seed.ts` - 4 planes nuevos en EUR
+- `lib/plans.ts` - Funciones de verificación ampliadas
+- `app/(dashboard)/pricing/page.tsx` - 4 planes con EUR
+- `app/(dashboard)/onboarding/page.tsx` - Nuevo
+- `app/api/plans/route.ts` - Features ampliadas
+- `app/api/onboarding/status/route.ts` - Nuevo
+- `app/api/onboarding/vps/route.ts` - Nuevo
+- `app/api/onboarding/mt5/route.ts` - Nuevo
+- `components/ui/alert.tsx` - Nuevo
+- `scripts/check-plans.ts` - Nuevo
