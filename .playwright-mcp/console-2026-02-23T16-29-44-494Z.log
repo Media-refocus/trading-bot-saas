@@ -1,0 +1,34 @@
+[   12498ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3005/favicon.ico:0
+[  315351ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3005/api/trpc/backtester.execute?batch=1:0
+[  315388ms] [ERROR] %c << mutation #5 %cbacktester.execute%c %O 
+    background-color: #904dfc;
+    color: white;
+    padding: 2px;
+   
+    background-color: #904dfc;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #904dfc;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: Object, result: TRPCClientError: 
+Invalid `prisma.tickData.findMany()` invocation:
+
+
+Failed to convert rust `String…, elapsedMs: 105428, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  315431ms] [ERROR] Error ejecutando backtest: TRPCClientError: 
+Invalid `prisma.tickData.findMany()` invocation:
+
+
+Failed to convert rust `String` into napi `string`
+    at TRPCClientError.from (webpack-internal:///(app-pages-browser)/./node_modules/@trpc/client/dist/TRPCClientError-apv8gw59.mjs:47:42)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/@trpc/client/dist/httpBatchLink-DpOHx07Q.mjs:241:97) @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[ 1011009ms] [WARNING] [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree. @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/dev/hot-reloader/app/hot-reloader-app.js:111

@@ -215,6 +215,10 @@ export default function SimpleCandleChart({
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [currentTick, setCurrentTick] = useState<Tick | null>(null);
 
+  // Estado del tooltip
+  const [hoveredCandle, setHoveredCandle] = useState<Candle | null>(null);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+
   // Estado de la posición y cuenta (estilo MT5)
   const [position, setPosition] = useState<OpenPosition | null>(null);
   const [account, setAccount] = useState<AccountState>({
@@ -899,6 +903,120 @@ export default function SimpleCandleChart({
       ctx.fillText(isBuy ? "BUY" : "SELL", x + 12, isBuy ? y + 18 : y - 15);
     }
 
+    // Marcador de cierre del trade
+    if (trade && candles.length > 0) {
+      const isBuy = trade.signalSide === "BUY";
+      const lastCandleIndex = candles.length - 1;
+      const exitX = padding.left + (lastCandleIndex + 0.5) * (chartWidth / candles.length);
+      const exitY = priceToY(trade.exitPrice);
+
+      // Color según razón de cierre
+      const exitColor =
+        trade.exitReason === "TAKE_PROFIT" ? "#22c55e" :
+        trade.exitReason === "TRAILING_SL" ? "#eab308" : "#ef4444";
+
+      // Círculo de cierre
+      ctx.beginPath();
+      ctx.arc(exitX, exitY, 8, 0, Math.PI * 2);
+      ctx.fillStyle = exitColor;
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // X dentro del círculo
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(exitX - 3, exitY - 3);
+      ctx.lineTo(exitX + 3, exitY + 3);
+      ctx.moveTo(exitX + 3, exitY - 3);
+      ctx.lineTo(exitX - 3, exitY + 3);
+      ctx.stroke();
+
+      // Etiqueta de cierre
+      const label =
+        trade.exitReason === "TAKE_PROFIT" ? "TP ✓" :
+        trade.exitReason === "TRAILING_SL" ? "Trail" : "SL ✗";
+
+      ctx.fillStyle = exitColor;
+      ctx.font = "bold 10px sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(label, exitX + 12, isBuy ? exitY - 8 : exitY + 12);
+
+      // Línea conectora de entrada a salida
+      const entryX = padding.left + 0.5 * (chartWidth / candles.length);
+      const entryY = priceToY(trade.entryPrice);
+
+      ctx.strokeStyle = trade.totalProfit >= 0 ? "#22c55e50" : "#ef444450";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(entryX, entryY);
+      ctx.lineTo(exitX, exitY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Pips ganados/perdidos en el medio de la línea
+      const midX = (entryX + exitX) / 2;
+      const midY = (entryY + exitY) / 2;
+      const pipsDiff = isBuy
+        ? (trade.exitPrice - trade.entryPrice) / PIP_VALUE
+        : (trade.entryPrice - trade.exitPrice) / PIP_VALUE;
+
+      ctx.fillStyle = trade.totalProfit >= 0 ? "#22c55e" : "#ef4444";
+      ctx.font = "bold 11px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        `${pipsDiff >= 0 ? "+" : ""}${pipsDiff.toFixed(1)} pips`,
+        midX,
+        midY - 8
+      );
+    }
+
+    // Tooltip de vela hovereada
+    if (hoveredCandle && candles.length > 0) {
+      const tooltipX = 10;
+      const tooltipY = 10;
+      const tooltipWidth = 140;
+      const tooltipHeight = 75;
+
+      // Fondo del tooltip
+      ctx.fillStyle = "#1e293b";
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      // Contenido del tooltip
+      ctx.fillStyle = "#e2e8f0";
+      ctx.font = "bold 11px sans-serif";
+      ctx.textAlign = "left";
+
+      const timeStr = new Date(hoveredCandle.startTime).toLocaleTimeString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      ctx.fillText(`Time: ${timeStr}`, tooltipX + 8, tooltipY + 18);
+      ctx.fillStyle = "#22c55e";
+      ctx.fillText(`O: ${hoveredCandle.open.toFixed(2)}`, tooltipX + 8, tooltipY + 34);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillText(`H: ${hoveredCandle.high.toFixed(2)}`, tooltipX + 70, tooltipY + 34);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillText(`L: ${hoveredCandle.low.toFixed(2)}`, tooltipX + 8, tooltipY + 50);
+      ctx.fillStyle = "#22c55e";
+      ctx.fillText(`C: ${hoveredCandle.close.toFixed(2)}`, tooltipX + 70, tooltipY + 50);
+
+      // Cambio
+      const change = hoveredCandle.close - hoveredCandle.open;
+      const changeColor = change >= 0 ? "#22c55e" : "#ef4444";
+      ctx.fillStyle = changeColor;
+      ctx.fillText(`${change >= 0 ? "+" : ""}${(change / PIP_VALUE).toFixed(1)} pips`, tooltipX + 8, tooltipY + 66);
+    }
+
     // Línea de precio actual
     if (currentPrice !== null && candles.length > 0) {
       const currentY = priceToY(currentPrice);
@@ -919,13 +1037,47 @@ export default function SimpleCandleChart({
     } catch (error) {
       console.error("Error rendering chart:", error);
     }
-  }, [candles, trade, config, currentPrice, position, currentTick]);
+  }, [candles, trade, config, currentPrice, position, currentTick, hoveredCandle]);
 
   // Resize
   useEffect(() => {
     const handleResize = () => setCandles(c => [...c]);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Mouse move para tooltip
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container || candles.length === 0) {
+      setHoveredCandle(null);
+      setMousePos(null);
+      return;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const padding = { top: 20, right: 70, bottom: 30, left: 10 };
+    const chartWidth = rect.width - padding.left - padding.right;
+
+    // Calcular qué vela está bajo el mouse
+    const candleIndex = Math.floor((x - padding.left) / (chartWidth / candles.length));
+
+    if (candleIndex >= 0 && candleIndex < candles.length) {
+      setHoveredCandle(candles[candleIndex]);
+      setMousePos({ x: e.clientX, y: e.clientY });
+    } else {
+      setHoveredCandle(null);
+      setMousePos(null);
+    }
+  }, [candles]);
+
+  const handleMouseLeave = useCallback(() => {
+    setHoveredCandle(null);
+    setMousePos(null);
   }, []);
 
   // ==================== RENDER ====================
@@ -1077,7 +1229,12 @@ export default function SimpleCandleChart({
 
       {/* Canvas del gráfico */}
       <div ref={containerRef} className="w-full rounded-lg overflow-hidden bg-slate-900">
-        <canvas ref={canvasRef} />
+        <canvas
+          ref={canvasRef}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          className="cursor-crosshair"
+        />
       </div>
 
       {/* Info del trade */}

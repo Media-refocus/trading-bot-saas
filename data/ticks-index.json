@@ -1,0 +1,3942 @@
+{
+  "generated": "2026-02-18T17:07:06.634Z",
+  "totalDays": 492,
+  "days": [
+    {
+      "date": "2024-05-31",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 1,
+      "endLine": 12383,
+      "firstTimestamp": "2024-05-31T20:00:00.247Z",
+      "lastTimestamp": "2024-05-31T21:56:57.128Z"
+    },
+    {
+      "date": "2024-06-02",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 12384,
+      "endLine": 15921,
+      "firstTimestamp": "2024-06-02T23:01:02.256Z",
+      "lastTimestamp": "2024-06-02T23:59:57.534Z"
+    },
+    {
+      "date": "2024-06-03",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 15922,
+      "endLine": 190514,
+      "firstTimestamp": "2024-06-03T00:00:00.146Z",
+      "lastTimestamp": "2024-06-03T23:59:49.736Z"
+    },
+    {
+      "date": "2024-06-04",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 190515,
+      "endLine": 363813,
+      "firstTimestamp": "2024-06-04T00:00:00.108Z",
+      "lastTimestamp": "2024-06-04T23:59:55.439Z"
+    },
+    {
+      "date": "2024-06-05",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 363814,
+      "endLine": 525931,
+      "firstTimestamp": "2024-06-05T00:00:00.325Z",
+      "lastTimestamp": "2024-06-05T23:59:59.939Z"
+    },
+    {
+      "date": "2024-06-06",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 525932,
+      "endLine": 690717,
+      "firstTimestamp": "2024-06-06T00:00:00.152Z",
+      "lastTimestamp": "2024-06-06T23:59:58.522Z"
+    },
+    {
+      "date": "2024-06-07",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 690718,
+      "endLine": 880190,
+      "firstTimestamp": "2024-06-07T00:00:00.251Z",
+      "lastTimestamp": "2024-06-07T21:56:58.636Z"
+    },
+    {
+      "date": "2024-06-09",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 880191,
+      "endLine": 883765,
+      "firstTimestamp": "2024-06-09T23:01:02.186Z",
+      "lastTimestamp": "2024-06-09T23:59:59.775Z"
+    },
+    {
+      "date": "2024-06-10",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 883766,
+      "endLine": 1031988,
+      "firstTimestamp": "2024-06-10T00:00:00.180Z",
+      "lastTimestamp": "2024-06-10T23:59:53.637Z"
+    },
+    {
+      "date": "2024-06-11",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 1031989,
+      "endLine": 1196976,
+      "firstTimestamp": "2024-06-11T00:00:00.142Z",
+      "lastTimestamp": "2024-06-11T23:59:59.999Z"
+    },
+    {
+      "date": "2024-06-12",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 1196977,
+      "endLine": 1363328,
+      "firstTimestamp": "2024-06-12T00:00:00.200Z",
+      "lastTimestamp": "2024-06-12T23:59:59.378Z"
+    },
+    {
+      "date": "2024-06-13",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 1363329,
+      "endLine": 1534111,
+      "firstTimestamp": "2024-06-13T00:00:00.180Z",
+      "lastTimestamp": "2024-06-13T23:59:59.401Z"
+    },
+    {
+      "date": "2024-06-14",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 1534112,
+      "endLine": 1711637,
+      "firstTimestamp": "2024-06-14T00:00:00.309Z",
+      "lastTimestamp": "2024-06-14T21:56:59.429Z"
+    },
+    {
+      "date": "2024-06-16",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 1711638,
+      "endLine": 1713810,
+      "firstTimestamp": "2024-06-16T23:01:04.207Z",
+      "lastTimestamp": "2024-06-16T23:59:56.755Z"
+    },
+    {
+      "date": "2024-06-17",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 1713811,
+      "endLine": 1872339,
+      "firstTimestamp": "2024-06-17T00:00:00.225Z",
+      "lastTimestamp": "2024-06-17T23:59:59.534Z"
+    },
+    {
+      "date": "2024-06-18",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 1872340,
+      "endLine": 2027703,
+      "firstTimestamp": "2024-06-18T00:00:00.107Z",
+      "lastTimestamp": "2024-06-18T23:59:56.443Z"
+    },
+    {
+      "date": "2024-06-19",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 2027704,
+      "endLine": 2128210,
+      "firstTimestamp": "2024-06-19T00:00:00.172Z",
+      "lastTimestamp": "2024-06-19T23:59:51.292Z"
+    },
+    {
+      "date": "2024-06-20",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 2128211,
+      "endLine": 2286959,
+      "firstTimestamp": "2024-06-20T00:00:00.108Z",
+      "lastTimestamp": "2024-06-20T23:59:50.288Z"
+    },
+    {
+      "date": "2024-06-21",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 2286960,
+      "endLine": 2448015,
+      "firstTimestamp": "2024-06-21T00:00:00.397Z",
+      "lastTimestamp": "2024-06-21T21:56:59.810Z"
+    },
+    {
+      "date": "2024-06-23",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 2448016,
+      "endLine": 2450209,
+      "firstTimestamp": "2024-06-23T23:01:02.177Z",
+      "lastTimestamp": "2024-06-23T23:59:58.230Z"
+    },
+    {
+      "date": "2024-06-24",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 2450210,
+      "endLine": 2607613,
+      "firstTimestamp": "2024-06-24T00:00:00.135Z",
+      "lastTimestamp": "2024-06-24T23:59:57.645Z"
+    },
+    {
+      "date": "2024-06-25",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 2607614,
+      "endLine": 2763480,
+      "firstTimestamp": "2024-06-25T00:00:00.051Z",
+      "lastTimestamp": "2024-06-25T23:59:58.696Z"
+    },
+    {
+      "date": "2024-06-26",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 2763481,
+      "endLine": 2927769,
+      "firstTimestamp": "2024-06-26T00:00:00.102Z",
+      "lastTimestamp": "2024-06-26T23:59:59.896Z"
+    },
+    {
+      "date": "2024-06-27",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 2927770,
+      "endLine": 3079893,
+      "firstTimestamp": "2024-06-27T00:00:00.100Z",
+      "lastTimestamp": "2024-06-27T23:59:57.678Z"
+    },
+    {
+      "date": "2024-06-28",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 3079894,
+      "endLine": 3237530,
+      "firstTimestamp": "2024-06-28T00:00:00.283Z",
+      "lastTimestamp": "2024-06-28T21:56:59.754Z"
+    },
+    {
+      "date": "2024-06-30",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 3237531,
+      "endLine": 3239317,
+      "firstTimestamp": "2024-06-30T23:01:02.117Z",
+      "lastTimestamp": "2024-06-30T23:59:59.165Z"
+    },
+    {
+      "date": "2024-07-01",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 3239318,
+      "endLine": 3392833,
+      "firstTimestamp": "2024-07-01T00:00:00.182Z",
+      "lastTimestamp": "2024-07-01T23:59:58.317Z"
+    },
+    {
+      "date": "2024-07-02",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 3392834,
+      "endLine": 3540775,
+      "firstTimestamp": "2024-07-02T00:00:00.120Z",
+      "lastTimestamp": "2024-07-02T23:59:59.068Z"
+    },
+    {
+      "date": "2024-07-03",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 3540776,
+      "endLine": 3687936,
+      "firstTimestamp": "2024-07-03T00:00:00.074Z",
+      "lastTimestamp": "2024-07-03T23:59:59.794Z"
+    },
+    {
+      "date": "2024-07-04",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 3687937,
+      "endLine": 3786682,
+      "firstTimestamp": "2024-07-04T00:00:00.192Z",
+      "lastTimestamp": "2024-07-04T23:59:57.626Z"
+    },
+    {
+      "date": "2024-07-05",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 3786683,
+      "endLine": 3942747,
+      "firstTimestamp": "2024-07-05T00:00:00.138Z",
+      "lastTimestamp": "2024-07-05T21:56:58.900Z"
+    },
+    {
+      "date": "2024-07-07",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 3942748,
+      "endLine": 3945304,
+      "firstTimestamp": "2024-07-07T23:01:01.333Z",
+      "lastTimestamp": "2024-07-07T23:59:59.957Z"
+    },
+    {
+      "date": "2024-07-08",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 3945305,
+      "endLine": 4107319,
+      "firstTimestamp": "2024-07-08T00:00:00.160Z",
+      "lastTimestamp": "2024-07-08T23:59:57.661Z"
+    },
+    {
+      "date": "2024-07-09",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 4107320,
+      "endLine": 4263655,
+      "firstTimestamp": "2024-07-09T00:00:00.265Z",
+      "lastTimestamp": "2024-07-09T23:59:59.889Z"
+    },
+    {
+      "date": "2024-07-10",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 4263656,
+      "endLine": 4402368,
+      "firstTimestamp": "2024-07-10T00:00:00.097Z",
+      "lastTimestamp": "2024-07-10T23:59:53.651Z"
+    },
+    {
+      "date": "2024-07-11",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 4402369,
+      "endLine": 4560330,
+      "firstTimestamp": "2024-07-11T00:00:00.256Z",
+      "lastTimestamp": "2024-07-11T23:59:59.954Z"
+    },
+    {
+      "date": "2024-07-12",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 4560331,
+      "endLine": 4722106,
+      "firstTimestamp": "2024-07-12T00:00:00.269Z",
+      "lastTimestamp": "2024-07-12T21:56:58.138Z"
+    },
+    {
+      "date": "2024-07-14",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 4722107,
+      "endLine": 4726180,
+      "firstTimestamp": "2024-07-14T23:01:01.218Z",
+      "lastTimestamp": "2024-07-14T23:59:58.982Z"
+    },
+    {
+      "date": "2024-07-15",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 4726181,
+      "endLine": 4891724,
+      "firstTimestamp": "2024-07-15T00:00:00.092Z",
+      "lastTimestamp": "2024-07-15T23:59:53.365Z"
+    },
+    {
+      "date": "2024-07-16",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 4891725,
+      "endLine": 5063516,
+      "firstTimestamp": "2024-07-16T00:00:00.073Z",
+      "lastTimestamp": "2024-07-16T23:59:58.087Z"
+    },
+    {
+      "date": "2024-07-17",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 5063517,
+      "endLine": 5258606,
+      "firstTimestamp": "2024-07-17T00:00:00.088Z",
+      "lastTimestamp": "2024-07-17T23:59:59.916Z"
+    },
+    {
+      "date": "2024-07-18",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 5258607,
+      "endLine": 5436063,
+      "firstTimestamp": "2024-07-18T00:00:00.118Z",
+      "lastTimestamp": "2024-07-18T23:59:56.821Z"
+    },
+    {
+      "date": "2024-07-19",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 5436064,
+      "endLine": 5617672,
+      "firstTimestamp": "2024-07-19T00:00:00.139Z",
+      "lastTimestamp": "2024-07-19T21:56:57.849Z"
+    },
+    {
+      "date": "2024-07-21",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 5617673,
+      "endLine": 5621111,
+      "firstTimestamp": "2024-07-21T23:01:01.561Z",
+      "lastTimestamp": "2024-07-21T23:59:58.686Z"
+    },
+    {
+      "date": "2024-07-22",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 5621112,
+      "endLine": 5787550,
+      "firstTimestamp": "2024-07-22T00:00:00.098Z",
+      "lastTimestamp": "2024-07-22T23:59:56.774Z"
+    },
+    {
+      "date": "2024-07-23",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 5787551,
+      "endLine": 5951649,
+      "firstTimestamp": "2024-07-23T00:00:00.080Z",
+      "lastTimestamp": "2024-07-23T23:59:59.993Z"
+    },
+    {
+      "date": "2024-07-24",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 5951650,
+      "endLine": 6126675,
+      "firstTimestamp": "2024-07-24T00:00:00.199Z",
+      "lastTimestamp": "2024-07-24T23:59:59.005Z"
+    },
+    {
+      "date": "2024-07-25",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 6126676,
+      "endLine": 6338850,
+      "firstTimestamp": "2024-07-25T00:00:00.035Z",
+      "lastTimestamp": "2024-07-25T23:59:38.444Z"
+    },
+    {
+      "date": "2024-07-26",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 6338851,
+      "endLine": 6511509,
+      "firstTimestamp": "2024-07-26T00:00:00.067Z",
+      "lastTimestamp": "2024-07-26T21:56:59.117Z"
+    },
+    {
+      "date": "2024-07-28",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 6511510,
+      "endLine": 6516368,
+      "firstTimestamp": "2024-07-28T23:00:00.512Z",
+      "lastTimestamp": "2024-07-28T23:59:58.182Z"
+    },
+    {
+      "date": "2024-07-29",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 6516369,
+      "endLine": 6688081,
+      "firstTimestamp": "2024-07-29T00:00:00.194Z",
+      "lastTimestamp": "2024-07-29T23:59:59.722Z"
+    },
+    {
+      "date": "2024-07-30",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 6688082,
+      "endLine": 6862406,
+      "firstTimestamp": "2024-07-30T00:00:00.127Z",
+      "lastTimestamp": "2024-07-30T23:59:59.759Z"
+    },
+    {
+      "date": "2024-07-31",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 6862407,
+      "endLine": 7056372,
+      "firstTimestamp": "2024-07-31T00:00:00.059Z",
+      "lastTimestamp": "2024-07-31T23:59:57.880Z"
+    },
+    {
+      "date": "2024-08-01",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 7056373,
+      "endLine": 7268980,
+      "firstTimestamp": "2024-08-01T00:00:00.296Z",
+      "lastTimestamp": "2024-08-01T23:59:58.780Z"
+    },
+    {
+      "date": "2024-08-02",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 7268981,
+      "endLine": 7483259,
+      "firstTimestamp": "2024-08-02T00:00:00.283Z",
+      "lastTimestamp": "2024-08-02T21:56:59.849Z"
+    },
+    {
+      "date": "2024-08-04",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 7483260,
+      "endLine": 7488958,
+      "firstTimestamp": "2024-08-04T23:00:00.321Z",
+      "lastTimestamp": "2024-08-04T23:59:59.336Z"
+    },
+    {
+      "date": "2024-08-05",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 7488959,
+      "endLine": 7749258,
+      "firstTimestamp": "2024-08-05T00:00:00.158Z",
+      "lastTimestamp": "2024-08-05T23:59:58.648Z"
+    },
+    {
+      "date": "2024-08-06",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 7749259,
+      "endLine": 7971481,
+      "firstTimestamp": "2024-08-06T00:00:00.154Z",
+      "lastTimestamp": "2024-08-06T23:59:59.135Z"
+    },
+    {
+      "date": "2024-08-07",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 7971482,
+      "endLine": 8166386,
+      "firstTimestamp": "2024-08-07T00:00:00.137Z",
+      "lastTimestamp": "2024-08-07T23:59:59.528Z"
+    },
+    {
+      "date": "2024-08-08",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 8166387,
+      "endLine": 8359382,
+      "firstTimestamp": "2024-08-08T00:00:00.144Z",
+      "lastTimestamp": "2024-08-08T23:59:57.113Z"
+    },
+    {
+      "date": "2024-08-09",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 8359383,
+      "endLine": 8527895,
+      "firstTimestamp": "2024-08-09T00:00:00.119Z",
+      "lastTimestamp": "2024-08-09T21:56:59.915Z"
+    },
+    {
+      "date": "2024-08-11",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 8527896,
+      "endLine": 8531113,
+      "firstTimestamp": "2024-08-11T23:00:00.170Z",
+      "lastTimestamp": "2024-08-11T23:59:58.538Z"
+    },
+    {
+      "date": "2024-08-12",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 8531114,
+      "endLine": 8686242,
+      "firstTimestamp": "2024-08-12T00:00:00.148Z",
+      "lastTimestamp": "2024-08-12T23:59:59.826Z"
+    },
+    {
+      "date": "2024-08-13",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 8686243,
+      "endLine": 8846046,
+      "firstTimestamp": "2024-08-13T00:00:00.132Z",
+      "lastTimestamp": "2024-08-13T23:59:57.211Z"
+    },
+    {
+      "date": "2024-08-14",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 8846047,
+      "endLine": 9014042,
+      "firstTimestamp": "2024-08-14T00:00:00.111Z",
+      "lastTimestamp": "2024-08-14T23:59:56.432Z"
+    },
+    {
+      "date": "2024-08-15",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 9014043,
+      "endLine": 9181178,
+      "firstTimestamp": "2024-08-15T00:00:00.140Z",
+      "lastTimestamp": "2024-08-15T23:59:59.794Z"
+    },
+    {
+      "date": "2024-08-16",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 9181179,
+      "endLine": 9351539,
+      "firstTimestamp": "2024-08-16T00:00:00.095Z",
+      "lastTimestamp": "2024-08-16T21:56:59.344Z"
+    },
+    {
+      "date": "2024-08-18",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 9351540,
+      "endLine": 9356457,
+      "firstTimestamp": "2024-08-18T23:00:00.336Z",
+      "lastTimestamp": "2024-08-18T23:59:55.917Z"
+    },
+    {
+      "date": "2024-08-19",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 9356458,
+      "endLine": 9526201,
+      "firstTimestamp": "2024-08-19T00:00:00.130Z",
+      "lastTimestamp": "2024-08-19T23:59:57.034Z"
+    },
+    {
+      "date": "2024-08-20",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 9526202,
+      "endLine": 9696198,
+      "firstTimestamp": "2024-08-20T00:00:00.038Z",
+      "lastTimestamp": "2024-08-20T23:59:56.912Z"
+    },
+    {
+      "date": "2024-08-21",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 9696199,
+      "endLine": 9861173,
+      "firstTimestamp": "2024-08-21T00:00:00.123Z",
+      "lastTimestamp": "2024-08-21T23:59:58.296Z"
+    },
+    {
+      "date": "2024-08-22",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 9861174,
+      "endLine": 10029733,
+      "firstTimestamp": "2024-08-22T00:00:00.107Z",
+      "lastTimestamp": "2024-08-22T23:59:58.368Z"
+    },
+    {
+      "date": "2024-08-23",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 10029734,
+      "endLine": 10192526,
+      "firstTimestamp": "2024-08-23T00:00:00.069Z",
+      "lastTimestamp": "2024-08-23T21:56:58.423Z"
+    },
+    {
+      "date": "2024-08-25",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 10192527,
+      "endLine": 10194874,
+      "firstTimestamp": "2024-08-25T23:00:45.336Z",
+      "lastTimestamp": "2024-08-25T23:59:59.110Z"
+    },
+    {
+      "date": "2024-08-26",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 10194875,
+      "endLine": 10364028,
+      "firstTimestamp": "2024-08-26T00:00:00.211Z",
+      "lastTimestamp": "2024-08-26T23:59:58.178Z"
+    },
+    {
+      "date": "2024-08-27",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 10364029,
+      "endLine": 10531785,
+      "firstTimestamp": "2024-08-27T00:00:00.196Z",
+      "lastTimestamp": "2024-08-27T23:59:52.797Z"
+    },
+    {
+      "date": "2024-08-28",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 10531786,
+      "endLine": 10706473,
+      "firstTimestamp": "2024-08-28T00:00:00.106Z",
+      "lastTimestamp": "2024-08-28T23:59:58.209Z"
+    },
+    {
+      "date": "2024-08-29",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 10706474,
+      "endLine": 10877833,
+      "firstTimestamp": "2024-08-29T00:00:00.313Z",
+      "lastTimestamp": "2024-08-29T23:59:58.507Z"
+    },
+    {
+      "date": "2024-08-30",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 10877834,
+      "endLine": 11044855,
+      "firstTimestamp": "2024-08-30T00:00:00.205Z",
+      "lastTimestamp": "2024-08-30T21:56:59.781Z"
+    },
+    {
+      "date": "2024-09-01",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 11044856,
+      "endLine": 11046785,
+      "firstTimestamp": "2024-09-01T23:00:45.257Z",
+      "lastTimestamp": "2024-09-01T23:59:58.194Z"
+    },
+    {
+      "date": "2024-09-02",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 11046786,
+      "endLine": 11155378,
+      "firstTimestamp": "2024-09-02T00:00:00.102Z",
+      "lastTimestamp": "2024-09-02T23:59:48.467Z"
+    },
+    {
+      "date": "2024-09-03",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 11155379,
+      "endLine": 11323360,
+      "firstTimestamp": "2024-09-03T00:00:00.090Z",
+      "lastTimestamp": "2024-09-03T23:59:59.285Z"
+    },
+    {
+      "date": "2024-09-04",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 11323361,
+      "endLine": 11483397,
+      "firstTimestamp": "2024-09-04T00:00:00.084Z",
+      "lastTimestamp": "2024-09-04T23:59:59.262Z"
+    },
+    {
+      "date": "2024-09-05",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 11483398,
+      "endLine": 11635988,
+      "firstTimestamp": "2024-09-05T00:00:00.269Z",
+      "lastTimestamp": "2024-09-05T23:59:58.186Z"
+    },
+    {
+      "date": "2024-09-06",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 11635989,
+      "endLine": 11798702,
+      "firstTimestamp": "2024-09-06T00:00:00.302Z",
+      "lastTimestamp": "2024-09-06T21:56:58.980Z"
+    },
+    {
+      "date": "2024-09-08",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 11798703,
+      "endLine": 11801386,
+      "firstTimestamp": "2024-09-08T23:00:45.134Z",
+      "lastTimestamp": "2024-09-08T23:59:58.641Z"
+    },
+    {
+      "date": "2024-09-09",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 11801387,
+      "endLine": 11960459,
+      "firstTimestamp": "2024-09-09T00:00:00.155Z",
+      "lastTimestamp": "2024-09-09T23:59:58.366Z"
+    },
+    {
+      "date": "2024-09-10",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 11960460,
+      "endLine": 12111203,
+      "firstTimestamp": "2024-09-10T00:00:00.070Z",
+      "lastTimestamp": "2024-09-10T23:59:57.437Z"
+    },
+    {
+      "date": "2024-09-11",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 12111204,
+      "endLine": 12278192,
+      "firstTimestamp": "2024-09-11T00:00:00.147Z",
+      "lastTimestamp": "2024-09-11T23:59:56.952Z"
+    },
+    {
+      "date": "2024-09-12",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 12278193,
+      "endLine": 12439801,
+      "firstTimestamp": "2024-09-12T00:00:00.257Z",
+      "lastTimestamp": "2024-09-12T23:59:56.780Z"
+    },
+    {
+      "date": "2024-09-13",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 12439802,
+      "endLine": 12603899,
+      "firstTimestamp": "2024-09-13T00:00:00.091Z",
+      "lastTimestamp": "2024-09-13T21:56:58.430Z"
+    },
+    {
+      "date": "2024-09-15",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 12603900,
+      "endLine": 12607172,
+      "firstTimestamp": "2024-09-15T23:00:45.086Z",
+      "lastTimestamp": "2024-09-15T23:59:59.515Z"
+    },
+    {
+      "date": "2024-09-16",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 12607173,
+      "endLine": 12744695,
+      "firstTimestamp": "2024-09-16T00:00:00.125Z",
+      "lastTimestamp": "2024-09-16T23:59:58.465Z"
+    },
+    {
+      "date": "2024-09-17",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 12744696,
+      "endLine": 12892653,
+      "firstTimestamp": "2024-09-17T00:00:00.063Z",
+      "lastTimestamp": "2024-09-17T23:59:53.440Z"
+    },
+    {
+      "date": "2024-09-18",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 12892654,
+      "endLine": 13068289,
+      "firstTimestamp": "2024-09-18T00:00:00.149Z",
+      "lastTimestamp": "2024-09-18T23:59:59.701Z"
+    },
+    {
+      "date": "2024-09-19",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 13068290,
+      "endLine": 13251661,
+      "firstTimestamp": "2024-09-19T00:00:00.211Z",
+      "lastTimestamp": "2024-09-19T23:59:57.300Z"
+    },
+    {
+      "date": "2024-09-20",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 13251662,
+      "endLine": 13418691,
+      "firstTimestamp": "2024-09-20T00:00:00.205Z",
+      "lastTimestamp": "2024-09-20T21:56:53.803Z"
+    },
+    {
+      "date": "2024-09-22",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 13418692,
+      "endLine": 13421884,
+      "firstTimestamp": "2024-09-22T23:00:45.276Z",
+      "lastTimestamp": "2024-09-22T23:59:59.973Z"
+    },
+    {
+      "date": "2024-09-23",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 13421885,
+      "endLine": 13574083,
+      "firstTimestamp": "2024-09-23T00:00:00.174Z",
+      "lastTimestamp": "2024-09-23T23:59:53.167Z"
+    },
+    {
+      "date": "2024-09-24",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 13574084,
+      "endLine": 13753861,
+      "firstTimestamp": "2024-09-24T00:00:00.192Z",
+      "lastTimestamp": "2024-09-24T23:59:59.867Z"
+    },
+    {
+      "date": "2024-09-25",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 13753862,
+      "endLine": 13924046,
+      "firstTimestamp": "2024-09-25T00:00:00.168Z",
+      "lastTimestamp": "2024-09-25T23:59:57.249Z"
+    },
+    {
+      "date": "2024-09-26",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 13924047,
+      "endLine": 14100087,
+      "firstTimestamp": "2024-09-26T00:00:00.251Z",
+      "lastTimestamp": "2024-09-26T23:59:59.865Z"
+    },
+    {
+      "date": "2024-09-27",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 14100088,
+      "endLine": 14280085,
+      "firstTimestamp": "2024-09-27T00:00:00.162Z",
+      "lastTimestamp": "2024-09-27T21:56:59.925Z"
+    },
+    {
+      "date": "2024-09-29",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 14280086,
+      "endLine": 14284273,
+      "firstTimestamp": "2024-09-29T23:00:45.096Z",
+      "lastTimestamp": "2024-09-29T23:59:59.108Z"
+    },
+    {
+      "date": "2024-09-30",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 14284274,
+      "endLine": 14461110,
+      "firstTimestamp": "2024-09-30T00:00:00.116Z",
+      "lastTimestamp": "2024-09-30T23:59:55.233Z"
+    },
+    {
+      "date": "2024-10-01",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 14461111,
+      "endLine": 14623468,
+      "firstTimestamp": "2024-10-01T00:00:00.144Z",
+      "lastTimestamp": "2024-10-01T23:59:58.713Z"
+    },
+    {
+      "date": "2024-10-02",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 14623469,
+      "endLine": 14780842,
+      "firstTimestamp": "2024-10-02T00:00:00.120Z",
+      "lastTimestamp": "2024-10-02T23:59:56.812Z"
+    },
+    {
+      "date": "2024-10-03",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 14780843,
+      "endLine": 14945366,
+      "firstTimestamp": "2024-10-03T00:00:00.125Z",
+      "lastTimestamp": "2024-10-03T23:59:51.787Z"
+    },
+    {
+      "date": "2024-10-04",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 14945367,
+      "endLine": 15102962,
+      "firstTimestamp": "2024-10-04T00:00:00.101Z",
+      "lastTimestamp": "2024-10-04T21:56:59.993Z"
+    },
+    {
+      "date": "2024-10-06",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 15102963,
+      "endLine": 15106469,
+      "firstTimestamp": "2024-10-06T23:00:45.277Z",
+      "lastTimestamp": "2024-10-06T23:59:59.806Z"
+    },
+    {
+      "date": "2024-10-07",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 15106470,
+      "endLine": 15270869,
+      "firstTimestamp": "2024-10-07T00:00:00.110Z",
+      "lastTimestamp": "2024-10-07T23:59:59.731Z"
+    },
+    {
+      "date": "2024-10-08",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 15270870,
+      "endLine": 15467278,
+      "firstTimestamp": "2024-10-08T00:00:00.142Z",
+      "lastTimestamp": "2024-10-08T23:59:59.319Z"
+    },
+    {
+      "date": "2024-10-09",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 15467279,
+      "endLine": 15636856,
+      "firstTimestamp": "2024-10-09T00:00:00.227Z",
+      "lastTimestamp": "2024-10-09T23:59:58.570Z"
+    },
+    {
+      "date": "2024-10-10",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 15636857,
+      "endLine": 15805465,
+      "firstTimestamp": "2024-10-10T00:00:00.377Z",
+      "lastTimestamp": "2024-10-10T23:59:58.504Z"
+    },
+    {
+      "date": "2024-10-11",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 15805466,
+      "endLine": 15950876,
+      "firstTimestamp": "2024-10-11T00:00:00.411Z",
+      "lastTimestamp": "2024-10-11T21:56:58.303Z"
+    },
+    {
+      "date": "2024-10-13",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 15950877,
+      "endLine": 15954833,
+      "firstTimestamp": "2024-10-13T23:00:45.362Z",
+      "lastTimestamp": "2024-10-13T23:59:56.668Z"
+    },
+    {
+      "date": "2024-10-14",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 15954834,
+      "endLine": 16092728,
+      "firstTimestamp": "2024-10-14T00:00:00.176Z",
+      "lastTimestamp": "2024-10-14T23:59:55.510Z"
+    },
+    {
+      "date": "2024-10-15",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 16092729,
+      "endLine": 16252547,
+      "firstTimestamp": "2024-10-15T00:00:00.219Z",
+      "lastTimestamp": "2024-10-15T23:59:57.249Z"
+    },
+    {
+      "date": "2024-10-16",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 16252548,
+      "endLine": 16403284,
+      "firstTimestamp": "2024-10-16T00:00:00.254Z",
+      "lastTimestamp": "2024-10-16T23:59:57.861Z"
+    },
+    {
+      "date": "2024-10-17",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 16403285,
+      "endLine": 16566285,
+      "firstTimestamp": "2024-10-17T00:00:00.166Z",
+      "lastTimestamp": "2024-10-17T23:59:57.658Z"
+    },
+    {
+      "date": "2024-10-18",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 16566286,
+      "endLine": 16728006,
+      "firstTimestamp": "2024-10-18T00:00:00.364Z",
+      "lastTimestamp": "2024-10-18T21:56:59.464Z"
+    },
+    {
+      "date": "2024-10-20",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 16728007,
+      "endLine": 16731102,
+      "firstTimestamp": "2024-10-20T23:00:45.327Z",
+      "lastTimestamp": "2024-10-20T23:59:59.962Z"
+    },
+    {
+      "date": "2024-10-21",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 16731103,
+      "endLine": 16904811,
+      "firstTimestamp": "2024-10-21T00:00:00.161Z",
+      "lastTimestamp": "2024-10-21T23:59:44.547Z"
+    },
+    {
+      "date": "2024-10-22",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 16904812,
+      "endLine": 17068223,
+      "firstTimestamp": "2024-10-22T00:00:00.564Z",
+      "lastTimestamp": "2024-10-22T23:59:55.949Z"
+    },
+    {
+      "date": "2024-10-23",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 17068224,
+      "endLine": 17240767,
+      "firstTimestamp": "2024-10-23T00:00:00.453Z",
+      "lastTimestamp": "2024-10-23T23:59:57.746Z"
+    },
+    {
+      "date": "2024-10-24",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 17240768,
+      "endLine": 17406158,
+      "firstTimestamp": "2024-10-24T00:00:00.451Z",
+      "lastTimestamp": "2024-10-24T23:59:56.138Z"
+    },
+    {
+      "date": "2024-10-25",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 17406159,
+      "endLine": 17561053,
+      "firstTimestamp": "2024-10-25T00:00:00.460Z",
+      "lastTimestamp": "2024-10-25T21:56:58.477Z"
+    },
+    {
+      "date": "2024-10-28",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 17561054,
+      "endLine": 17715412,
+      "firstTimestamp": "2024-10-28T00:00:45.176Z",
+      "lastTimestamp": "2024-10-28T22:57:59.494Z"
+    },
+    {
+      "date": "2024-10-29",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 17715413,
+      "endLine": 17884190,
+      "firstTimestamp": "2024-10-29T00:00:45.690Z",
+      "lastTimestamp": "2024-10-29T22:57:59.789Z"
+    },
+    {
+      "date": "2024-10-30",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 17884191,
+      "endLine": 18047993,
+      "firstTimestamp": "2024-10-30T00:00:45.541Z",
+      "lastTimestamp": "2024-10-30T22:57:59.719Z"
+    },
+    {
+      "date": "2024-10-31",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 18047994,
+      "endLine": 18212093,
+      "firstTimestamp": "2024-10-31T00:00:45.517Z",
+      "lastTimestamp": "2024-10-31T22:57:59.362Z"
+    },
+    {
+      "date": "2024-11-01",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 18212094,
+      "endLine": 18378750,
+      "firstTimestamp": "2024-11-01T00:00:45.643Z",
+      "lastTimestamp": "2024-11-01T22:56:59.843Z"
+    },
+    {
+      "date": "2024-11-04",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 18378751,
+      "endLine": 18544066,
+      "firstTimestamp": "2024-11-04T00:00:45.356Z",
+      "lastTimestamp": "2024-11-04T22:57:57.242Z"
+    },
+    {
+      "date": "2024-11-05",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 18544067,
+      "endLine": 18706290,
+      "firstTimestamp": "2024-11-05T00:00:45.292Z",
+      "lastTimestamp": "2024-11-05T22:57:58.134Z"
+    },
+    {
+      "date": "2024-11-06",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 18706291,
+      "endLine": 18940875,
+      "firstTimestamp": "2024-11-06T00:00:45.295Z",
+      "lastTimestamp": "2024-11-06T22:57:58.246Z"
+    },
+    {
+      "date": "2024-11-07",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 18940876,
+      "endLine": 19133582,
+      "firstTimestamp": "2024-11-07T00:00:45.236Z",
+      "lastTimestamp": "2024-11-07T22:57:57.008Z"
+    },
+    {
+      "date": "2024-11-08",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 19133583,
+      "endLine": 19311731,
+      "firstTimestamp": "2024-11-08T00:00:45.197Z",
+      "lastTimestamp": "2024-11-08T22:56:59.808Z"
+    },
+    {
+      "date": "2024-11-11",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 19311732,
+      "endLine": 19485082,
+      "firstTimestamp": "2024-11-11T00:00:44.951Z",
+      "lastTimestamp": "2024-11-11T22:57:54.829Z"
+    },
+    {
+      "date": "2024-11-12",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 19485083,
+      "endLine": 19669897,
+      "firstTimestamp": "2024-11-12T00:00:45.258Z",
+      "lastTimestamp": "2024-11-12T22:57:58.587Z"
+    },
+    {
+      "date": "2024-11-13",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 19669898,
+      "endLine": 19848551,
+      "firstTimestamp": "2024-11-13T00:00:45.344Z",
+      "lastTimestamp": "2024-11-13T22:57:57.844Z"
+    },
+    {
+      "date": "2024-11-14",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 19848552,
+      "endLine": 20048632,
+      "firstTimestamp": "2024-11-14T00:00:45.061Z",
+      "lastTimestamp": "2024-11-14T22:57:58.408Z"
+    },
+    {
+      "date": "2024-11-15",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 20048633,
+      "endLine": 20239679,
+      "firstTimestamp": "2024-11-15T00:00:45.007Z",
+      "lastTimestamp": "2024-11-15T22:56:59.845Z"
+    },
+    {
+      "date": "2024-11-18",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 20239680,
+      "endLine": 20417108,
+      "firstTimestamp": "2024-11-18T00:00:45.303Z",
+      "lastTimestamp": "2024-11-18T22:57:58.188Z"
+    },
+    {
+      "date": "2024-11-19",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 20417109,
+      "endLine": 20598210,
+      "firstTimestamp": "2024-11-19T00:00:45.347Z",
+      "lastTimestamp": "2024-11-19T22:57:59.358Z"
+    },
+    {
+      "date": "2024-11-20",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 20598211,
+      "endLine": 20770610,
+      "firstTimestamp": "2024-11-20T00:00:45.367Z",
+      "lastTimestamp": "2024-11-20T22:57:58.713Z"
+    },
+    {
+      "date": "2024-11-21",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 20770611,
+      "endLine": 20937503,
+      "firstTimestamp": "2024-11-21T00:00:45.030Z",
+      "lastTimestamp": "2024-11-21T22:57:59.405Z"
+    },
+    {
+      "date": "2024-11-22",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 20937504,
+      "endLine": 21117268,
+      "firstTimestamp": "2024-11-22T00:00:45.058Z",
+      "lastTimestamp": "2024-11-22T22:56:59.303Z"
+    },
+    {
+      "date": "2024-11-25",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 21117269,
+      "endLine": 21312797,
+      "firstTimestamp": "2024-11-25T00:00:45.339Z",
+      "lastTimestamp": "2024-11-25T22:57:58.775Z"
+    },
+    {
+      "date": "2024-11-26",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 21312798,
+      "endLine": 21487533,
+      "firstTimestamp": "2024-11-26T00:00:45.297Z",
+      "lastTimestamp": "2024-11-26T22:57:55.596Z"
+    },
+    {
+      "date": "2024-11-27",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 21487534,
+      "endLine": 21645029,
+      "firstTimestamp": "2024-11-27T00:00:45.299Z",
+      "lastTimestamp": "2024-11-27T22:57:58.742Z"
+    },
+    {
+      "date": "2024-11-28",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 21645030,
+      "endLine": 21755336,
+      "firstTimestamp": "2024-11-28T00:00:45.063Z",
+      "lastTimestamp": "2024-11-28T20:29:59.865Z"
+    },
+    {
+      "date": "2024-11-29",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 21755337,
+      "endLine": 21907859,
+      "firstTimestamp": "2024-11-29T00:00:45.279Z",
+      "lastTimestamp": "2024-11-29T20:44:59.784Z"
+    },
+    {
+      "date": "2024-12-02",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 21907860,
+      "endLine": 22095393,
+      "firstTimestamp": "2024-12-02T00:00:45.283Z",
+      "lastTimestamp": "2024-12-02T22:57:59.077Z"
+    },
+    {
+      "date": "2024-12-03",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 22095394,
+      "endLine": 22264249,
+      "firstTimestamp": "2024-12-03T00:00:45.256Z",
+      "lastTimestamp": "2024-12-03T22:57:55.881Z"
+    },
+    {
+      "date": "2024-12-04",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 22264250,
+      "endLine": 22436845,
+      "firstTimestamp": "2024-12-04T00:00:45.300Z",
+      "lastTimestamp": "2024-12-04T22:57:58.713Z"
+    },
+    {
+      "date": "2024-12-05",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 22436846,
+      "endLine": 22596765,
+      "firstTimestamp": "2024-12-05T00:00:45.481Z",
+      "lastTimestamp": "2024-12-05T22:57:59.023Z"
+    },
+    {
+      "date": "2024-12-06",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 22596766,
+      "endLine": 22765261,
+      "firstTimestamp": "2024-12-06T00:00:45.448Z",
+      "lastTimestamp": "2024-12-06T22:56:59.275Z"
+    },
+    {
+      "date": "2024-12-09",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 22765262,
+      "endLine": 22946544,
+      "firstTimestamp": "2024-12-09T00:00:45.125Z",
+      "lastTimestamp": "2024-12-09T22:57:59.700Z"
+    },
+    {
+      "date": "2024-12-10",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 22946545,
+      "endLine": 23117277,
+      "firstTimestamp": "2024-12-10T00:00:45.321Z",
+      "lastTimestamp": "2024-12-10T22:57:55.925Z"
+    },
+    {
+      "date": "2024-12-11",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 23117278,
+      "endLine": 23317625,
+      "firstTimestamp": "2024-12-11T00:00:45.353Z",
+      "lastTimestamp": "2024-12-11T22:57:59.024Z"
+    },
+    {
+      "date": "2024-12-12",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 23317626,
+      "endLine": 23495174,
+      "firstTimestamp": "2024-12-12T00:00:45.452Z",
+      "lastTimestamp": "2024-12-12T22:57:59.558Z"
+    },
+    {
+      "date": "2024-12-13",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 23495175,
+      "endLine": 23677750,
+      "firstTimestamp": "2024-12-13T00:00:45.116Z",
+      "lastTimestamp": "2024-12-13T22:56:57.167Z"
+    },
+    {
+      "date": "2024-12-16",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 23677751,
+      "endLine": 23825121,
+      "firstTimestamp": "2024-12-16T00:00:45.096Z",
+      "lastTimestamp": "2024-12-16T22:57:59.636Z"
+    },
+    {
+      "date": "2024-12-17",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 23825122,
+      "endLine": 23985940,
+      "firstTimestamp": "2024-12-17T00:00:45.106Z",
+      "lastTimestamp": "2024-12-17T22:57:59.932Z"
+    },
+    {
+      "date": "2024-12-18",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 23985941,
+      "endLine": 24153354,
+      "firstTimestamp": "2024-12-18T00:00:45.076Z",
+      "lastTimestamp": "2024-12-18T22:57:59.830Z"
+    },
+    {
+      "date": "2024-12-19",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 24153355,
+      "endLine": 24336765,
+      "firstTimestamp": "2024-12-19T00:00:45.132Z",
+      "lastTimestamp": "2024-12-19T22:57:57.711Z"
+    },
+    {
+      "date": "2024-12-20",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 24336766,
+      "endLine": 24500915,
+      "firstTimestamp": "2024-12-20T00:00:45.216Z",
+      "lastTimestamp": "2024-12-20T22:56:59.276Z"
+    },
+    {
+      "date": "2024-12-23",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 24500916,
+      "endLine": 24645796,
+      "firstTimestamp": "2024-12-23T00:00:45.262Z",
+      "lastTimestamp": "2024-12-23T22:57:59.451Z"
+    },
+    {
+      "date": "2024-12-24",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 24645797,
+      "endLine": 24755776,
+      "firstTimestamp": "2024-12-24T00:00:45.316Z",
+      "lastTimestamp": "2024-12-24T19:44:59.403Z"
+    },
+    {
+      "date": "2024-12-26",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 24755777,
+      "endLine": 24879304,
+      "firstTimestamp": "2024-12-26T00:00:45.448Z",
+      "lastTimestamp": "2024-12-26T22:57:59.277Z"
+    },
+    {
+      "date": "2024-12-27",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 24879305,
+      "endLine": 25018136,
+      "firstTimestamp": "2024-12-27T00:00:45.257Z",
+      "lastTimestamp": "2024-12-27T22:56:59.196Z"
+    },
+    {
+      "date": "2024-12-30",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 25018137,
+      "endLine": 25166184,
+      "firstTimestamp": "2024-12-30T00:00:45.067Z",
+      "lastTimestamp": "2024-12-30T22:57:59.563Z"
+    },
+    {
+      "date": "2024-12-31",
+      "file": "XAUUSD_2024.csv.gz",
+      "startLine": 25166185,
+      "endLine": 25302767,
+      "firstTimestamp": "2024-12-31T00:00:45.285Z",
+      "lastTimestamp": "2024-12-31T22:57:59.792Z"
+    },
+    {
+      "date": "2025-01-02",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 1,
+      "endLine": 165998,
+      "firstTimestamp": "2025-01-02T00:00:45.162Z",
+      "lastTimestamp": "2025-01-02T22:57:59.482Z"
+    },
+    {
+      "date": "2025-01-03",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 165999,
+      "endLine": 308841,
+      "firstTimestamp": "2025-01-03T00:00:45.506Z",
+      "lastTimestamp": "2025-01-03T22:56:57.995Z"
+    },
+    {
+      "date": "2025-01-06",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 308842,
+      "endLine": 480985,
+      "firstTimestamp": "2025-01-06T00:00:45.297Z",
+      "lastTimestamp": "2025-01-06T22:57:59.939Z"
+    },
+    {
+      "date": "2025-01-07",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 480986,
+      "endLine": 641117,
+      "firstTimestamp": "2025-01-07T00:00:45.347Z",
+      "lastTimestamp": "2025-01-07T22:57:58.724Z"
+    },
+    {
+      "date": "2025-01-08",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 641118,
+      "endLine": 801746,
+      "firstTimestamp": "2025-01-08T00:00:45.078Z",
+      "lastTimestamp": "2025-01-08T22:57:59.829Z"
+    },
+    {
+      "date": "2025-01-09",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 801747,
+      "endLine": 935740,
+      "firstTimestamp": "2025-01-09T00:00:45.379Z",
+      "lastTimestamp": "2025-01-09T22:57:56.747Z"
+    },
+    {
+      "date": "2025-01-10",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 935741,
+      "endLine": 1116224,
+      "firstTimestamp": "2025-01-10T00:00:45.466Z",
+      "lastTimestamp": "2025-01-10T22:56:53.738Z"
+    },
+    {
+      "date": "2025-01-13",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 1116225,
+      "endLine": 1298175,
+      "firstTimestamp": "2025-01-13T00:00:45.340Z",
+      "lastTimestamp": "2025-01-13T22:57:59.311Z"
+    },
+    {
+      "date": "2025-01-14",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 1298176,
+      "endLine": 1469813,
+      "firstTimestamp": "2025-01-14T00:00:45.303Z",
+      "lastTimestamp": "2025-01-14T22:57:59.125Z"
+    },
+    {
+      "date": "2025-01-15",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 1469814,
+      "endLine": 1628372,
+      "firstTimestamp": "2025-01-15T00:00:45.304Z",
+      "lastTimestamp": "2025-01-15T22:57:59.668Z"
+    },
+    {
+      "date": "2025-01-16",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 1628373,
+      "endLine": 1804231,
+      "firstTimestamp": "2025-01-16T00:01:04.321Z",
+      "lastTimestamp": "2025-01-16T22:57:58.613Z"
+    },
+    {
+      "date": "2025-01-17",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 1804232,
+      "endLine": 1968767,
+      "firstTimestamp": "2025-01-17T00:00:45.446Z",
+      "lastTimestamp": "2025-01-17T22:56:59.179Z"
+    },
+    {
+      "date": "2025-01-20",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 1968768,
+      "endLine": 2113318,
+      "firstTimestamp": "2025-01-20T00:00:45.447Z",
+      "lastTimestamp": "2025-01-20T20:29:59.318Z"
+    },
+    {
+      "date": "2025-01-21",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 2113319,
+      "endLine": 2296198,
+      "firstTimestamp": "2025-01-21T00:00:45.513Z",
+      "lastTimestamp": "2025-01-21T22:57:59.884Z"
+    },
+    {
+      "date": "2025-01-22",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 2296199,
+      "endLine": 2462478,
+      "firstTimestamp": "2025-01-22T00:00:45.474Z",
+      "lastTimestamp": "2025-01-22T22:57:58.821Z"
+    },
+    {
+      "date": "2025-01-23",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 2462479,
+      "endLine": 2633082,
+      "firstTimestamp": "2025-01-23T00:00:45.244Z",
+      "lastTimestamp": "2025-01-23T22:57:58.658Z"
+    },
+    {
+      "date": "2025-01-24",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 2633083,
+      "endLine": 2808322,
+      "firstTimestamp": "2025-01-24T00:00:45.234Z",
+      "lastTimestamp": "2025-01-24T22:56:59.750Z"
+    },
+    {
+      "date": "2025-01-27",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 2808323,
+      "endLine": 2999435,
+      "firstTimestamp": "2025-01-27T00:00:45.324Z",
+      "lastTimestamp": "2025-01-27T22:57:54.553Z"
+    },
+    {
+      "date": "2025-01-28",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 2999436,
+      "endLine": 3160369,
+      "firstTimestamp": "2025-01-28T00:00:45.300Z",
+      "lastTimestamp": "2025-01-28T22:57:59.720Z"
+    },
+    {
+      "date": "2025-01-29",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 3160370,
+      "endLine": 3328696,
+      "firstTimestamp": "2025-01-29T00:00:45.334Z",
+      "lastTimestamp": "2025-01-29T22:57:59.879Z"
+    },
+    {
+      "date": "2025-01-30",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 3328697,
+      "endLine": 3497078,
+      "firstTimestamp": "2025-01-30T00:00:45.032Z",
+      "lastTimestamp": "2025-01-30T22:57:58.498Z"
+    },
+    {
+      "date": "2025-01-31",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 3497079,
+      "endLine": 3682641,
+      "firstTimestamp": "2025-01-31T00:00:45.298Z",
+      "lastTimestamp": "2025-01-31T22:56:52.326Z"
+    },
+    {
+      "date": "2025-02-03",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 3682642,
+      "endLine": 3899961,
+      "firstTimestamp": "2025-02-03T00:00:45.257Z",
+      "lastTimestamp": "2025-02-03T22:57:59.688Z"
+    },
+    {
+      "date": "2025-02-04",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 3899962,
+      "endLine": 4093741,
+      "firstTimestamp": "2025-02-04T00:00:45.063Z",
+      "lastTimestamp": "2025-02-04T22:57:56.614Z"
+    },
+    {
+      "date": "2025-02-05",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 4093742,
+      "endLine": 4272241,
+      "firstTimestamp": "2025-02-05T00:00:45.162Z",
+      "lastTimestamp": "2025-02-05T22:57:56.221Z"
+    },
+    {
+      "date": "2025-02-06",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 4272242,
+      "endLine": 4445555,
+      "firstTimestamp": "2025-02-06T00:00:45.434Z",
+      "lastTimestamp": "2025-02-06T22:57:57.459Z"
+    },
+    {
+      "date": "2025-02-07",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 4445556,
+      "endLine": 4612138,
+      "firstTimestamp": "2025-02-07T00:00:45.431Z",
+      "lastTimestamp": "2025-02-07T22:56:57.231Z"
+    },
+    {
+      "date": "2025-02-10",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 4612139,
+      "endLine": 4793090,
+      "firstTimestamp": "2025-02-10T00:00:45.239Z",
+      "lastTimestamp": "2025-02-10T22:57:57.620Z"
+    },
+    {
+      "date": "2025-02-11",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 4793091,
+      "endLine": 4999507,
+      "firstTimestamp": "2025-02-11T00:00:45.497Z",
+      "lastTimestamp": "2025-02-11T22:57:58.386Z"
+    },
+    {
+      "date": "2025-02-12",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 4999508,
+      "endLine": 5183353,
+      "firstTimestamp": "2025-02-12T00:00:45.468Z",
+      "lastTimestamp": "2025-02-12T22:57:59.852Z"
+    },
+    {
+      "date": "2025-02-13",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 5183354,
+      "endLine": 5355182,
+      "firstTimestamp": "2025-02-13T00:00:45.270Z",
+      "lastTimestamp": "2025-02-13T22:57:59.319Z"
+    },
+    {
+      "date": "2025-02-14",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 5355183,
+      "endLine": 5544174,
+      "firstTimestamp": "2025-02-14T00:00:45.281Z",
+      "lastTimestamp": "2025-02-14T22:56:57.000Z"
+    },
+    {
+      "date": "2025-02-17",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 5544175,
+      "endLine": 5676579,
+      "firstTimestamp": "2025-02-17T00:00:45.400Z",
+      "lastTimestamp": "2025-02-17T20:14:55.426Z"
+    },
+    {
+      "date": "2025-02-18",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 5676580,
+      "endLine": 5819437,
+      "firstTimestamp": "2025-02-18T00:00:45.424Z",
+      "lastTimestamp": "2025-02-18T22:57:58.710Z"
+    },
+    {
+      "date": "2025-02-19",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 5819438,
+      "endLine": 5983825,
+      "firstTimestamp": "2025-02-19T00:00:45.387Z",
+      "lastTimestamp": "2025-02-19T22:57:59.161Z"
+    },
+    {
+      "date": "2025-02-20",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 5983826,
+      "endLine": 6144645,
+      "firstTimestamp": "2025-02-20T00:00:45.295Z",
+      "lastTimestamp": "2025-02-20T22:57:59.558Z"
+    },
+    {
+      "date": "2025-02-21",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 6144646,
+      "endLine": 6303996,
+      "firstTimestamp": "2025-02-21T00:00:45.431Z",
+      "lastTimestamp": "2025-02-21T22:56:58.872Z"
+    },
+    {
+      "date": "2025-02-24",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 6303997,
+      "endLine": 6471071,
+      "firstTimestamp": "2025-02-24T00:00:45.096Z",
+      "lastTimestamp": "2025-02-24T22:57:54.282Z"
+    },
+    {
+      "date": "2025-02-25",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 6471072,
+      "endLine": 6652845,
+      "firstTimestamp": "2025-02-25T00:00:45.569Z",
+      "lastTimestamp": "2025-02-25T22:57:54.126Z"
+    },
+    {
+      "date": "2025-02-26",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 6652846,
+      "endLine": 6810232,
+      "firstTimestamp": "2025-02-26T00:00:45.356Z",
+      "lastTimestamp": "2025-02-26T22:57:59.829Z"
+    },
+    {
+      "date": "2025-02-27",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 6810233,
+      "endLine": 6999961,
+      "firstTimestamp": "2025-02-27T00:00:45.468Z",
+      "lastTimestamp": "2025-02-27T22:57:59.800Z"
+    },
+    {
+      "date": "2025-02-28",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 6999962,
+      "endLine": 7198153,
+      "firstTimestamp": "2025-02-28T00:00:45.257Z",
+      "lastTimestamp": "2025-02-28T22:56:59.890Z"
+    },
+    {
+      "date": "2025-03-03",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 7198154,
+      "endLine": 7386232,
+      "firstTimestamp": "2025-03-03T00:00:45.445Z",
+      "lastTimestamp": "2025-03-03T22:57:59.077Z"
+    },
+    {
+      "date": "2025-03-04",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 7386233,
+      "endLine": 7580305,
+      "firstTimestamp": "2025-03-04T00:00:45.543Z",
+      "lastTimestamp": "2025-03-04T22:57:58.513Z"
+    },
+    {
+      "date": "2025-03-05",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 7580306,
+      "endLine": 7780858,
+      "firstTimestamp": "2025-03-05T00:00:45.575Z",
+      "lastTimestamp": "2025-03-05T22:57:56.462Z"
+    },
+    {
+      "date": "2025-03-06",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 7780859,
+      "endLine": 7975125,
+      "firstTimestamp": "2025-03-06T00:00:45.213Z",
+      "lastTimestamp": "2025-03-06T22:57:48.977Z"
+    },
+    {
+      "date": "2025-03-07",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 7975126,
+      "endLine": 8171660,
+      "firstTimestamp": "2025-03-07T00:00:45.311Z",
+      "lastTimestamp": "2025-03-07T22:56:59.739Z"
+    },
+    {
+      "date": "2025-03-10",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 8171661,
+      "endLine": 8373594,
+      "firstTimestamp": "2025-03-10T00:00:45.152Z",
+      "lastTimestamp": "2025-03-10T22:57:59.209Z"
+    },
+    {
+      "date": "2025-03-11",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 8373595,
+      "endLine": 8553729,
+      "firstTimestamp": "2025-03-11T00:00:45.178Z",
+      "lastTimestamp": "2025-03-11T22:57:59.068Z"
+    },
+    {
+      "date": "2025-03-12",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 8553730,
+      "endLine": 8733327,
+      "firstTimestamp": "2025-03-12T00:00:45.399Z",
+      "lastTimestamp": "2025-03-12T22:57:59.830Z"
+    },
+    {
+      "date": "2025-03-13",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 8733328,
+      "endLine": 8909838,
+      "firstTimestamp": "2025-03-13T00:53:37.950Z",
+      "lastTimestamp": "2025-03-13T22:57:59.974Z"
+    },
+    {
+      "date": "2025-03-14",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 8909839,
+      "endLine": 9089124,
+      "firstTimestamp": "2025-03-14T00:00:45.014Z",
+      "lastTimestamp": "2025-03-14T22:56:57.007Z"
+    },
+    {
+      "date": "2025-03-17",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 9089125,
+      "endLine": 9241818,
+      "firstTimestamp": "2025-03-17T00:00:45.047Z",
+      "lastTimestamp": "2025-03-17T22:57:59.952Z"
+    },
+    {
+      "date": "2025-03-18",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 9241819,
+      "endLine": 9409620,
+      "firstTimestamp": "2025-03-18T00:00:45.291Z",
+      "lastTimestamp": "2025-03-18T22:57:59.757Z"
+    },
+    {
+      "date": "2025-03-19",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 9409621,
+      "endLine": 9576512,
+      "firstTimestamp": "2025-03-19T00:00:45.352Z",
+      "lastTimestamp": "2025-03-19T22:57:59.784Z"
+    },
+    {
+      "date": "2025-03-20",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 9576513,
+      "endLine": 9755362,
+      "firstTimestamp": "2025-03-20T00:00:45.399Z",
+      "lastTimestamp": "2025-03-20T22:57:58.914Z"
+    },
+    {
+      "date": "2025-03-21",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 9755363,
+      "endLine": 9922133,
+      "firstTimestamp": "2025-03-21T00:00:45.239Z",
+      "lastTimestamp": "2025-03-21T22:56:59.757Z"
+    },
+    {
+      "date": "2025-03-24",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 9922134,
+      "endLine": 10093528,
+      "firstTimestamp": "2025-03-24T00:00:45.267Z",
+      "lastTimestamp": "2025-03-24T22:57:59.773Z"
+    },
+    {
+      "date": "2025-03-25",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 10093529,
+      "endLine": 10242051,
+      "firstTimestamp": "2025-03-25T00:00:45.324Z",
+      "lastTimestamp": "2025-03-25T22:57:55.211Z"
+    },
+    {
+      "date": "2025-03-26",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 10242052,
+      "endLine": 10401661,
+      "firstTimestamp": "2025-03-26T00:00:45.375Z",
+      "lastTimestamp": "2025-03-26T22:57:58.670Z"
+    },
+    {
+      "date": "2025-03-27",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 10401662,
+      "endLine": 10579546,
+      "firstTimestamp": "2025-03-27T00:00:45.450Z",
+      "lastTimestamp": "2025-03-27T22:57:55.809Z"
+    },
+    {
+      "date": "2025-03-28",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 10579547,
+      "endLine": 10753150,
+      "firstTimestamp": "2025-03-28T00:00:45.034Z",
+      "lastTimestamp": "2025-03-28T22:56:58.087Z"
+    },
+    {
+      "date": "2025-03-30",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 10753151,
+      "endLine": 10758386,
+      "firstTimestamp": "2025-03-30T23:00:45.217Z",
+      "lastTimestamp": "2025-03-30T23:59:59.560Z"
+    },
+    {
+      "date": "2025-03-31",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 10758387,
+      "endLine": 10942311,
+      "firstTimestamp": "2025-03-31T00:00:00.062Z",
+      "lastTimestamp": "2025-03-31T23:59:55.057Z"
+    },
+    {
+      "date": "2025-04-01",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 10942312,
+      "endLine": 11122912,
+      "firstTimestamp": "2025-04-01T00:00:00.065Z",
+      "lastTimestamp": "2025-04-01T23:59:55.579Z"
+    },
+    {
+      "date": "2025-04-02",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 11122913,
+      "endLine": 11303858,
+      "firstTimestamp": "2025-04-02T00:00:00.086Z",
+      "lastTimestamp": "2025-04-02T23:59:59.917Z"
+    },
+    {
+      "date": "2025-04-03",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 11303859,
+      "endLine": 11536720,
+      "firstTimestamp": "2025-04-03T00:00:00.213Z",
+      "lastTimestamp": "2025-04-03T23:59:58.606Z"
+    },
+    {
+      "date": "2025-04-04",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 11536721,
+      "endLine": 11758497,
+      "firstTimestamp": "2025-04-04T00:00:00.207Z",
+      "lastTimestamp": "2025-04-04T21:56:59.260Z"
+    },
+    {
+      "date": "2025-04-06",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 11758498,
+      "endLine": 11767051,
+      "firstTimestamp": "2025-04-06T23:00:45.332Z",
+      "lastTimestamp": "2025-04-06T23:59:59.931Z"
+    },
+    {
+      "date": "2025-04-07",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 11767052,
+      "endLine": 12009715,
+      "firstTimestamp": "2025-04-07T00:00:00.139Z",
+      "lastTimestamp": "2025-04-07T23:59:59.754Z"
+    },
+    {
+      "date": "2025-04-08",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 12009716,
+      "endLine": 12205582,
+      "firstTimestamp": "2025-04-08T00:00:00.167Z",
+      "lastTimestamp": "2025-04-08T23:59:59.464Z"
+    },
+    {
+      "date": "2025-04-09",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 12205583,
+      "endLine": 12441086,
+      "firstTimestamp": "2025-04-09T00:00:00.065Z",
+      "lastTimestamp": "2025-04-09T23:59:58.359Z"
+    },
+    {
+      "date": "2025-04-10",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 12441087,
+      "endLine": 12648058,
+      "firstTimestamp": "2025-04-10T00:00:00.063Z",
+      "lastTimestamp": "2025-04-10T23:59:59.875Z"
+    },
+    {
+      "date": "2025-04-11",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 12648059,
+      "endLine": 12864160,
+      "firstTimestamp": "2025-04-11T00:00:00.076Z",
+      "lastTimestamp": "2025-04-11T21:56:59.906Z"
+    },
+    {
+      "date": "2025-04-13",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 12864161,
+      "endLine": 12870266,
+      "firstTimestamp": "2025-04-13T23:00:45.302Z",
+      "lastTimestamp": "2025-04-13T23:59:59.831Z"
+    },
+    {
+      "date": "2025-04-14",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 12870267,
+      "endLine": 13046757,
+      "firstTimestamp": "2025-04-14T00:00:00.139Z",
+      "lastTimestamp": "2025-04-14T23:59:59.133Z"
+    },
+    {
+      "date": "2025-04-15",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 13046758,
+      "endLine": 13191761,
+      "firstTimestamp": "2025-04-15T00:00:00.134Z",
+      "lastTimestamp": "2025-04-15T23:59:57.729Z"
+    },
+    {
+      "date": "2025-04-16",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 13191762,
+      "endLine": 13387460,
+      "firstTimestamp": "2025-04-16T00:00:00.032Z",
+      "lastTimestamp": "2025-04-16T23:59:55.719Z"
+    },
+    {
+      "date": "2025-04-17",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 13387461,
+      "endLine": 13564740,
+      "firstTimestamp": "2025-04-17T00:00:00.124Z",
+      "lastTimestamp": "2025-04-17T21:57:59.162Z"
+    },
+    {
+      "date": "2025-04-20",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 13564741,
+      "endLine": 13571278,
+      "firstTimestamp": "2025-04-20T23:00:45.096Z",
+      "lastTimestamp": "2025-04-20T23:59:57.343Z"
+    },
+    {
+      "date": "2025-04-21",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 13571279,
+      "endLine": 13759623,
+      "firstTimestamp": "2025-04-21T00:00:00.049Z",
+      "lastTimestamp": "2025-04-21T23:59:57.146Z"
+    },
+    {
+      "date": "2025-04-22",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 13759624,
+      "endLine": 13988723,
+      "firstTimestamp": "2025-04-22T00:00:00.056Z",
+      "lastTimestamp": "2025-04-22T23:59:59.830Z"
+    },
+    {
+      "date": "2025-04-23",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 13988724,
+      "endLine": 14203879,
+      "firstTimestamp": "2025-04-23T00:00:00.030Z",
+      "lastTimestamp": "2025-04-23T23:59:57.247Z"
+    },
+    {
+      "date": "2025-04-24",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 14203880,
+      "endLine": 14394760,
+      "firstTimestamp": "2025-04-24T00:00:00.050Z",
+      "lastTimestamp": "2025-04-24T23:59:59.443Z"
+    },
+    {
+      "date": "2025-04-25",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 14394761,
+      "endLine": 14580533,
+      "firstTimestamp": "2025-04-25T00:00:00.044Z",
+      "lastTimestamp": "2025-04-25T21:56:59.995Z"
+    },
+    {
+      "date": "2025-04-27",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 14580534,
+      "endLine": 14585505,
+      "firstTimestamp": "2025-04-27T23:00:45.033Z",
+      "lastTimestamp": "2025-04-27T23:59:57.588Z"
+    },
+    {
+      "date": "2025-04-28",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 14585506,
+      "endLine": 14751915,
+      "firstTimestamp": "2025-04-28T00:00:00.093Z",
+      "lastTimestamp": "2025-04-28T23:59:59.920Z"
+    },
+    {
+      "date": "2025-04-29",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 14751916,
+      "endLine": 14901732,
+      "firstTimestamp": "2025-04-29T00:00:00.131Z",
+      "lastTimestamp": "2025-04-29T23:59:59.016Z"
+    },
+    {
+      "date": "2025-04-30",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 14901733,
+      "endLine": 15065045,
+      "firstTimestamp": "2025-04-30T00:00:00.126Z",
+      "lastTimestamp": "2025-04-30T23:59:59.830Z"
+    },
+    {
+      "date": "2025-05-01",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 15065046,
+      "endLine": 15230592,
+      "firstTimestamp": "2025-05-01T00:00:00.237Z",
+      "lastTimestamp": "2025-05-01T23:59:59.552Z"
+    },
+    {
+      "date": "2025-05-02",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 15230593,
+      "endLine": 15392586,
+      "firstTimestamp": "2025-05-02T00:00:00.052Z",
+      "lastTimestamp": "2025-05-02T21:56:59.515Z"
+    },
+    {
+      "date": "2025-05-04",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 15392587,
+      "endLine": 15397555,
+      "firstTimestamp": "2025-05-04T23:00:45.332Z",
+      "lastTimestamp": "2025-05-04T23:59:57.023Z"
+    },
+    {
+      "date": "2025-05-05",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 15397556,
+      "endLine": 15551167,
+      "firstTimestamp": "2025-05-05T00:00:00.026Z",
+      "lastTimestamp": "2025-05-05T23:59:58.480Z"
+    },
+    {
+      "date": "2025-05-06",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 15551168,
+      "endLine": 15739178,
+      "firstTimestamp": "2025-05-06T00:00:00.086Z",
+      "lastTimestamp": "2025-05-06T23:59:59.845Z"
+    },
+    {
+      "date": "2025-05-07",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 15739179,
+      "endLine": 15919115,
+      "firstTimestamp": "2025-05-07T00:00:00.050Z",
+      "lastTimestamp": "2025-05-07T23:59:58.090Z"
+    },
+    {
+      "date": "2025-05-08",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 15919116,
+      "endLine": 16106983,
+      "firstTimestamp": "2025-05-08T00:00:00.094Z",
+      "lastTimestamp": "2025-05-08T23:59:59.190Z"
+    },
+    {
+      "date": "2025-05-09",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 16106984,
+      "endLine": 16270160,
+      "firstTimestamp": "2025-05-09T00:00:00.096Z",
+      "lastTimestamp": "2025-05-09T21:56:58.805Z"
+    },
+    {
+      "date": "2025-05-11",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 16270161,
+      "endLine": 16276755,
+      "firstTimestamp": "2025-05-11T23:00:45.097Z",
+      "lastTimestamp": "2025-05-11T23:59:56.724Z"
+    },
+    {
+      "date": "2025-05-12",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 16276756,
+      "endLine": 16466908,
+      "firstTimestamp": "2025-05-12T00:00:00.133Z",
+      "lastTimestamp": "2025-05-12T23:59:57.400Z"
+    },
+    {
+      "date": "2025-05-13",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 16466909,
+      "endLine": 16628578,
+      "firstTimestamp": "2025-05-13T00:00:00.112Z",
+      "lastTimestamp": "2025-05-13T23:59:58.110Z"
+    },
+    {
+      "date": "2025-05-14",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 16628579,
+      "endLine": 16808456,
+      "firstTimestamp": "2025-05-14T00:00:00.012Z",
+      "lastTimestamp": "2025-05-14T23:59:59.414Z"
+    },
+    {
+      "date": "2025-05-15",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 16808457,
+      "endLine": 16991767,
+      "firstTimestamp": "2025-05-15T00:00:00.235Z",
+      "lastTimestamp": "2025-05-15T23:59:59.052Z"
+    },
+    {
+      "date": "2025-05-16",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 16991768,
+      "endLine": 17160085,
+      "firstTimestamp": "2025-05-16T00:00:00.056Z",
+      "lastTimestamp": "2025-05-16T21:56:59.772Z"
+    },
+    {
+      "date": "2025-05-18",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 17160086,
+      "endLine": 17167120,
+      "firstTimestamp": "2025-05-18T23:00:45.277Z",
+      "lastTimestamp": "2025-05-18T23:59:59.793Z"
+    },
+    {
+      "date": "2025-05-19",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 17167121,
+      "endLine": 17313492,
+      "firstTimestamp": "2025-05-19T00:00:00.104Z",
+      "lastTimestamp": "2025-05-19T23:59:55.771Z"
+    },
+    {
+      "date": "2025-05-20",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 17313493,
+      "endLine": 17472081,
+      "firstTimestamp": "2025-05-20T00:00:00.086Z",
+      "lastTimestamp": "2025-05-20T23:59:57.681Z"
+    },
+    {
+      "date": "2025-05-21",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 17472082,
+      "endLine": 17636908,
+      "firstTimestamp": "2025-05-21T00:00:00.087Z",
+      "lastTimestamp": "2025-05-21T23:59:56.858Z"
+    },
+    {
+      "date": "2025-05-22",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 17636909,
+      "endLine": 17832870,
+      "firstTimestamp": "2025-05-22T00:00:00.265Z",
+      "lastTimestamp": "2025-05-22T23:59:59.632Z"
+    },
+    {
+      "date": "2025-05-23",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 17832871,
+      "endLine": 18014141,
+      "firstTimestamp": "2025-05-23T00:00:00.243Z",
+      "lastTimestamp": "2025-05-23T21:56:59.348Z"
+    },
+    {
+      "date": "2025-05-25",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 18014142,
+      "endLine": 18020580,
+      "firstTimestamp": "2025-05-25T23:00:45.058Z",
+      "lastTimestamp": "2025-05-25T23:59:59.624Z"
+    },
+    {
+      "date": "2025-05-26",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 18020581,
+      "endLine": 18142214,
+      "firstTimestamp": "2025-05-26T00:00:00.130Z",
+      "lastTimestamp": "2025-05-26T23:59:53.484Z"
+    },
+    {
+      "date": "2025-05-27",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 18142215,
+      "endLine": 18304779,
+      "firstTimestamp": "2025-05-27T00:00:00.096Z",
+      "lastTimestamp": "2025-05-27T23:59:59.846Z"
+    },
+    {
+      "date": "2025-05-28",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 18304780,
+      "endLine": 18454373,
+      "firstTimestamp": "2025-05-28T00:00:00.051Z",
+      "lastTimestamp": "2025-05-28T23:59:58.807Z"
+    },
+    {
+      "date": "2025-05-29",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 18454374,
+      "endLine": 18625064,
+      "firstTimestamp": "2025-05-29T00:00:00.113Z",
+      "lastTimestamp": "2025-05-29T23:59:59.005Z"
+    },
+    {
+      "date": "2025-05-30",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 18625065,
+      "endLine": 18782175,
+      "firstTimestamp": "2025-05-30T00:00:00.209Z",
+      "lastTimestamp": "2025-05-30T21:56:57.756Z"
+    },
+    {
+      "date": "2025-06-01",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 18782176,
+      "endLine": 18787531,
+      "firstTimestamp": "2025-06-01T23:00:45.302Z",
+      "lastTimestamp": "2025-06-01T23:59:59.126Z"
+    },
+    {
+      "date": "2025-06-02",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 18787532,
+      "endLine": 18951818,
+      "firstTimestamp": "2025-06-02T00:00:00.033Z",
+      "lastTimestamp": "2025-06-02T23:59:59.209Z"
+    },
+    {
+      "date": "2025-06-03",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 18951819,
+      "endLine": 19113947,
+      "firstTimestamp": "2025-06-03T00:00:00.115Z",
+      "lastTimestamp": "2025-06-03T23:59:59.926Z"
+    },
+    {
+      "date": "2025-06-04",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 19113948,
+      "endLine": 19270656,
+      "firstTimestamp": "2025-06-04T00:00:00.151Z",
+      "lastTimestamp": "2025-06-04T23:59:59.621Z"
+    },
+    {
+      "date": "2025-06-05",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 19270657,
+      "endLine": 19444964,
+      "firstTimestamp": "2025-06-05T00:00:00.127Z",
+      "lastTimestamp": "2025-06-05T23:59:58.546Z"
+    },
+    {
+      "date": "2025-06-06",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 19444965,
+      "endLine": 19605930,
+      "firstTimestamp": "2025-06-06T00:00:00.151Z",
+      "lastTimestamp": "2025-06-06T21:56:59.963Z"
+    },
+    {
+      "date": "2025-06-08",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 19605931,
+      "endLine": 19610149,
+      "firstTimestamp": "2025-06-08T23:00:45.067Z",
+      "lastTimestamp": "2025-06-08T23:59:59.630Z"
+    },
+    {
+      "date": "2025-06-09",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 19610150,
+      "endLine": 19759028,
+      "firstTimestamp": "2025-06-09T00:00:00.025Z",
+      "lastTimestamp": "2025-06-09T23:59:57.398Z"
+    },
+    {
+      "date": "2025-06-10",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 19759029,
+      "endLine": 19913797,
+      "firstTimestamp": "2025-06-10T00:00:00.118Z",
+      "lastTimestamp": "2025-06-10T23:59:59.537Z"
+    },
+    {
+      "date": "2025-06-11",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 19913798,
+      "endLine": 20078478,
+      "firstTimestamp": "2025-06-11T00:00:00.108Z",
+      "lastTimestamp": "2025-06-11T23:59:59.811Z"
+    },
+    {
+      "date": "2025-06-12",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 20078479,
+      "endLine": 20255009,
+      "firstTimestamp": "2025-06-12T00:00:00.111Z",
+      "lastTimestamp": "2025-06-12T23:59:59.467Z"
+    },
+    {
+      "date": "2025-06-13",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 20255010,
+      "endLine": 20441542,
+      "firstTimestamp": "2025-06-13T00:00:00.075Z",
+      "lastTimestamp": "2025-06-13T21:56:59.691Z"
+    },
+    {
+      "date": "2025-06-15",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 20441543,
+      "endLine": 20448203,
+      "firstTimestamp": "2025-06-15T23:00:45.029Z",
+      "lastTimestamp": "2025-06-15T23:59:59.235Z"
+    },
+    {
+      "date": "2025-06-16",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 20448204,
+      "endLine": 20611551,
+      "firstTimestamp": "2025-06-16T00:00:00.145Z",
+      "lastTimestamp": "2025-06-16T23:59:59.324Z"
+    },
+    {
+      "date": "2025-06-17",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 20611552,
+      "endLine": 20774269,
+      "firstTimestamp": "2025-06-17T00:00:00.139Z",
+      "lastTimestamp": "2025-06-17T23:59:59.612Z"
+    },
+    {
+      "date": "2025-06-18",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 20774270,
+      "endLine": 20931597,
+      "firstTimestamp": "2025-06-18T00:00:00.316Z",
+      "lastTimestamp": "2025-06-18T23:59:58.114Z"
+    },
+    {
+      "date": "2025-06-19",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 20931598,
+      "endLine": 21047052,
+      "firstTimestamp": "2025-06-19T00:00:00.017Z",
+      "lastTimestamp": "2025-06-19T23:59:58.599Z"
+    },
+    {
+      "date": "2025-06-20",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 21047053,
+      "endLine": 21180206,
+      "firstTimestamp": "2025-06-20T00:00:00.107Z",
+      "lastTimestamp": "2025-06-20T21:56:59.818Z"
+    },
+    {
+      "date": "2025-06-22",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 21180207,
+      "endLine": 21187397,
+      "firstTimestamp": "2025-06-22T23:00:45.276Z",
+      "lastTimestamp": "2025-06-22T23:59:58.805Z"
+    },
+    {
+      "date": "2025-06-23",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 21187398,
+      "endLine": 21338705,
+      "firstTimestamp": "2025-06-23T00:00:00.123Z",
+      "lastTimestamp": "2025-06-23T23:59:58.716Z"
+    },
+    {
+      "date": "2025-06-24",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 21338706,
+      "endLine": 21490457,
+      "firstTimestamp": "2025-06-24T00:00:00.136Z",
+      "lastTimestamp": "2025-06-24T23:59:59.384Z"
+    },
+    {
+      "date": "2025-06-25",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 21490458,
+      "endLine": 21611724,
+      "firstTimestamp": "2025-06-25T00:00:00.193Z",
+      "lastTimestamp": "2025-06-25T23:59:59.585Z"
+    },
+    {
+      "date": "2025-06-26",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 21611725,
+      "endLine": 21746734,
+      "firstTimestamp": "2025-06-26T00:00:00.091Z",
+      "lastTimestamp": "2025-06-26T23:59:59.559Z"
+    },
+    {
+      "date": "2025-06-27",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 21746735,
+      "endLine": 21897441,
+      "firstTimestamp": "2025-06-27T00:00:00.066Z",
+      "lastTimestamp": "2025-06-27T21:56:59.804Z"
+    },
+    {
+      "date": "2025-06-29",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 21897442,
+      "endLine": 21903806,
+      "firstTimestamp": "2025-06-29T23:00:45.268Z",
+      "lastTimestamp": "2025-06-29T23:59:58.944Z"
+    },
+    {
+      "date": "2025-06-30",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 21903807,
+      "endLine": 22035825,
+      "firstTimestamp": "2025-06-30T00:00:00.048Z",
+      "lastTimestamp": "2025-06-30T23:59:55.156Z"
+    },
+    {
+      "date": "2025-07-01",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 22035826,
+      "endLine": 22176035,
+      "firstTimestamp": "2025-07-01T00:00:00.068Z",
+      "lastTimestamp": "2025-07-01T23:59:52.733Z"
+    },
+    {
+      "date": "2025-07-02",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 22176036,
+      "endLine": 22298534,
+      "firstTimestamp": "2025-07-02T00:00:00.147Z",
+      "lastTimestamp": "2025-07-02T23:59:58.050Z"
+    },
+    {
+      "date": "2025-07-03",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 22298535,
+      "endLine": 22421259,
+      "firstTimestamp": "2025-07-03T00:00:00.070Z",
+      "lastTimestamp": "2025-07-03T23:59:54.432Z"
+    },
+    {
+      "date": "2025-07-04",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 22421260,
+      "endLine": 22504652,
+      "firstTimestamp": "2025-07-04T00:00:00.044Z",
+      "lastTimestamp": "2025-07-04T17:44:59.948Z"
+    },
+    {
+      "date": "2025-07-06",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 22504653,
+      "endLine": 22508032,
+      "firstTimestamp": "2025-07-06T23:00:45.304Z",
+      "lastTimestamp": "2025-07-06T23:59:59.664Z"
+    },
+    {
+      "date": "2025-07-07",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 22508033,
+      "endLine": 22653917,
+      "firstTimestamp": "2025-07-07T00:00:00.166Z",
+      "lastTimestamp": "2025-07-07T23:59:59.232Z"
+    },
+    {
+      "date": "2025-07-08",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 22653918,
+      "endLine": 22792780,
+      "firstTimestamp": "2025-07-08T00:00:00.035Z",
+      "lastTimestamp": "2025-07-08T23:59:59.882Z"
+    },
+    {
+      "date": "2025-07-09",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 22792781,
+      "endLine": 22930199,
+      "firstTimestamp": "2025-07-09T00:00:00.108Z",
+      "lastTimestamp": "2025-07-09T23:59:59.494Z"
+    },
+    {
+      "date": "2025-07-10",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 22930200,
+      "endLine": 23054068,
+      "firstTimestamp": "2025-07-10T00:00:00.098Z",
+      "lastTimestamp": "2025-07-10T23:59:59.718Z"
+    },
+    {
+      "date": "2025-07-11",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 23054069,
+      "endLine": 23208862,
+      "firstTimestamp": "2025-07-11T00:00:00.028Z",
+      "lastTimestamp": "2025-07-11T21:56:59.761Z"
+    },
+    {
+      "date": "2025-07-13",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 23208863,
+      "endLine": 23214839,
+      "firstTimestamp": "2025-07-13T23:00:45.366Z",
+      "lastTimestamp": "2025-07-13T23:59:59.333Z"
+    },
+    {
+      "date": "2025-07-14",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 23214840,
+      "endLine": 23361919,
+      "firstTimestamp": "2025-07-14T00:00:00.030Z",
+      "lastTimestamp": "2025-07-14T23:59:59.185Z"
+    },
+    {
+      "date": "2025-07-15",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 23361920,
+      "endLine": 23493460,
+      "firstTimestamp": "2025-07-15T00:00:00.192Z",
+      "lastTimestamp": "2025-07-15T23:59:58.328Z"
+    },
+    {
+      "date": "2025-07-16",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 23493461,
+      "endLine": 23639710,
+      "firstTimestamp": "2025-07-16T00:00:00.139Z",
+      "lastTimestamp": "2025-07-16T23:59:58.907Z"
+    },
+    {
+      "date": "2025-07-17",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 23639711,
+      "endLine": 23775890,
+      "firstTimestamp": "2025-07-17T00:00:00.111Z",
+      "lastTimestamp": "2025-07-17T23:59:55.339Z"
+    },
+    {
+      "date": "2025-07-18",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 23775891,
+      "endLine": 23895239,
+      "firstTimestamp": "2025-07-18T00:00:00.057Z",
+      "lastTimestamp": "2025-07-18T21:56:54.807Z"
+    },
+    {
+      "date": "2025-07-20",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 23895240,
+      "endLine": 23898703,
+      "firstTimestamp": "2025-07-20T23:00:45.264Z",
+      "lastTimestamp": "2025-07-20T23:59:57.025Z"
+    },
+    {
+      "date": "2025-07-21",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 23898704,
+      "endLine": 24032955,
+      "firstTimestamp": "2025-07-21T00:00:00.143Z",
+      "lastTimestamp": "2025-07-21T23:59:59.030Z"
+    },
+    {
+      "date": "2025-07-22",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 24032956,
+      "endLine": 24178756,
+      "firstTimestamp": "2025-07-22T00:00:00.029Z",
+      "lastTimestamp": "2025-07-22T23:59:58.615Z"
+    },
+    {
+      "date": "2025-07-23",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 24178757,
+      "endLine": 24338104,
+      "firstTimestamp": "2025-07-23T00:00:00.019Z",
+      "lastTimestamp": "2025-07-23T23:59:57.054Z"
+    },
+    {
+      "date": "2025-07-24",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 24338105,
+      "endLine": 24489843,
+      "firstTimestamp": "2025-07-24T00:00:00.260Z",
+      "lastTimestamp": "2025-07-24T23:59:59.623Z"
+    },
+    {
+      "date": "2025-07-25",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 24489844,
+      "endLine": 24620082,
+      "firstTimestamp": "2025-07-25T00:00:00.023Z",
+      "lastTimestamp": "2025-07-25T21:56:59.667Z"
+    },
+    {
+      "date": "2025-07-27",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 24620083,
+      "endLine": 24625667,
+      "firstTimestamp": "2025-07-27T23:00:45.309Z",
+      "lastTimestamp": "2025-07-27T23:59:58.860Z"
+    },
+    {
+      "date": "2025-07-28",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 24625668,
+      "endLine": 24768037,
+      "firstTimestamp": "2025-07-28T00:00:00.061Z",
+      "lastTimestamp": "2025-07-28T23:59:57.741Z"
+    },
+    {
+      "date": "2025-07-29",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 24768038,
+      "endLine": 24913861,
+      "firstTimestamp": "2025-07-29T00:00:00.048Z",
+      "lastTimestamp": "2025-07-29T23:59:59.005Z"
+    },
+    {
+      "date": "2025-07-30",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 24913862,
+      "endLine": 25062521,
+      "firstTimestamp": "2025-07-30T00:00:00.108Z",
+      "lastTimestamp": "2025-07-30T23:59:57.741Z"
+    },
+    {
+      "date": "2025-07-31",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 25062522,
+      "endLine": 25214548,
+      "firstTimestamp": "2025-07-31T00:00:00.143Z",
+      "lastTimestamp": "2025-07-31T23:59:59.756Z"
+    },
+    {
+      "date": "2025-08-01",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 25214549,
+      "endLine": 25372667,
+      "firstTimestamp": "2025-08-01T00:00:00.051Z",
+      "lastTimestamp": "2025-08-01T21:56:59.556Z"
+    },
+    {
+      "date": "2025-08-03",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 25372668,
+      "endLine": 25377457,
+      "firstTimestamp": "2025-08-03T23:00:45.279Z",
+      "lastTimestamp": "2025-08-03T23:59:59.689Z"
+    },
+    {
+      "date": "2025-08-04",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 25377458,
+      "endLine": 25521489,
+      "firstTimestamp": "2025-08-04T00:00:00.008Z",
+      "lastTimestamp": "2025-08-04T23:59:59.131Z"
+    },
+    {
+      "date": "2025-08-05",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 25521490,
+      "endLine": 25655665,
+      "firstTimestamp": "2025-08-05T00:00:00.133Z",
+      "lastTimestamp": "2025-08-05T23:59:45.135Z"
+    },
+    {
+      "date": "2025-08-06",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 25655666,
+      "endLine": 25793843,
+      "firstTimestamp": "2025-08-06T00:00:00.050Z",
+      "lastTimestamp": "2025-08-06T23:59:59.938Z"
+    },
+    {
+      "date": "2025-08-07",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 25793844,
+      "endLine": 25985709,
+      "firstTimestamp": "2025-08-07T00:00:00.139Z",
+      "lastTimestamp": "2025-08-07T23:59:58.534Z"
+    },
+    {
+      "date": "2025-08-08",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 25985710,
+      "endLine": 26217908,
+      "firstTimestamp": "2025-08-08T00:00:00.145Z",
+      "lastTimestamp": "2025-08-08T21:56:59.247Z"
+    },
+    {
+      "date": "2025-08-10",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 26217909,
+      "endLine": 26221968,
+      "firstTimestamp": "2025-08-10T23:00:45.217Z",
+      "lastTimestamp": "2025-08-10T23:59:59.766Z"
+    },
+    {
+      "date": "2025-08-11",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 26221969,
+      "endLine": 26407485,
+      "firstTimestamp": "2025-08-11T00:00:00.070Z",
+      "lastTimestamp": "2025-08-11T23:59:58.466Z"
+    },
+    {
+      "date": "2025-08-12",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 26407486,
+      "endLine": 26567989,
+      "firstTimestamp": "2025-08-12T00:00:00.074Z",
+      "lastTimestamp": "2025-08-12T23:59:57.594Z"
+    },
+    {
+      "date": "2025-08-13",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 26567990,
+      "endLine": 26711379,
+      "firstTimestamp": "2025-08-13T00:00:00.203Z",
+      "lastTimestamp": "2025-08-13T23:59:59.391Z"
+    },
+    {
+      "date": "2025-08-14",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 26711380,
+      "endLine": 26875223,
+      "firstTimestamp": "2025-08-14T00:00:00.199Z",
+      "lastTimestamp": "2025-08-14T23:59:58.675Z"
+    },
+    {
+      "date": "2025-08-15",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 26875224,
+      "endLine": 27012551,
+      "firstTimestamp": "2025-08-15T00:00:00.175Z",
+      "lastTimestamp": "2025-08-15T21:56:58.380Z"
+    },
+    {
+      "date": "2025-08-17",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 27012552,
+      "endLine": 27015722,
+      "firstTimestamp": "2025-08-17T23:00:45.238Z",
+      "lastTimestamp": "2025-08-17T23:59:59.887Z"
+    },
+    {
+      "date": "2025-08-18",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 27015723,
+      "endLine": 27154601,
+      "firstTimestamp": "2025-08-18T00:00:00.088Z",
+      "lastTimestamp": "2025-08-18T23:59:59.447Z"
+    },
+    {
+      "date": "2025-08-19",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 27154602,
+      "endLine": 27284298,
+      "firstTimestamp": "2025-08-19T00:00:00.125Z",
+      "lastTimestamp": "2025-08-19T23:59:59.614Z"
+    },
+    {
+      "date": "2025-08-20",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 27284299,
+      "endLine": 27409291,
+      "firstTimestamp": "2025-08-20T00:00:00.116Z",
+      "lastTimestamp": "2025-08-20T23:59:59.895Z"
+    },
+    {
+      "date": "2025-08-21",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 27409292,
+      "endLine": 27531214,
+      "firstTimestamp": "2025-08-21T00:00:00.101Z",
+      "lastTimestamp": "2025-08-21T23:59:59.018Z"
+    },
+    {
+      "date": "2025-08-22",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 27531215,
+      "endLine": 27657741,
+      "firstTimestamp": "2025-08-22T00:00:00.126Z",
+      "lastTimestamp": "2025-08-22T21:56:56.218Z"
+    },
+    {
+      "date": "2025-08-24",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 27657742,
+      "endLine": 27661086,
+      "firstTimestamp": "2025-08-24T23:00:45.421Z",
+      "lastTimestamp": "2025-08-24T23:59:59.206Z"
+    },
+    {
+      "date": "2025-08-25",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 27661087,
+      "endLine": 27762057,
+      "firstTimestamp": "2025-08-25T00:00:00.202Z",
+      "lastTimestamp": "2025-08-25T23:59:59.798Z"
+    },
+    {
+      "date": "2025-08-26",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 27762058,
+      "endLine": 27910610,
+      "firstTimestamp": "2025-08-26T00:00:00.001Z",
+      "lastTimestamp": "2025-08-26T23:59:52.029Z"
+    },
+    {
+      "date": "2025-08-27",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 27910611,
+      "endLine": 28062359,
+      "firstTimestamp": "2025-08-27T00:00:00.239Z",
+      "lastTimestamp": "2025-08-27T23:59:57.470Z"
+    },
+    {
+      "date": "2025-08-28",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 28062360,
+      "endLine": 28226533,
+      "firstTimestamp": "2025-08-28T00:00:00.274Z",
+      "lastTimestamp": "2025-08-28T23:59:59.031Z"
+    },
+    {
+      "date": "2025-08-29",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 28226534,
+      "endLine": 28394889,
+      "firstTimestamp": "2025-08-29T00:00:00.339Z",
+      "lastTimestamp": "2025-08-29T21:56:59.515Z"
+    },
+    {
+      "date": "2025-08-31",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 28394890,
+      "endLine": 28400735,
+      "firstTimestamp": "2025-08-31T23:00:45.400Z",
+      "lastTimestamp": "2025-08-31T23:59:58.033Z"
+    },
+    {
+      "date": "2025-09-01",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 28400736,
+      "endLine": 28557632,
+      "firstTimestamp": "2025-09-01T00:00:00.044Z",
+      "lastTimestamp": "2025-09-01T23:59:59.320Z"
+    },
+    {
+      "date": "2025-09-02",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 28557633,
+      "endLine": 28780058,
+      "firstTimestamp": "2025-09-02T00:00:00.027Z",
+      "lastTimestamp": "2025-09-02T23:59:59.438Z"
+    },
+    {
+      "date": "2025-09-03",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 28780059,
+      "endLine": 28994226,
+      "firstTimestamp": "2025-09-03T00:00:00.037Z",
+      "lastTimestamp": "2025-09-03T23:59:59.885Z"
+    },
+    {
+      "date": "2025-09-04",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 28994227,
+      "endLine": 29199061,
+      "firstTimestamp": "2025-09-04T00:00:00.094Z",
+      "lastTimestamp": "2025-09-04T23:59:58.796Z"
+    },
+    {
+      "date": "2025-09-05",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 29199062,
+      "endLine": 29394895,
+      "firstTimestamp": "2025-09-05T00:00:00.102Z",
+      "lastTimestamp": "2025-09-05T21:56:57.059Z"
+    },
+    {
+      "date": "2025-09-07",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 29394896,
+      "endLine": 29405347,
+      "firstTimestamp": "2025-09-07T23:00:45.039Z",
+      "lastTimestamp": "2025-09-07T23:59:59.777Z"
+    },
+    {
+      "date": "2025-09-08",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 29405348,
+      "endLine": 29607966,
+      "firstTimestamp": "2025-09-08T00:00:00.078Z",
+      "lastTimestamp": "2025-09-08T23:59:59.145Z"
+    },
+    {
+      "date": "2025-09-09",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 29607967,
+      "endLine": 29824394,
+      "firstTimestamp": "2025-09-09T00:00:00.041Z",
+      "lastTimestamp": "2025-09-09T23:59:56.296Z"
+    },
+    {
+      "date": "2025-09-10",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 29824395,
+      "endLine": 30012999,
+      "firstTimestamp": "2025-09-10T00:00:00.104Z",
+      "lastTimestamp": "2025-09-10T23:59:59.781Z"
+    },
+    {
+      "date": "2025-09-11",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 30013000,
+      "endLine": 30193830,
+      "firstTimestamp": "2025-09-11T00:00:00.085Z",
+      "lastTimestamp": "2025-09-11T23:59:59.875Z"
+    },
+    {
+      "date": "2025-09-12",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 30193831,
+      "endLine": 30368751,
+      "firstTimestamp": "2025-09-12T00:00:00.076Z",
+      "lastTimestamp": "2025-09-12T21:56:58.534Z"
+    },
+    {
+      "date": "2025-09-14",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 30368752,
+      "endLine": 30374289,
+      "firstTimestamp": "2025-09-14T23:00:45.242Z",
+      "lastTimestamp": "2025-09-14T23:59:58.716Z"
+    },
+    {
+      "date": "2025-09-15",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 30374290,
+      "endLine": 30562582,
+      "firstTimestamp": "2025-09-15T00:00:00.122Z",
+      "lastTimestamp": "2025-09-15T23:59:58.419Z"
+    },
+    {
+      "date": "2025-09-16",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 30562583,
+      "endLine": 30749654,
+      "firstTimestamp": "2025-09-16T00:00:00.019Z",
+      "lastTimestamp": "2025-09-16T23:59:59.798Z"
+    },
+    {
+      "date": "2025-09-17",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 30749655,
+      "endLine": 30955612,
+      "firstTimestamp": "2025-09-17T00:00:00.102Z",
+      "lastTimestamp": "2025-09-17T23:59:59.570Z"
+    },
+    {
+      "date": "2025-09-18",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 30955613,
+      "endLine": 31156000,
+      "firstTimestamp": "2025-09-18T00:00:00.173Z",
+      "lastTimestamp": "2025-09-18T23:59:58.085Z"
+    },
+    {
+      "date": "2025-09-19",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 31156001,
+      "endLine": 31349953,
+      "firstTimestamp": "2025-09-19T00:00:00.087Z",
+      "lastTimestamp": "2025-09-19T21:56:59.879Z"
+    },
+    {
+      "date": "2025-09-21",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 31349954,
+      "endLine": 31355798,
+      "firstTimestamp": "2025-09-21T23:00:45.419Z",
+      "lastTimestamp": "2025-09-21T23:59:59.903Z"
+    },
+    {
+      "date": "2025-09-22",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 31355799,
+      "endLine": 31558729,
+      "firstTimestamp": "2025-09-22T00:00:00.086Z",
+      "lastTimestamp": "2025-09-22T23:59:59.972Z"
+    },
+    {
+      "date": "2025-09-23",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 31558730,
+      "endLine": 31781442,
+      "firstTimestamp": "2025-09-23T00:00:00.139Z",
+      "lastTimestamp": "2025-09-23T23:59:53.841Z"
+    },
+    {
+      "date": "2025-09-24",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 31781443,
+      "endLine": 31989044,
+      "firstTimestamp": "2025-09-24T00:00:00.047Z",
+      "lastTimestamp": "2025-09-24T23:59:58.415Z"
+    },
+    {
+      "date": "2025-09-25",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 31989045,
+      "endLine": 32206909,
+      "firstTimestamp": "2025-09-25T00:00:00.018Z",
+      "lastTimestamp": "2025-09-25T23:59:53.906Z"
+    },
+    {
+      "date": "2025-09-26",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 32206910,
+      "endLine": 32414589,
+      "firstTimestamp": "2025-09-26T00:00:00.023Z",
+      "lastTimestamp": "2025-09-26T21:56:57.362Z"
+    },
+    {
+      "date": "2025-09-28",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 32414590,
+      "endLine": 32421310,
+      "firstTimestamp": "2025-09-28T23:00:45.299Z",
+      "lastTimestamp": "2025-09-28T23:59:59.908Z"
+    },
+    {
+      "date": "2025-09-29",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 32421311,
+      "endLine": 32651716,
+      "firstTimestamp": "2025-09-29T00:00:00.113Z",
+      "lastTimestamp": "2025-09-29T23:59:59.452Z"
+    },
+    {
+      "date": "2025-09-30",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 32651717,
+      "endLine": 32883206,
+      "firstTimestamp": "2025-09-30T00:00:00.154Z",
+      "lastTimestamp": "2025-09-30T23:59:59.675Z"
+    },
+    {
+      "date": "2025-10-01",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 32883207,
+      "endLine": 33103984,
+      "firstTimestamp": "2025-10-01T00:00:00.077Z",
+      "lastTimestamp": "2025-10-01T23:59:59.803Z"
+    },
+    {
+      "date": "2025-10-02",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 33103985,
+      "endLine": 33309554,
+      "firstTimestamp": "2025-10-02T00:00:00.002Z",
+      "lastTimestamp": "2025-10-02T23:59:57.605Z"
+    },
+    {
+      "date": "2025-10-03",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 33309555,
+      "endLine": 33511357,
+      "firstTimestamp": "2025-10-03T00:00:00.007Z",
+      "lastTimestamp": "2025-10-03T21:56:58.956Z"
+    },
+    {
+      "date": "2025-10-05",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 33511358,
+      "endLine": 33519324,
+      "firstTimestamp": "2025-10-05T23:00:45.267Z",
+      "lastTimestamp": "2025-10-05T23:59:59.837Z"
+    },
+    {
+      "date": "2025-10-06",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 33519325,
+      "endLine": 33762834,
+      "firstTimestamp": "2025-10-06T00:00:00.037Z",
+      "lastTimestamp": "2025-10-06T23:59:59.319Z"
+    },
+    {
+      "date": "2025-10-07",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 33762835,
+      "endLine": 33996235,
+      "firstTimestamp": "2025-10-07T00:00:00.116Z",
+      "lastTimestamp": "2025-10-07T23:59:59.852Z"
+    },
+    {
+      "date": "2025-10-08",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 33996236,
+      "endLine": 34233913,
+      "firstTimestamp": "2025-10-08T00:00:00.056Z",
+      "lastTimestamp": "2025-10-08T23:59:57.823Z"
+    },
+    {
+      "date": "2025-10-09",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 34233914,
+      "endLine": 34484593,
+      "firstTimestamp": "2025-10-09T00:00:00.125Z",
+      "lastTimestamp": "2025-10-09T23:59:59.784Z"
+    },
+    {
+      "date": "2025-10-10",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 34484594,
+      "endLine": 34731010,
+      "firstTimestamp": "2025-10-10T00:00:00.183Z",
+      "lastTimestamp": "2025-10-10T21:56:59.835Z"
+    },
+    {
+      "date": "2025-10-12",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 34731011,
+      "endLine": 34738889,
+      "firstTimestamp": "2025-10-12T23:00:45.426Z",
+      "lastTimestamp": "2025-10-12T23:59:59.930Z"
+    },
+    {
+      "date": "2025-10-13",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 34738890,
+      "endLine": 34944488,
+      "firstTimestamp": "2025-10-13T00:00:00.227Z",
+      "lastTimestamp": "2025-10-13T23:59:59.578Z"
+    },
+    {
+      "date": "2025-10-14",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 34944489,
+      "endLine": 35181223,
+      "firstTimestamp": "2025-10-14T00:00:00.281Z",
+      "lastTimestamp": "2025-10-14T23:59:57.237Z"
+    },
+    {
+      "date": "2025-10-15",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 35181224,
+      "endLine": 35388564,
+      "firstTimestamp": "2025-10-15T00:00:00.243Z",
+      "lastTimestamp": "2025-10-15T23:59:58.462Z"
+    },
+    {
+      "date": "2025-10-16",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 35388565,
+      "endLine": 35611568,
+      "firstTimestamp": "2025-10-16T00:00:00.075Z",
+      "lastTimestamp": "2025-10-16T23:59:59.966Z"
+    },
+    {
+      "date": "2025-10-17",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 35611569,
+      "endLine": 35869354,
+      "firstTimestamp": "2025-10-17T00:00:00.274Z",
+      "lastTimestamp": "2025-10-17T21:56:59.849Z"
+    },
+    {
+      "date": "2025-10-19",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 35869355,
+      "endLine": 35877795,
+      "firstTimestamp": "2025-10-19T23:00:45.376Z",
+      "lastTimestamp": "2025-10-19T23:59:59.816Z"
+    },
+    {
+      "date": "2025-10-20",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 35877796,
+      "endLine": 36107096,
+      "firstTimestamp": "2025-10-20T00:00:00.118Z",
+      "lastTimestamp": "2025-10-20T23:59:59.883Z"
+    },
+    {
+      "date": "2025-10-21",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 36107097,
+      "endLine": 36357654,
+      "firstTimestamp": "2025-10-21T00:00:00.084Z",
+      "lastTimestamp": "2025-10-21T23:59:59.926Z"
+    },
+    {
+      "date": "2025-10-22",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 36357655,
+      "endLine": 36613412,
+      "firstTimestamp": "2025-10-22T00:00:00.127Z",
+      "lastTimestamp": "2025-10-22T23:59:59.876Z"
+    },
+    {
+      "date": "2025-10-23",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 36613413,
+      "endLine": 36831380,
+      "firstTimestamp": "2025-10-23T00:00:00.276Z",
+      "lastTimestamp": "2025-10-23T23:59:56.614Z"
+    },
+    {
+      "date": "2025-10-24",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 36831381,
+      "endLine": 37031985,
+      "firstTimestamp": "2025-10-24T00:00:00.222Z",
+      "lastTimestamp": "2025-10-24T21:56:59.871Z"
+    },
+    {
+      "date": "2025-10-27",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 37031986,
+      "endLine": 37253016,
+      "firstTimestamp": "2025-10-27T00:00:45.315Z",
+      "lastTimestamp": "2025-10-27T22:57:59.985Z"
+    },
+    {
+      "date": "2025-10-28",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 37253017,
+      "endLine": 37469614,
+      "firstTimestamp": "2025-10-28T00:00:45.353Z",
+      "lastTimestamp": "2025-10-28T22:57:59.698Z"
+    },
+    {
+      "date": "2025-10-29",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 37469615,
+      "endLine": 37689054,
+      "firstTimestamp": "2025-10-29T00:00:45.384Z",
+      "lastTimestamp": "2025-10-29T22:57:59.874Z"
+    },
+    {
+      "date": "2025-10-30",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 37689055,
+      "endLine": 37916373,
+      "firstTimestamp": "2025-10-30T00:00:45.083Z",
+      "lastTimestamp": "2025-10-30T22:57:59.938Z"
+    },
+    {
+      "date": "2025-10-31",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 37916374,
+      "endLine": 38131200,
+      "firstTimestamp": "2025-10-31T00:00:45.307Z",
+      "lastTimestamp": "2025-10-31T22:56:59.634Z"
+    },
+    {
+      "date": "2025-11-03",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 38131201,
+      "endLine": 38328608,
+      "firstTimestamp": "2025-11-03T00:00:45.395Z",
+      "lastTimestamp": "2025-11-03T22:57:57.647Z"
+    },
+    {
+      "date": "2025-11-04",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 38328609,
+      "endLine": 38531415,
+      "firstTimestamp": "2025-11-04T00:00:45.394Z",
+      "lastTimestamp": "2025-11-04T22:57:59.945Z"
+    },
+    {
+      "date": "2025-11-05",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 38531416,
+      "endLine": 38712006,
+      "firstTimestamp": "2025-11-05T00:00:45.430Z",
+      "lastTimestamp": "2025-11-05T22:57:59.652Z"
+    },
+    {
+      "date": "2025-11-06",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 38712007,
+      "endLine": 38894087,
+      "firstTimestamp": "2025-11-06T00:00:45.214Z",
+      "lastTimestamp": "2025-11-06T22:57:57.807Z"
+    },
+    {
+      "date": "2025-11-07",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 38894088,
+      "endLine": 39061910,
+      "firstTimestamp": "2025-11-07T00:00:45.386Z",
+      "lastTimestamp": "2025-11-07T22:56:59.311Z"
+    },
+    {
+      "date": "2025-11-10",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 39061911,
+      "endLine": 39249124,
+      "firstTimestamp": "2025-11-10T00:00:45.314Z",
+      "lastTimestamp": "2025-11-10T22:57:59.728Z"
+    },
+    {
+      "date": "2025-11-11",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 39249125,
+      "endLine": 39441009,
+      "firstTimestamp": "2025-11-11T00:00:45.439Z",
+      "lastTimestamp": "2025-11-11T22:57:59.084Z"
+    },
+    {
+      "date": "2025-11-12",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 39441010,
+      "endLine": 39651178,
+      "firstTimestamp": "2025-11-12T00:00:45.410Z",
+      "lastTimestamp": "2025-11-12T22:57:54.159Z"
+    },
+    {
+      "date": "2025-11-13",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 39651179,
+      "endLine": 39877090,
+      "firstTimestamp": "2025-11-13T00:00:45.300Z",
+      "lastTimestamp": "2025-11-13T22:57:59.961Z"
+    },
+    {
+      "date": "2025-11-14",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 39877091,
+      "endLine": 40112365,
+      "firstTimestamp": "2025-11-14T00:00:45.263Z",
+      "lastTimestamp": "2025-11-14T22:56:59.829Z"
+    },
+    {
+      "date": "2025-11-17",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 40112366,
+      "endLine": 40333074,
+      "firstTimestamp": "2025-11-17T00:00:45.307Z",
+      "lastTimestamp": "2025-11-17T22:57:59.893Z"
+    },
+    {
+      "date": "2025-11-18",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 40333075,
+      "endLine": 40557245,
+      "firstTimestamp": "2025-11-18T00:00:45.380Z",
+      "lastTimestamp": "2025-11-18T22:57:58.074Z"
+    },
+    {
+      "date": "2025-11-19",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 40557246,
+      "endLine": 40779131,
+      "firstTimestamp": "2025-11-19T00:00:45.293Z",
+      "lastTimestamp": "2025-11-19T22:57:59.981Z"
+    },
+    {
+      "date": "2025-11-20",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 40779132,
+      "endLine": 41011068,
+      "firstTimestamp": "2025-11-20T00:00:45.412Z",
+      "lastTimestamp": "2025-11-20T22:57:59.511Z"
+    },
+    {
+      "date": "2025-11-21",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 41011069,
+      "endLine": 41247816,
+      "firstTimestamp": "2025-11-21T00:00:45.471Z",
+      "lastTimestamp": "2025-11-21T22:56:59.897Z"
+    },
+    {
+      "date": "2025-11-24",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 41247817,
+      "endLine": 41463248,
+      "firstTimestamp": "2025-11-24T00:00:45.320Z",
+      "lastTimestamp": "2025-11-24T22:57:59.240Z"
+    },
+    {
+      "date": "2025-11-25",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 41463249,
+      "endLine": 41667059,
+      "firstTimestamp": "2025-11-25T00:00:45.285Z",
+      "lastTimestamp": "2025-11-25T22:57:59.784Z"
+    },
+    {
+      "date": "2025-11-26",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 41667060,
+      "endLine": 41854301,
+      "firstTimestamp": "2025-11-26T00:00:45.258Z",
+      "lastTimestamp": "2025-11-26T22:57:58.944Z"
+    },
+    {
+      "date": "2025-11-27",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 41854302,
+      "endLine": 41988652,
+      "firstTimestamp": "2025-11-27T00:00:45.449Z",
+      "lastTimestamp": "2025-11-27T20:29:54.446Z"
+    },
+    {
+      "date": "2025-11-28",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 41988653,
+      "endLine": 42045808,
+      "firstTimestamp": "2025-11-28T00:00:45.553Z",
+      "lastTimestamp": "2025-11-28T20:44:59.867Z"
+    },
+    {
+      "date": "2025-12-01",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 42045809,
+      "endLine": 42300469,
+      "firstTimestamp": "2025-12-01T00:00:45.333Z",
+      "lastTimestamp": "2025-12-01T22:57:59.870Z"
+    },
+    {
+      "date": "2025-12-02",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 42300470,
+      "endLine": 42531043,
+      "firstTimestamp": "2025-12-02T00:00:45.272Z",
+      "lastTimestamp": "2025-12-02T22:57:59.800Z"
+    },
+    {
+      "date": "2025-12-03",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 42531044,
+      "endLine": 42761410,
+      "firstTimestamp": "2025-12-03T00:00:45.266Z",
+      "lastTimestamp": "2025-12-03T22:57:59.956Z"
+    },
+    {
+      "date": "2025-12-04",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 42761411,
+      "endLine": 42987884,
+      "firstTimestamp": "2025-12-04T00:00:45.340Z",
+      "lastTimestamp": "2025-12-04T22:57:59.172Z"
+    },
+    {
+      "date": "2025-12-05",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 42987885,
+      "endLine": 43200848,
+      "firstTimestamp": "2025-12-05T00:00:45.445Z",
+      "lastTimestamp": "2025-12-05T22:56:58.992Z"
+    },
+    {
+      "date": "2025-12-08",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 43200849,
+      "endLine": 43407906,
+      "firstTimestamp": "2025-12-08T00:00:45.036Z",
+      "lastTimestamp": "2025-12-08T22:57:59.989Z"
+    },
+    {
+      "date": "2025-12-09",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 43407907,
+      "endLine": 43622046,
+      "firstTimestamp": "2025-12-09T00:00:45.061Z",
+      "lastTimestamp": "2025-12-09T22:57:59.846Z"
+    },
+    {
+      "date": "2025-12-10",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 43622047,
+      "endLine": 43836687,
+      "firstTimestamp": "2025-12-10T00:00:45.328Z",
+      "lastTimestamp": "2025-12-10T22:57:59.775Z"
+    },
+    {
+      "date": "2025-12-11",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 43836688,
+      "endLine": 44067134,
+      "firstTimestamp": "2025-12-11T00:00:45.348Z",
+      "lastTimestamp": "2025-12-11T22:57:59.599Z"
+    },
+    {
+      "date": "2025-12-12",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 44067135,
+      "endLine": 44303448,
+      "firstTimestamp": "2025-12-12T00:00:45.286Z",
+      "lastTimestamp": "2025-12-12T22:56:59.382Z"
+    },
+    {
+      "date": "2025-12-15",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 44303449,
+      "endLine": 44531130,
+      "firstTimestamp": "2025-12-15T00:00:45.266Z",
+      "lastTimestamp": "2025-12-15T22:57:59.259Z"
+    },
+    {
+      "date": "2025-12-16",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 44531131,
+      "endLine": 44760028,
+      "firstTimestamp": "2025-12-16T00:00:45.308Z",
+      "lastTimestamp": "2025-12-16T22:57:59.684Z"
+    },
+    {
+      "date": "2025-12-17",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 44760029,
+      "endLine": 44992771,
+      "firstTimestamp": "2025-12-17T00:00:45.080Z",
+      "lastTimestamp": "2025-12-17T22:57:58.592Z"
+    },
+    {
+      "date": "2025-12-18",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 44992772,
+      "endLine": 45222807,
+      "firstTimestamp": "2025-12-18T00:00:45.192Z",
+      "lastTimestamp": "2025-12-18T22:57:59.574Z"
+    },
+    {
+      "date": "2025-12-19",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 45222808,
+      "endLine": 45427822,
+      "firstTimestamp": "2025-12-19T00:00:45.457Z",
+      "lastTimestamp": "2025-12-19T22:56:59.441Z"
+    },
+    {
+      "date": "2025-12-22",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 45427823,
+      "endLine": 45627004,
+      "firstTimestamp": "2025-12-22T00:00:45.283Z",
+      "lastTimestamp": "2025-12-22T22:57:58.479Z"
+    },
+    {
+      "date": "2025-12-23",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 45627005,
+      "endLine": 45842349,
+      "firstTimestamp": "2025-12-23T00:00:45.045Z",
+      "lastTimestamp": "2025-12-23T22:57:59.059Z"
+    },
+    {
+      "date": "2025-12-24",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 45842350,
+      "endLine": 46032204,
+      "firstTimestamp": "2025-12-24T00:00:45.083Z",
+      "lastTimestamp": "2025-12-24T19:44:59.753Z"
+    },
+    {
+      "date": "2025-12-26",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 46032205,
+      "endLine": 46264972,
+      "firstTimestamp": "2025-12-26T00:00:45.342Z",
+      "lastTimestamp": "2025-12-26T22:56:59.962Z"
+    },
+    {
+      "date": "2025-12-29",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 46264973,
+      "endLine": 46528454,
+      "firstTimestamp": "2025-12-29T00:00:45.309Z",
+      "lastTimestamp": "2025-12-29T22:57:58.883Z"
+    },
+    {
+      "date": "2025-12-30",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 46528455,
+      "endLine": 46771423,
+      "firstTimestamp": "2025-12-30T00:00:45.319Z",
+      "lastTimestamp": "2025-12-30T22:57:59.876Z"
+    },
+    {
+      "date": "2025-12-31",
+      "file": "XAUUSD_2025.csv.gz",
+      "startLine": 46771424,
+      "endLine": 47004799,
+      "firstTimestamp": "2025-12-31T00:00:45.280Z",
+      "lastTimestamp": "2025-12-31T22:57:59.863Z"
+    },
+    {
+      "date": "2026-01-02",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 1,
+      "endLine": 208021,
+      "firstTimestamp": "2026-01-02T00:00:45.438Z",
+      "lastTimestamp": "2026-01-02T22:56:59.311Z"
+    },
+    {
+      "date": "2026-01-05",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 208022,
+      "endLine": 460217,
+      "firstTimestamp": "2026-01-05T00:00:45.589Z",
+      "lastTimestamp": "2026-01-05T22:57:59.324Z"
+    },
+    {
+      "date": "2026-01-06",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 460218,
+      "endLine": 700962,
+      "firstTimestamp": "2026-01-06T00:00:45.578Z",
+      "lastTimestamp": "2026-01-06T22:57:59.455Z"
+    },
+    {
+      "date": "2026-01-07",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 700963,
+      "endLine": 947241,
+      "firstTimestamp": "2026-01-07T00:00:45.261Z",
+      "lastTimestamp": "2026-01-07T22:57:59.958Z"
+    },
+    {
+      "date": "2026-01-08",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 947242,
+      "endLine": 1195097,
+      "firstTimestamp": "2026-01-08T00:00:45.254Z",
+      "lastTimestamp": "2026-01-08T22:57:58.956Z"
+    },
+    {
+      "date": "2026-01-09",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 1195098,
+      "endLine": 1418824,
+      "firstTimestamp": "2026-01-09T00:00:45.082Z",
+      "lastTimestamp": "2026-01-09T22:56:59.179Z"
+    },
+    {
+      "date": "2026-01-12",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 1418825,
+      "endLine": 1652992,
+      "firstTimestamp": "2026-01-12T00:00:45.326Z",
+      "lastTimestamp": "2026-01-12T22:57:59.929Z"
+    },
+    {
+      "date": "2026-01-13",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 1652993,
+      "endLine": 1873925,
+      "firstTimestamp": "2026-01-13T00:00:45.274Z",
+      "lastTimestamp": "2026-01-13T22:57:59.666Z"
+    },
+    {
+      "date": "2026-01-14",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 1873926,
+      "endLine": 2110109,
+      "firstTimestamp": "2026-01-14T00:00:45.428Z",
+      "lastTimestamp": "2026-01-14T22:57:59.802Z"
+    },
+    {
+      "date": "2026-01-15",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 2110110,
+      "endLine": 2348010,
+      "firstTimestamp": "2026-01-15T00:00:45.301Z",
+      "lastTimestamp": "2026-01-15T22:57:56.285Z"
+    },
+    {
+      "date": "2026-01-16",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 2348011,
+      "endLine": 2568678,
+      "firstTimestamp": "2026-01-16T00:00:45.110Z",
+      "lastTimestamp": "2026-01-16T22:56:59.647Z"
+    },
+    {
+      "date": "2026-01-19",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 2568679,
+      "endLine": 2740149,
+      "firstTimestamp": "2026-01-19T00:00:45.311Z",
+      "lastTimestamp": "2026-01-19T20:29:59.950Z"
+    },
+    {
+      "date": "2026-01-20",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 2740150,
+      "endLine": 2965691,
+      "firstTimestamp": "2026-01-20T00:00:45.301Z",
+      "lastTimestamp": "2026-01-20T22:57:59.679Z"
+    },
+    {
+      "date": "2026-01-21",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 2965692,
+      "endLine": 3215582,
+      "firstTimestamp": "2026-01-21T00:00:45.337Z",
+      "lastTimestamp": "2026-01-21T22:57:59.873Z"
+    },
+    {
+      "date": "2026-01-22",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 3215583,
+      "endLine": 3445962,
+      "firstTimestamp": "2026-01-22T00:00:45.204Z",
+      "lastTimestamp": "2026-01-22T22:57:59.757Z"
+    },
+    {
+      "date": "2026-01-23",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 3445963,
+      "endLine": 3675473,
+      "firstTimestamp": "2026-01-23T00:00:45.226Z",
+      "lastTimestamp": "2026-01-23T22:56:59.784Z"
+    },
+    {
+      "date": "2026-01-26",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 3675474,
+      "endLine": 3948927,
+      "firstTimestamp": "2026-01-26T00:00:45.323Z",
+      "lastTimestamp": "2026-01-26T22:57:59.778Z"
+    },
+    {
+      "date": "2026-01-27",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 3948928,
+      "endLine": 4216115,
+      "firstTimestamp": "2026-01-27T00:00:45.076Z",
+      "lastTimestamp": "2026-01-27T22:57:59.790Z"
+    },
+    {
+      "date": "2026-01-28",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 4216116,
+      "endLine": 4491914,
+      "firstTimestamp": "2026-01-28T00:00:45.001Z",
+      "lastTimestamp": "2026-01-28T22:57:59.990Z"
+    },
+    {
+      "date": "2026-01-29",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 4491915,
+      "endLine": 4795262,
+      "firstTimestamp": "2026-01-29T00:00:45.199Z",
+      "lastTimestamp": "2026-01-29T22:57:59.714Z"
+    },
+    {
+      "date": "2026-01-30",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 4795263,
+      "endLine": 5117571,
+      "firstTimestamp": "2026-01-30T00:00:45.270Z",
+      "lastTimestamp": "2026-01-30T22:56:59.932Z"
+    },
+    {
+      "date": "2026-02-02",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 5117572,
+      "endLine": 5446057,
+      "firstTimestamp": "2026-02-02T00:00:45.515Z",
+      "lastTimestamp": "2026-02-02T22:57:59.864Z"
+    },
+    {
+      "date": "2026-02-03",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 5446058,
+      "endLine": 5755176,
+      "firstTimestamp": "2026-02-03T00:00:45.374Z",
+      "lastTimestamp": "2026-02-03T22:57:59.713Z"
+    },
+    {
+      "date": "2026-02-04",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 5755177,
+      "endLine": 6045495,
+      "firstTimestamp": "2026-02-04T00:00:45.679Z",
+      "lastTimestamp": "2026-02-04T22:57:59.765Z"
+    },
+    {
+      "date": "2026-02-05",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 6045496,
+      "endLine": 6360752,
+      "firstTimestamp": "2026-02-05T00:00:45.411Z",
+      "lastTimestamp": "2026-02-05T22:57:59.748Z"
+    },
+    {
+      "date": "2026-02-06",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 6360753,
+      "endLine": 6658601,
+      "firstTimestamp": "2026-02-06T00:00:45.509Z",
+      "lastTimestamp": "2026-02-06T22:56:59.925Z"
+    },
+    {
+      "date": "2026-02-09",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 6658602,
+      "endLine": 6944317,
+      "firstTimestamp": "2026-02-09T00:00:45.451Z",
+      "lastTimestamp": "2026-02-09T22:57:59.615Z"
+    },
+    {
+      "date": "2026-02-10",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 6944318,
+      "endLine": 7221998,
+      "firstTimestamp": "2026-02-10T00:00:45.486Z",
+      "lastTimestamp": "2026-02-10T22:57:59.243Z"
+    },
+    {
+      "date": "2026-02-11",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 7221999,
+      "endLine": 7498084,
+      "firstTimestamp": "2026-02-11T00:00:45.510Z",
+      "lastTimestamp": "2026-02-11T22:57:59.847Z"
+    },
+    {
+      "date": "2026-02-12",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 7498085,
+      "endLine": 7772662,
+      "firstTimestamp": "2026-02-12T00:00:45.498Z",
+      "lastTimestamp": "2026-02-12T22:57:59.761Z"
+    },
+    {
+      "date": "2026-02-13",
+      "file": "XAUUSD_2026.csv.gz",
+      "startLine": 7772663,
+      "endLine": 8044243,
+      "firstTimestamp": "2026-02-13T00:00:45.256Z",
+      "lastTimestamp": "2026-02-13T21:59:58.837Z"
+    }
+  ]
+}

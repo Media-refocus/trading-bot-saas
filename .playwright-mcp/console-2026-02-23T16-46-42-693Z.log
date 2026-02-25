@@ -1,0 +1,286 @@
+[    2843ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3005/_next/static/webpack/20dbd2bc7583ae97.webpack.hot-update.json:0
+[    3929ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3005/api/trpc/backtester.getSignalsInfo,backtester.listSignalSources,backtester.getCacheStatus,backtester.getAllJobs,backtester.getOptimizationPresets?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22source%22%3A%22signals_simple.csv%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%224%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D:0
+[    4105ms] [ERROR] %c << query #1 %cbacktester.getSignalsInfo%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: Object, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1704, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[    4106ms] [ERROR] %c << query #2 %cbacktester.listSignalSources%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1704, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[    4107ms] [ERROR] %c << query #3 %cbacktester.getCacheStatus%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1702, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[    4107ms] [ERROR] %c << query #4 %cbacktester.getAllJobs%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1701, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[    4108ms] [ERROR] %c << query #5 %cbacktester.getOptimizationPresets%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1699, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[   11375ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3005/api/trpc/backtester.getSignalsInfo,backtester.listSignalSources,backtester.getCacheStatus,backtester.getAllJobs,backtester.getOptimizationPresets?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22source%22%3A%22signals_simple.csv%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%224%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D:0
+[   11386ms] [ERROR] %c << query #1 %cbacktester.getSignalsInfo%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: Object, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 6126, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[   11387ms] [ERROR] %c << query #2 %cbacktester.listSignalSources%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 6127, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[   11387ms] [ERROR] %c << query #3 %cbacktester.getCacheStatus%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 6127, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[   11388ms] [ERROR] %c << query #4 %cbacktester.getAllJobs%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 6125, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[   11389ms] [ERROR] %c << query #5 %cbacktester.getOptimizationPresets%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 6125, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  109119ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3005/api/trpc/backtester.getSignalsInfo,backtester.listSignalSources,backtester.getCacheStatus,backtester.getAllJobs,backtester.getOptimizationPresets?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22source%22%3A%22signals_simple.csv%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%224%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D:0
+[  109140ms] [ERROR] %c << query #12 %cbacktester.getSignalsInfo%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: Object, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1417, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  109141ms] [ERROR] %c << query #13 %cbacktester.listSignalSources%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1416, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  109142ms] [ERROR] %c << query #14 %cbacktester.getCacheStatus%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1416, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  109143ms] [ERROR] %c << query #15 %cbacktester.getAllJobs%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1415, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  109143ms] [ERROR] %c << query #16 %cbacktester.getOptimizationPresets%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1415, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  111593ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3005/api/trpc/backtester.getSignalsInfo,backtester.listSignalSources,backtester.getCacheStatus,backtester.getAllJobs?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22source%22%3A%22signals_simple.csv%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D:0
+[  111594ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3005/api/trpc/backtester.getOptimizationPresets?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D:0
+[  111595ms] [ERROR] %c << query #17 %cbacktester.getSignalsInfo%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: Object, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1439, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  111595ms] [ERROR] %c << query #18 %cbacktester.listSignalSources%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1439, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  111596ms] [ERROR] %c << query #19 %cbacktester.getCacheStatus%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1439, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  111596ms] [ERROR] %c << query #20 %cbacktester.getAllJobs%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1439, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56
+[  111597ms] [ERROR] %c << query #21 %cbacktester.getOptimizationPresets%c %O 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+   
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: bold; 
+    background-color: #3fb0d8;
+    color: white;
+    padding: 2px;
+  ; font-weight: normal; {input: undefined, result: TRPCClientError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    at TRPCClientError.fro…, elapsedMs: 1438, context: Object} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/next-devtools/userspace/app/errors/intercept-console-error.js:56

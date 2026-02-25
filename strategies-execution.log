@@ -1,0 +1,93 @@
+[2026-02-14 01:13:46] === INICIANDO EJECUCION DE ESTRATEGIAS 1 a 30 ===
+[2026-02-14 01:13:46] Ejecutando estrategia 1: GRID_8
+[2026-02-14 01:16:05]   ERROR: Se ha terminado la conexión: Error inesperado de recepción.
+[2026-02-14 01:16:06] Ejecutando estrategia 2: GRID_10
+[2026-02-14 01:16:10]   ERROR: No es posible conectar con el servidor remoto
+[2026-02-14 01:16:10] Ejecutando estrategia 3: GRID_12
+[2026-02-14 01:16:14]   ERROR: No es posible conectar con el servidor remoto
+[2026-02-14 01:16:15] Ejecutando estrategia 4: GRID_15
+[2026-02-14 01:16:19]   ERROR: No es posible conectar con el servidor remoto
+[2026-02-14 01:16:19] Ejecutando estrategia 5: GRID_20
+[2026-02-14 01:16:23]   ERROR: No es posible conectar con el servidor remoto
+[2026-02-14 01:16:24] Ejecutando estrategia 6: GRID_SL_50
+[2026-02-14 01:16:28]   ERROR: No es posible conectar con el servidor remoto
+[2026-02-14 01:16:29] Ejecutando estrategia 7: GRID_SL_100
+[2026-02-14 01:16:33]   ERROR: No es posible conectar con el servidor remoto
+[2026-02-14 01:16:33] Ejecutando estrategia 8: GRID_SL_200
+[2026-02-14 01:16:37]   ERROR: No es posible conectar con el servidor remoto
+[2026-02-14 01:16:38] Ejecutando estrategia 9: GRID_SL_DINAMICO
+[2026-02-14 01:16:42]   ERROR: No es posible conectar con el servidor remoto
+[2026-02-14 01:16:42] Ejecutando estrategia 10: GRID_TRAILING
+[2026-02-14 01:16:46]   ERROR: No es posible conectar con el servidor remoto
+[2026-02-14 01:16:47] Ejecutando estrategia 11: MULTI_2
+[2026-02-14 01:22:18] === INICIANDO EJECUCION DE ESTRATEGIAS 1 a 30 ===
+[2026-02-14 01:22:18] Ejecutando estrategia 1: GRID_8
+[2026-02-14 01:26:24]   OK - Trades: 764, Profit: $2947.44, WinRate: 0%
+[2026-02-14 01:26:24] Ejecutando estrategia 2: GRID_10
+[2026-02-14 01:30:56]   OK - Trades: 554, Profit: $2284.27, WinRate: 0%
+[2026-02-14 01:30:56] Ejecutando estrategia 3: GRID_12
+[2026-02-14 01:39:05]   OK - Trades: 420, Profit: $1799.60, WinRate: 0%
+[2026-02-14 01:39:05] Ejecutando estrategia 4: GRID_15
+[2026-02-14 01:47:09]   OK - Trades: 258, Profit: $1672.59, WinRate: 0%
+[2026-02-14 01:47:10] Ejecutando estrategia 5: GRID_20
+[2026-02-14 01:55:16]   OK - Trades: 149, Profit: $1362.86, WinRate: 0%
+[2026-02-14 01:55:17] Ejecutando estrategia 6: GRID_SL_50
+[2026-02-14 02:03:22]   OK - Trades: 409, Profit: $1782.54, WinRate: 0%
+[2026-02-14 02:03:23] Ejecutando estrategia 7: GRID_SL_100
+[2026-02-14 02:11:19]   OK - Trades: 416, Profit: $1794.80, WinRate: 0%
+[2026-02-14 02:11:19] Ejecutando estrategia 8: GRID_SL_200
+[2026-02-14 02:19:16]   OK - Trades: 418, Profit: $1757.88, WinRate: 0%
+[2026-02-14 02:19:17] Ejecutando estrategia 9: GRID_SL_DINAMICO
+[2026-02-14 02:27:18]   OK - Trades: 562, Profit: $1515.81, WinRate: 0%
+[2026-02-14 02:27:18] Ejecutando estrategia 10: GRID_TRAILING
+[2026-02-14 02:27:19]   ERROR: Error en el servidor remoto: (400) Solicitud incorrecta.
+[2026-02-14 02:27:19] Ejecutando estrategia 11: MULTI_2
+[2026-02-14 02:35:15]   OK - Trades: 358, Profit: $965.97, WinRate: 0%
+[2026-02-14 02:35:16] Ejecutando estrategia 12: MULTI_3
+[2026-02-14 02:43:09]   OK - Trades: 308, Profit: $574.20, WinRate: 0%
+[2026-02-14 02:43:09] Ejecutando estrategia 13: MULTI_2_TIGHT
+[2026-02-14 02:51:12]   OK - Trades: 569, Profit: $1418.69, WinRate: 0%
+[2026-02-14 02:51:12] Ejecutando estrategia 14: MULTI_3_TIGHT
+[2026-02-14 02:59:09]   OK - Trades: 458, Profit: $877.62, WinRate: 0%
+[2026-02-14 02:59:09] Ejecutando estrategia 15: SCALP_5
+[2026-02-14 03:07:13]   OK - Trades: 1035, Profit: $1429.21, WinRate: 0%
+[2026-02-14 03:07:14] Ejecutando estrategia 16: SCALP_8
+[2026-02-14 03:15:13]   OK - Trades: 752, Profit: $2961.04, WinRate: 0%
+[2026-02-14 03:15:14] Ejecutando estrategia 17: SCALP_AGRESIVO
+[2026-02-14 03:15:14]   ERROR: Error en el servidor remoto: (400) Solicitud incorrecta.
+[2026-02-14 03:15:14] Ejecutando estrategia 18: SWING_20
+[2026-02-14 03:23:10]   OK - Trades: 260, Profit: $2077.73, WinRate: 0%
+[2026-02-14 03:23:10] Ejecutando estrategia 19: SWING_30
+[2026-02-14 03:31:04]   OK - Trades: 163, Profit: $1621.19, WinRate: 0%
+[2026-02-14 03:31:04] Ejecutando estrategia 20: SWING_50
+[2026-02-14 03:39:00]   OK - Trades: 130, Profit: $2259.94, WinRate: 0%
+[2026-02-14 03:39:01] Ejecutando estrategia 21: SMART_CLOSE_BASE
+[2026-02-14 03:46:58]   OK - Trades: 410, Profit: $1753.42, WinRate: 0%
+[2026-02-14 03:46:59] Ejecutando estrategia 22: SMART_COMPENSATE
+[2026-02-14 03:54:56]   OK - Trades: 412, Profit: $1778.58, WinRate: 0%
+[2026-02-14 03:54:56] Ejecutando estrategia 23: SMART_REENTRY
+[2026-02-14 04:02:53]   OK - Trades: 408, Profit: $1789.44, WinRate: 0%
+[2026-02-14 04:02:53] Ejecutando estrategia 24: SMART_DYNAMIC_DIST
+[2026-02-14 04:10:48]   OK - Trades: 415, Profit: $1796.00, WinRate: 0%
+[2026-02-14 04:10:49] Ejecutando estrategia 25: SMART_RISK_MGMT
+[2026-02-14 04:18:51]   OK - Trades: 412, Profit: $1791.53, WinRate: 0%
+[2026-02-14 04:18:52] Ejecutando estrategia 26: CONSERV_5
+[2026-02-14 04:26:48]   OK - Trades: 159, Profit: $720.86, WinRate: 0%
+[2026-02-14 04:26:49] Ejecutando estrategia 27: CONSERV_10
+[2026-02-14 04:34:42]   OK - Trades: 95, Profit: $533.50, WinRate: 0%
+[2026-02-14 04:34:43] Ejecutando estrategia 28: CONSERV_PROM
+[2026-02-14 04:42:38]   OK - Trades: 92, Profit: $616.52, WinRate: 0%
+[2026-02-14 04:42:38] Ejecutando estrategia 29: AGRESIVO_1
+[2026-02-14 04:50:41]   OK - Trades: 840, Profit: $4468.09, WinRate: 0%
+[2026-02-14 04:50:41] Ejecutando estrategia 30: AGRESIVO_2
+[2026-02-14 04:58:43]   OK - Trades: 623, Profit: $4374.27, WinRate: 0%
+[2026-02-14 04:58:44] Guardado: strategies_comparison.json
+[2026-02-14 04:58:44] === EJECUCION COMPLETADA ===
+[2026-02-14 04:58:44] Total estrategias ejecutadas: 28
+[2026-02-14 04:58:44] Guardado: ranking_profit.md
+[2026-02-14 04:58:44] Guardado: ranking_winrate.md
+[2026-02-14 04:58:44] Guardado: ranking_drawdown.md
+[2026-02-14 04:58:44] Guardado: MEJOR_ESTRATEGIA.md
+[2026-02-14 04:58:44] Guardado: analisis_por_grupo.md
+[2026-02-14 04:58:45] Guardado: recomendaciones.md
+[2026-02-14 04:58:45] === TODOS LOS ARCHIVOS GENERADOS ===

@@ -48,7 +48,7 @@ After EVERY feature PR or major change:
 After each review, output:
 ```
 🔴 CRITICAL: [description] — file:line
-🟡 WARNING: [description] — file:line  
+🟡 WARNING: [description] — file:line
 🟢 OK: [what was verified]
 ```
 

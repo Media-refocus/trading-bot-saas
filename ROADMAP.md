@@ -57,31 +57,34 @@
 
 ---
 
-### 1.5.3 Visualización Gráfica (Tipo MT5)
+### 1.5.3 Visualización Gráfica (Tipo MT5) ✅
 **Prioridad**: ALTA
-**Tiempo estimado**: 3-4 días
+**Estado**: COMPLETADO
 
 **Objetivo**: Ver el movimiento del precio y las operaciones como en MT5
 
-**Tareas**:
-- [ ] Gráfico de velas (candlestick) con datos de ticks
-- [ ] Marcadores en el gráfico:
-  - [ ] Flecha de entrada (verde BUY / rojo SELL)
-  - [ ] Líneas de niveles de promedio (horizontal punteada)
-  - [ ] Línea de Take Profit (verde)
-  - [ ] Línea de Stop Loss (rojo) si aplica
-  - [ ] Marcador de cierre
-- [ ] Zoom y paneo del gráfico
-- [ ] Tooltip al pasar por velas/operaciones
-- [ ] Selector de trade para resaltar en gráfico
+**Tareas completadas**:
+- [x] Gráfico de velas (candlestick) con datos de ticks
+- [x] Marcadores en el gráfico:
+  - [x] Flecha de entrada (verde BUY / rojo SELL)
+  - [x] Líneas de niveles de promedio (horizontal punteada)
+  - [x] Línea de Take Profit (verde)
+  - [x] Línea de Stop Loss (rojo) si aplica
+  - [x] Marcador de cierre (círculo con X, color según razón)
+- [x] Tooltip al pasar por velas/operaciones (OHLC, tiempo, pips)
+- [x] Selector de trade para resaltar en gráfico
+- [x] Línea conectora de entrada a salida con pips ganados
+- [x] Panel de cuenta estilo MT5 (Balance, Equity, Floating P/L, Margin)
+- [x] Playback controls con velocidad variable
+- [x] Timeframes (M1, M5, M15, H1)
 
-**Librerías candidatas**:
-- Lightweight Charts (TradingView) - recomendado
-- Recharts
-- Plotly
+**Pendiente**:
+- [ ] Zoom y paneo del gráfico (nice to have)
+
+**Librería utilizada**: Canvas 2D nativo (sin dependencias adicionales)
 
 **UI afectada**:
-- Nuevo panel "Gráfico" con tabs por cada trade
+- Panel "Gráfico" integrado en backtester
 
 ---
 
@@ -182,7 +185,7 @@
 | Detalle de trades | CRÍTICA | ✅ Completado |
 | Curva de equity | ALTA | ✅ Completado |
 | Optimizador | ALTA | ✅ Completado |
-| Gráfico tipo MT5 | ALTA | Pendiente |
+| Gráfico tipo MT5 | ALTA | ✅ Completado |
 | Métricas avanzadas | MEDIA | ✅ Completado |
 | Filtros | MEDIA | ✅ Completado |
 | Comparador | MEDIA | Pendiente |

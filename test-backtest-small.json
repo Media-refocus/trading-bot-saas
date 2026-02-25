@@ -1,0 +1,1 @@
+{"0":{"json":{"config":{"strategyName":"TEST_SMALL","lotajeBase":0.03,"numOrders":1,"pipsDistance":12,"maxLevels":25,"takeProfitPips":12,"useStopLoss":false,"signalsSource":"signals_parsed.csv","useRealPrices":true},"signalLimit":10}}}

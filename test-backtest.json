@@ -1,0 +1,14 @@
+﻿{
+  "json": {
+    "config": {
+      "strategyName": "GRID_10",
+      "lotajeBase": 0.03,
+      "numOrders": 1,
+      "pipsDistance": 10,
+      "maxLevels": 30,
+      "takeProfitPips": 10,
+      "signalsSource": "signals_simple.csv",
+      "useRealPrices": false
+    }
+  }
+}
