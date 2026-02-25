@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { validateMt4Access } from "@/lib/plans";
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,14 +21,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar API key
-    const botConfig = await prisma.botConfig.findFirst({
-      where: { apiKeyPlain: apiKey },
-    });
+    // Validar API key y suscripción activa
+    const access = await validateMt4Access(apiKey);
 
-    if (!botConfig) {
-      return NextResponse.json({ error: "API Key inválida" }, { status: 401 });
+    if (!access.valid) {
+      return NextResponse.json(
+        { error: access.error },
+        { status: access.statusCode || 401 }
+      );
     }
+
+    const botConfig = access.botConfig!;
 
     // Actualizar estado de la señal
     const delivery = await prisma.signalDelivery.updateMany({

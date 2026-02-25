@@ -7,27 +7,24 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { validateMt4Access } from "@/lib/plans";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { apiKey, status, message, openPositions, totalProfit, symbol } = body;
 
-    if (!apiKey) {
+    // Validar API key y suscripción activa
+    const access = await validateMt4Access(apiKey || "");
+
+    if (!access.valid) {
       return NextResponse.json(
-        { error: "API Key requerida" },
-        { status: 400 }
+        { error: access.error },
+        { status: access.statusCode || 401 }
       );
     }
 
-    // Verificar API key
-    const botConfig = await prisma.botConfig.findFirst({
-      where: { apiKeyPlain: apiKey },
-    });
-
-    if (!botConfig) {
-      return NextResponse.json({ error: "API Key inválida" }, { status: 401 });
-    }
+    const botConfig = access.botConfig!;
 
     // Crear heartbeat
     await prisma.botHeartbeat.create({

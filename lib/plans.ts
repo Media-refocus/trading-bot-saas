@@ -355,6 +355,113 @@ export async function applyPlanLimits(
 }
 
 /**
+ * Verifica si el tenant tiene una suscripción activa
+ * Usado por las APIs MT4 para validar que el usuario puede recibir señales
+ */
+export async function validateActiveSubscription(
+  tenantId: string
+): Promise<{ active: boolean; reason?: string; planName?: string }> {
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    include: {
+      plan: true,
+      subscriptions: {
+        where: { status: "ACTIVE" },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
+    },
+  });
+
+  if (!tenant) {
+    return { active: false, reason: "Tenant no encontrado" };
+  }
+
+  // Si no tiene plan asignado
+  if (!tenant.plan) {
+    return { active: false, reason: "No tienes un plan asignado. Contacta a soporte." };
+  }
+
+  // Verificar suscripción activa
+  const activeSubscription = tenant.subscriptions[0];
+
+  if (!activeSubscription) {
+    return {
+      active: false,
+      reason: `Tu suscripción está inactiva. Renueva tu plan ${tenant.plan.name} para continuar.`,
+      planName: tenant.plan.name,
+    };
+  }
+
+  // Verificar que no ha expirado
+  if (activeSubscription.currentPeriodEnd && new Date() > activeSubscription.currentPeriodEnd) {
+    return {
+      active: false,
+      reason: `Tu suscripción expiró. Renueva tu plan ${tenant.plan.name} para continuar.`,
+      planName: tenant.plan.name,
+    };
+  }
+
+  return { active: true, planName: tenant.plan.name };
+}
+
+/**
+ * Valida API key y suscripción activa para APIs MT4
+ * Combina la validación de API key con la validación de suscripción
+ */
+export async function validateMt4Access(
+  apiKey: string
+): Promise<{
+  valid: boolean;
+  botConfig?: Awaited<ReturnType<typeof prisma.botConfig.findFirst>> & {
+    tenant?: { id: string; name: string; plan?: { name: string } | null };
+  };
+  error?: string;
+  statusCode?: number;
+}> {
+  if (!apiKey) {
+    return { valid: false, error: "API Key requerida", statusCode: 401 };
+  }
+
+  // Buscar botConfig por API key
+  const botConfig = await prisma.botConfig.findFirst({
+    where: { apiKeyPlain: apiKey },
+    include: { tenant: { include: { plan: true } } },
+  });
+
+  if (!botConfig) {
+    return { valid: false, error: "API Key inválida", statusCode: 401 };
+  }
+
+  // Verificar que el API key no esté revocado
+  if (botConfig.apiKeyStatus !== "ACTIVE") {
+    return {
+      valid: false,
+      error: `API Key ${botConfig.apiKeyStatus.toLowerCase()}. Contacta a soporte.`,
+      statusCode: 403,
+    };
+  }
+
+  // Verificar suscripción activa
+  const subscription = await validateActiveSubscription(botConfig.tenantId);
+
+  if (!subscription.active) {
+    return {
+      valid: false,
+      error: subscription.reason || "Suscripción inactiva",
+      statusCode: 402, // Payment Required
+    };
+  }
+
+  // Retornar botConfig con tenant para que esté disponible
+  const botConfigWithTenant = botConfig as typeof botConfig & {
+    tenant: { id: string; name: string; plan?: { name: string } | null };
+  };
+
+  return { valid: true, botConfig: botConfigWithTenant };
+}
+
+/**
  * Obtiene información del plan para mostrar en el dashboard
  */
 export async function getPlanInfo(tenantId: string): Promise<{

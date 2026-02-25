@@ -7,25 +7,24 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { validateMt4Access } from "@/lib/plans";
 
 export async function GET(request: NextRequest) {
   try {
     const apiKey = request.nextUrl.searchParams.get("apiKey");
     const symbol = request.nextUrl.searchParams.get("symbol") || "XAUUSD";
 
-    if (!apiKey) {
-      return NextResponse.json({ error: "API Key requerida" }, { status: 401 });
+    // Validar API key y suscripción activa
+    const access = await validateMt4Access(apiKey || "");
+
+    if (!access.valid) {
+      return NextResponse.json(
+        { error: access.error },
+        { status: access.statusCode || 401 }
+      );
     }
 
-    // Verificar API key y obtener tenant
-    const botConfig = await prisma.botConfig.findFirst({
-      where: { apiKeyPlain: apiKey },
-      include: { tenant: true },
-    });
-
-    if (!botConfig) {
-      return NextResponse.json({ error: "API Key inválida" }, { status: 401 });
-    }
+    const botConfig = access.botConfig!;
 
     // Obtener señales pendientes para este tenant
     const pendingSignals = await prisma.signalDelivery.findMany({

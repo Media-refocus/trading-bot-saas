@@ -6,27 +6,29 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { validateMt4Access } from "@/lib/plans";
 
 export async function GET(request: NextRequest) {
   const apiKey = request.nextUrl.searchParams.get("apiKey");
 
-  if (!apiKey) {
-    return NextResponse.json({ error: "API Key requerida" }, { status: 401 });
-  }
+  // Validar API key y suscripción activa
+  const access = await validateMt4Access(apiKey || "");
 
-  // Verificar que el API key existe
-  const botConfig = await prisma.botConfig.findFirst({
-    where: { apiKeyPlain: apiKey },
-  });
-
-  if (!botConfig) {
-    return NextResponse.json({ error: "API Key inválida" }, { status: 401 });
+  if (!access.valid) {
+    return NextResponse.json(
+      {
+        status: "error",
+        error: access.error,
+        timestamp: new Date().toISOString(),
+      },
+      { status: access.statusCode || 401 }
+    );
   }
 
   return NextResponse.json({
     status: "ok",
     timestamp: new Date().toISOString(),
     serverTime: Date.now(),
+    planName: access.botConfig?.tenant?.plan?.name,
   });
 }
