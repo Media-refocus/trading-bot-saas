@@ -1,6 +1,13 @@
-import { NextResponse } from "next/server";
+/**
+ * API de Heartbeat para el Bot
+ * ============================
+ *
+ * POST: Recibe telemetry del bot
+ * GET: Obtiene el último estado del bot
+ */
+import { NextRequest, NextResponse } from "next/server";
+import { withBotAuth } from "@/lib/security";
 import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
 
 interface HeartbeatData {
   status: string;
@@ -22,31 +29,8 @@ interface HeartbeatData {
  * Headers: Authorization: Bearer <apiKey>
  * Body: HeartbeatData
  */
-export async function POST(request: Request) {
+export const POST = withBotAuth(async (request, auth) => {
   try {
-    // Verificar autenticación
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { success: false, error: "Authorization header requerido" },
-        { status: 401 }
-      );
-    }
-
-    const apiKey = authHeader.substring(7);
-    const hashedKey = crypto.createHash("sha256").update(apiKey).digest("hex");
-
-    const botConfig = await prisma.botConfig.findUnique({
-      where: { apiKey: hashedKey },
-    });
-
-    if (!botConfig) {
-      return NextResponse.json(
-        { success: false, error: "No autorizado" },
-        { status: 401 }
-      );
-    }
-
     const data: HeartbeatData = await request.json();
 
     // Validar datos requeridos
@@ -60,7 +44,7 @@ export async function POST(request: Request) {
     // Crear registro de heartbeat
     await prisma.botHeartbeat.create({
       data: {
-        tenantId: botConfig.tenantId,
+        tenantId: auth.tenantId,
         status: data.status,
         mt5Connected: data.mt5Connected ?? false,
         openPositions: data.openPositions ?? 0,
@@ -76,7 +60,7 @@ export async function POST(request: Request) {
 
     // Actualizar último heartbeat en BotConfig
     await prisma.botConfig.update({
-      where: { id: botConfig.id },
+      where: { id: auth.botConfigId },
       data: { lastHeartbeat: new Date() },
     });
 
@@ -95,7 +79,7 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * GET /api/bot/heartbeat
@@ -103,34 +87,18 @@ export async function POST(request: Request) {
  *
  * Headers: Authorization: Bearer <apiKey>
  */
-export async function GET(request: Request) {
+export const GET = withBotAuth(async (request, auth) => {
   try {
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { success: false, error: "Authorization header requerido" },
-        { status: 401 }
-      );
-    }
-
-    const apiKey = authHeader.substring(7);
-    const hashedKey = crypto.createHash("sha256").update(apiKey).digest("hex");
-
-    const botConfig = await prisma.botConfig.findUnique({
-      where: { apiKey: hashedKey },
-    });
-
-    if (!botConfig) {
-      return NextResponse.json(
-        { success: false, error: "No autorizado" },
-        { status: 401 }
-      );
-    }
-
     // Obtener último heartbeat
     const lastHeartbeat = await prisma.botHeartbeat.findFirst({
-      where: { tenantId: botConfig.tenantId },
+      where: { tenantId: auth.tenantId },
       orderBy: { receivedAt: "desc" },
+    });
+
+    // Obtener config para lastHeartbeat
+    const botConfig = await prisma.botConfig.findUnique({
+      where: { id: auth.botConfigId },
+      select: { lastHeartbeat: true },
     });
 
     return NextResponse.json({
@@ -150,7 +118,7 @@ export async function GET(request: Request) {
             receivedAt: lastHeartbeat.receivedAt.toISOString(),
           }
         : null,
-      configLastHeartbeat: botConfig.lastHeartbeat?.toISOString(),
+      configLastHeartbeat: botConfig?.lastHeartbeat?.toISOString(),
     });
   } catch (error) {
     console.error("Error obteniendo heartbeat:", error);
@@ -159,4 +127,4 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-}
+});

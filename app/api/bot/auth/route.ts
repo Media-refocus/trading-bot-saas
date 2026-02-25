@@ -1,106 +1,107 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
-
 /**
  * POST /api/bot/auth
  * Autentica un bot usando su API key
  *
- * Request: { apiKey: string }
- * Response: { success: boolean, tenantId?: string, config?: BotConfig, error?: string }
+ * Este endpoint es especial: valida la API key pero NO usa el middleware estándar
+ * porque es el punto de entrada inicial del bot.
  */
-export async function POST(request: Request) {
+import { NextRequest, NextResponse } from "next/server";
+import {
+  validateApiKey,
+  logAuditEvent,
+  isValidApiKeyFormat,
+  hashApiKey,
+} from "@/lib/security";
+import { prisma } from "@/lib/prisma";
+
+export async function POST(request: NextRequest) {
   try {
-    const { apiKey } = await request.json();
+    const body = await request.json();
+    const { apiKey } = body;
 
     if (!apiKey) {
       return NextResponse.json(
-        { success: false, error: "API key requerida" },
+        { success: false, error: "API key requerida", code: "MISSING_API_KEY" },
         { status: 400 }
       );
     }
 
-    // Hash del API key para comparar
-    const hashedKey = crypto.createHash("sha256").update(apiKey).digest("hex");
+    // Obtener contexto del request para auditoría
+    const context = {
+      ipAddress:
+        request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+        request.headers.get("x-real-ip") ||
+        "unknown",
+      userAgent: request.headers.get("user-agent") || undefined,
+      endpoint: "/api/bot/auth",
+    };
 
-    // Buscar configuración del bot
-    const botConfig = await prisma.botConfig.findUnique({
-      where: { apiKey: hashedKey },
-      include: {
-        tenant: {
-          include: {
-            plan: true,
-            subscriptions: {
-              where: { status: "ACTIVE" },
-              take: 1,
-            },
-          },
+    // Validar API key completa (formato, estado, suscripción, rate limit)
+    const validation = await validateApiKey(
+      apiKey,
+      "/api/bot/auth",
+      context.ipAddress
+    );
+
+    if (!validation.valid) {
+      const errorCode: Record<string, string> = {
+        INVALID_FORMAT: "INVALID_KEY_FORMAT",
+        API_KEY_NOT_FOUND: "INVALID_API_KEY",
+        API_KEY_REVOKED: "KEY_REVOKED",
+        API_KEY_EXPIRED: "KEY_EXPIRED",
+        SUBSCRIPTION_INACTIVE: "SUBSCRIPTION_REQUIRED",
+        SUBSCRIPTION_EXPIRED: "SUBSCRIPTION_EXPIRED",
+        GRACE_PERIOD_EXPIRED: "GRACE_PERIOD_EXPIRED",
+        RATE_LIMIT_EXCEEDED: "RATE_LIMIT_EXCEEDED",
+      };
+
+      const statusCode = validation.reason === "RATE_LIMIT_EXCEEDED" ? 429 : 401;
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: getErrorMessage(validation.reason),
+          code: errorCode[validation.reason || "INVALID_API_KEY"],
+          tenantId: validation.tenantId,
         },
+        { status: statusCode }
+      );
+    }
+
+    // Obtener config completa para devolver al bot
+    const botConfig = await prisma.botConfig.findUnique({
+      where: { id: validation.botConfigId! },
+      include: {
+        tenant: true,
       },
-    });
-
-    if (!botConfig) {
-      return NextResponse.json(
-        { success: false, error: "API key inválida" },
-        { status: 401 }
-      );
-    }
-
-    // Verificar que el bot está activo
-    if (!botConfig.isActive) {
-      return NextResponse.json(
-        { success: false, error: "Bot desactivado. Contacte soporte." },
-        { status: 403 }
-      );
-    }
-
-    // Verificar suscripción activa
-    const activeSubscription = botConfig.tenant.subscriptions[0];
-    if (!activeSubscription && botConfig.tenant.planId) {
-      return NextResponse.json(
-        { success: false, error: "Suscripción inactiva. Renueve para continuar." },
-        { status: 403 }
-      );
-    }
-
-    // Obtener límites del plan
-    const plan = botConfig.tenant.plan;
-    const maxLevels = plan?.maxLevels ?? botConfig.maxLevels;
-    const maxPositions = plan?.maxPositions ?? 1;
-
-    // Actualizar último heartbeat
-    await prisma.botConfig.update({
-      where: { id: botConfig.id },
-      data: { lastHeartbeat: new Date() },
     });
 
     // Devolver configuración
     return NextResponse.json({
       success: true,
-      tenantId: botConfig.tenantId,
+      tenantId: validation.tenantId,
       config: {
         // Configuración de trading
-        lotSize: botConfig.lotSize,
-        gridDistance: botConfig.gridDistance,
-        takeProfit: botConfig.takeProfit,
-        maxLevels: Math.min(maxLevels, botConfig.maxLevels),
-        maxPositions,
+        lotSize: botConfig?.lotSize ?? 0.01,
+        gridDistance: botConfig?.gridDistance ?? 10.0,
+        takeProfit: botConfig?.takeProfit ?? 20.0,
+        maxLevels: validation.maxLevels ?? 3,
+        maxPositions: validation.maxPositions ?? 1,
 
         // Trailing SL
-        trailingActivate: botConfig.trailingActivate,
-        trailingStep: botConfig.trailingStep,
-        trailingBack: botConfig.trailingBack,
+        trailingActivate: botConfig?.trailingActivate,
+        trailingStep: botConfig?.trailingStep,
+        trailingBack: botConfig?.trailingBack,
 
         // Restricciones
-        defaultRestriction: botConfig.defaultRestriction,
+        defaultRestriction: botConfig?.defaultRestriction,
 
         // Features del plan
-        hasTrailingSL: plan?.hasTrailingSL ?? true,
-        hasAdvancedGrid: plan?.hasAdvancedGrid ?? false,
+        hasTrailingSL: validation.hasTrailingSL ?? true,
 
         // Info del tenant
-        tenantName: botConfig.tenant.name,
-        planName: plan?.name ?? "Sin plan",
+        tenantName: botConfig?.tenant.name,
+        planName: validation.planName ?? "Sin plan",
       },
     });
   } catch (error) {
@@ -110,4 +111,22 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Mensajes de error user-friendly
+ */
+function getErrorMessage(reason?: string): string {
+  const messages: Record<string, string> = {
+    INVALID_FORMAT: "Formato de API key inválido",
+    API_KEY_NOT_FOUND: "API key no encontrada",
+    API_KEY_REVOKED: "API key revocada. Genera una nueva desde el dashboard.",
+    API_KEY_EXPIRED: "API key expirada. Renueva tu suscripción.",
+    SUBSCRIPTION_INACTIVE: "Suscripción inactiva. Activa tu plan para continuar.",
+    SUBSCRIPTION_EXPIRED: "Suscripción vencida. Renueva para continuar operando.",
+    GRACE_PERIOD_EXPIRED: "Período de gracia finalizado. Renueva tu suscripción.",
+    RATE_LIMIT_EXCEEDED: "Límite de requests excedido. Espera un momento.",
+  };
+
+  return messages[reason || "API_KEY_NOT_FOUND"] || "Error de autenticación";
 }

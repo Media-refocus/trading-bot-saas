@@ -59,6 +59,7 @@ model Tenant {
   botConfigs      BotConfig[]
   botHeartbeats   BotHeartbeat[]
   signalDeliveries SignalDelivery[]
+  securityEvents  SecurityEvent[]
 }
 
 model User {
@@ -309,8 +310,12 @@ model BotConfig {
   tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   // API Key para autenticación del bot
-  apiKey          String   @unique    // Hash del API key
-  apiKeyPlain     String?             // Solo visible al generar (no se guarda en producción)
+  apiKey          String   @unique    // Hash SHA-256 del API key
+  apiKeyPlain     String?             // Solo visible al generar (null después de mostrar)
+  apiKeyStatus    String   @default("ACTIVE") // ACTIVE, PAUSED, REVOKED, EXPIRED, GRACE_PERIOD
+  apiKeyCreatedAt DateTime @default(now())
+  apiKeyExpiresAt DateTime?             // Para rotación programada
+  apiKeyRotatedAt DateTime?             // Última rotación
 
   // Configuración de trading (sobreescrita por plan)
   lotSize         Float    @default(0.01)
@@ -330,8 +335,67 @@ model BotConfig {
   isActive        Boolean  @default(true)
   lastHeartbeat   DateTime?
 
+  // Rate limiting (reset cada hora)
+  requestCount     Int      @default(0)
+  rateLimitResetAt DateTime @default(now())
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  // Relations
+  auditLogs       ApiKeyAudit[]
+}
+
+/// Logs de auditoría para API keys
+model ApiKeyAudit {
+  id          String   @id @default(cuid())
+  botConfigId String
+  botConfig   BotConfig @relation(fields: [botConfigId], references: [id], onDelete: Cascade)
+
+  // Evento
+  event       String              // API_KEY_GENERATED, API_KEY_REVOKED, API_KEY_ROTATED, API_KEY_ACCESSED, RATE_LIMIT_EXCEEDED
+  metadata    Json?               // Datos adicionales del evento
+
+  // Contexto
+  ipAddress   String?
+  userAgent   String?
+  endpoint    String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([botConfigId, createdAt])
+  @@index([event, createdAt])
+}
+
+/// Eventos de seguridad
+model SecurityEvent {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  // Tipo de evento
+  type        String              // SUSPICIOUS_ACTIVITY, BRUTE_FORCE_ATTEMPT, IP_BLOCKED, ABUSE_DETECTED
+  severity    String  @default("WARNING") // INFO, WARNING, CRITICAL
+
+  // Detalles
+  description String
+  metadata    Json?
+
+  // Contexto
+  ipAddress   String?
+  userAgent   String?
+  endpoint    String?
+
+  // Estado
+  resolved   Boolean @default(false)
+  resolvedAt DateTime?
+  resolvedBy String?             // UserId si fue resuelto manualmente
+
+  createdAt   DateTime @default(now())
+
+  @@index([type, createdAt])
+  @@index([tenantId, createdAt])
+  @@index([resolved, createdAt])
 }
 
 /// Heartbeat/Telemetry del bot

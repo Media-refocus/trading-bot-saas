@@ -101,6 +101,14 @@ export async function GET() {
         version: lastHeartbeat?.version || null,
       },
 
+      // Estado de seguridad
+      security: {
+        apiKeyStatus: botConfig.apiKeyStatus,
+        apiKeyCreatedAt: botConfig.apiKeyCreatedAt?.toISOString() || null,
+        lastRotation: botConfig.apiKeyRotatedAt?.toISOString() || null,
+        requestCount: botConfig.requestCount,
+      },
+
       // Posiciones abiertas
       positions: openPositions.map((p) => ({
         id: p.id,

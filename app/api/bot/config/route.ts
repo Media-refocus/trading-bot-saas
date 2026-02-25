@@ -1,47 +1,35 @@
-import { NextResponse } from "next/server";
+/**
+ * API de Configuración para el Bot
+ * ================================
+ *
+ * GET: Obtiene la configuración actual
+ * PUT: Actualiza la configuración
+ */
+import { NextRequest, NextResponse } from "next/server";
+import { withBotAuth, validatePlanLimit } from "@/lib/security";
 import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
 
 /**
  * GET /api/bot/config
- * Obtiene la configuración actual del bot (sin necesidad de re-autenticar)
+ * Obtiene la configuración actual del bot
  *
  * Headers: Authorization: Bearer <apiKey>
  */
-export async function GET(request: Request) {
+export const GET = withBotAuth(async (request, auth) => {
   try {
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { success: false, error: "Authorization header requerido" },
-        { status: 401 }
-      );
-    }
-
-    const apiKey = authHeader.substring(7);
-    const hashedKey = crypto.createHash("sha256").update(apiKey).digest("hex");
-
     const botConfig = await prisma.botConfig.findUnique({
-      where: { apiKey: hashedKey },
+      where: { id: auth.botConfigId },
       include: {
-        tenant: {
-          include: {
-            plan: true,
-          },
-        },
+        tenant: true,
       },
     });
 
     if (!botConfig) {
       return NextResponse.json(
-        { success: false, error: "No autorizado" },
-        { status: 401 }
+        { success: false, error: "Configuración no encontrada" },
+        { status: 404 }
       );
     }
-
-    const plan = botConfig.tenant.plan;
-    const maxLevels = plan?.maxLevels ?? botConfig.maxLevels;
-    const maxPositions = plan?.maxPositions ?? 1;
 
     return NextResponse.json({
       success: true,
@@ -50,8 +38,8 @@ export async function GET(request: Request) {
         lotSize: botConfig.lotSize,
         gridDistance: botConfig.gridDistance,
         takeProfit: botConfig.takeProfit,
-        maxLevels: Math.min(maxLevels, botConfig.maxLevels),
-        maxPositions,
+        maxLevels: auth.planLimits.maxLevels ?? botConfig.maxLevels,
+        maxPositions: auth.planLimits.maxPositions ?? 1,
 
         // Trailing SL
         trailingActivate: botConfig.trailingActivate,
@@ -62,18 +50,15 @@ export async function GET(request: Request) {
         defaultRestriction: botConfig.defaultRestriction,
 
         // Features del plan
-        hasTrailingSL: plan?.hasTrailingSL ?? true,
-        hasAdvancedGrid: plan?.hasAdvancedGrid ?? false,
+        hasTrailingSL: auth.planLimits.hasTrailingSL ?? true,
 
         // Estado
         isActive: botConfig.isActive,
         lastUpdated: botConfig.updatedAt.toISOString(),
       },
-      plan: plan
+      plan: auth.planLimits.planName
         ? {
-            name: plan.name,
-            price: plan.price,
-            currency: plan.currency,
+            name: auth.planLimits.planName,
           }
         : null,
     });
@@ -84,53 +69,28 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * PUT /api/bot/config
- * Actualiza la configuración del bot (desde el dashboard del cliente)
+ * Actualiza la configuración del bot
  *
  * Headers: Authorization: Bearer <apiKey>
  * Body: Partial<BotConfig>
  */
-export async function PUT(request: Request) {
+export const PUT = withBotAuth(async (request, auth) => {
   try {
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { success: false, error: "Authorization header requerido" },
-        { status: 401 }
-      );
-    }
-
-    const apiKey = authHeader.substring(7);
-    const hashedKey = crypto.createHash("sha256").update(apiKey).digest("hex");
-
-    const botConfig = await prisma.botConfig.findUnique({
-      where: { apiKey: hashedKey },
-      include: { tenant: { include: { plan: true } } },
-    });
-
-    if (!botConfig) {
-      return NextResponse.json(
-        { success: false, error: "No autorizado" },
-        { status: 401 }
-      );
-    }
-
     const data = await request.json();
-    const plan = botConfig.tenant.plan;
 
-    // Validar límites del plan
-    const maxLevels = plan?.maxLevels ?? 3;
-    if (data.maxLevels && data.maxLevels > maxLevels) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `maxLevels excede el límite del plan (${maxLevels})`,
-        },
-        { status: 400 }
-      );
+    // Validar límites del plan para maxLevels
+    if (data.maxLevels !== undefined) {
+      const limitCheck = validatePlanLimit(auth, "maxLevels", data.maxLevels);
+      if (!limitCheck.allowed) {
+        return NextResponse.json(
+          { success: false, error: limitCheck.reason },
+          { status: 400 }
+        );
+      }
     }
 
     // Actualizar solo campos permitidos
@@ -139,14 +99,17 @@ export async function PUT(request: Request) {
     if (data.lotSize !== undefined) updateData.lotSize = data.lotSize;
     if (data.gridDistance !== undefined) updateData.gridDistance = data.gridDistance;
     if (data.takeProfit !== undefined) updateData.takeProfit = data.takeProfit;
-    if (data.maxLevels !== undefined) updateData.maxLevels = Math.min(data.maxLevels, maxLevels);
+    if (data.maxLevels !== undefined) {
+      const maxAllowed = auth.planLimits.maxLevels ?? 3;
+      updateData.maxLevels = Math.min(data.maxLevels, maxAllowed);
+    }
     if (data.trailingActivate !== undefined) updateData.trailingActivate = data.trailingActivate;
     if (data.trailingStep !== undefined) updateData.trailingStep = data.trailingStep;
     if (data.trailingBack !== undefined) updateData.trailingBack = data.trailingBack;
     if (data.defaultRestriction !== undefined) updateData.defaultRestriction = data.defaultRestriction;
 
     const updated = await prisma.botConfig.update({
-      where: { id: botConfig.id },
+      where: { id: auth.botConfigId },
       data: updateData,
     });
 
@@ -171,4 +134,4 @@ export async function PUT(request: Request) {
       { status: 500 }
     );
   }
-}
+});

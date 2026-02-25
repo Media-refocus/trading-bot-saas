@@ -1,43 +1,23 @@
-import { NextResponse } from "next/server";
+/**
+ * API de Señales para el Bot
+ * ==========================
+ *
+ * GET: Obtiene señales pendientes
+ * POST: Marca señales como ejecutadas/fallidas
+ */
+import { NextRequest, NextResponse } from "next/server";
+import { withBotAuth, authenticateBotRequest } from "@/lib/security";
 import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
 
 /**
  * GET /api/bot/signals
  * Obtiene señales pendientes para el bot autenticado
  *
  * Headers: Authorization: Bearer <apiKey>
- * Query: since?: ISO timestamp (opcional, para obtener señales desde una fecha)
- *
- * Response: { success: boolean, signals?: Signal[], error?: string }
+ * Query: since?: ISO timestamp (opcional)
  */
-export async function GET(request: Request) {
+export const GET = withBotAuth(async (request, auth) => {
   try {
-    // Obtener API key del header
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { success: false, error: "Authorization header requerido" },
-        { status: 401 }
-      );
-    }
-
-    const apiKey = authHeader.substring(7);
-    const hashedKey = crypto.createHash("sha256").update(apiKey).digest("hex");
-
-    // Verificar API key
-    const botConfig = await prisma.botConfig.findUnique({
-      where: { apiKey: hashedKey },
-      include: { tenant: true },
-    });
-
-    if (!botConfig || !botConfig.isActive) {
-      return NextResponse.json(
-        { success: false, error: "No autorizado" },
-        { status: 401 }
-      );
-    }
-
     // Parsear parámetro "since"
     const { searchParams } = new URL(request.url);
     const since = searchParams.get("since");
@@ -45,7 +25,7 @@ export async function GET(request: Request) {
     // Obtener señales pendientes para este tenant
     const pendingDeliveries = await prisma.signalDelivery.findMany({
       where: {
-        tenantId: botConfig.tenantId,
+        tenantId: auth.tenantId,
         status: "PENDING",
         ...(since && {
           globalSignal: {
@@ -102,7 +82,7 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * POST /api/bot/signals
@@ -111,37 +91,29 @@ export async function GET(request: Request) {
  * Headers: Authorization: Bearer <apiKey>
  * Body: { deliveryId: string, status: "EXECUTED" | "FAILED", error?: string }
  */
-export async function POST(request: Request) {
+export const POST = withBotAuth(async (request, auth) => {
   try {
-    // Verificar autenticación
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { success: false, error: "Authorization header requerido" },
-        { status: 401 }
-      );
-    }
-
-    const apiKey = authHeader.substring(7);
-    const hashedKey = crypto.createHash("sha256").update(apiKey).digest("hex");
-
-    const botConfig = await prisma.botConfig.findUnique({
-      where: { apiKey: hashedKey },
-    });
-
-    if (!botConfig) {
-      return NextResponse.json(
-        { success: false, error: "No autorizado" },
-        { status: 401 }
-      );
-    }
-
     const { deliveryId, status, error } = await request.json();
 
     if (!deliveryId || !["EXECUTED", "FAILED"].includes(status)) {
       return NextResponse.json(
-        { success: false, error: "deliveryId y status (EXECUTED|FAILED) requeridos" },
+        {
+          success: false,
+          error: "deliveryId y status (EXECUTED|FAILED) requeridos",
+        },
         { status: 400 }
+      );
+    }
+
+    // Verificar que la delivery pertenece a este tenant
+    const delivery = await prisma.signalDelivery.findUnique({
+      where: { id: deliveryId },
+    });
+
+    if (!delivery || delivery.tenantId !== auth.tenantId) {
+      return NextResponse.json(
+        { success: false, error: "Delivery no encontrada" },
+        { status: 404 }
       );
     }
 
@@ -163,4 +135,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+});
