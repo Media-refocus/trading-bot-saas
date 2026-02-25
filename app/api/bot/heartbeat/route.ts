@@ -3,11 +3,12 @@
  * ============================
  *
  * POST: Recibe telemetry del bot
- * GET: Obtiene el último estado del bot
+ * GET: Obtiene el ultimo estado del bot
  */
 import { NextRequest, NextResponse } from "next/server";
 import { withBotAuth } from "@/lib/security";
 import { prisma } from "@/lib/prisma";
+import { createAlert, ALERT_TYPES } from "@/lib/alerts";
 
 interface HeartbeatData {
   status: string;
@@ -20,6 +21,7 @@ interface HeartbeatData {
   version?: string;
   platform?: string;
   error?: string;
+  drawdownPercent?: number;
 }
 
 /**
@@ -58,11 +60,38 @@ export const POST = withBotAuth(async (request, auth) => {
       },
     });
 
-    // Actualizar último heartbeat en BotConfig
+    // Actualizar ultimo heartbeat en BotConfig
     await prisma.botConfig.update({
       where: { id: auth.botConfigId },
       data: { lastHeartbeat: new Date() },
     });
+
+    // Crear alertas segun el estado del bot
+    // 1. Alerta de error si el status es ERROR
+    if (data.status === "ERROR" && data.error) {
+      await createAlert(
+        auth.tenantId,
+        ALERT_TYPES.BOT_ERROR,
+        `Tu bot de trading ha reportado un error: ${data.error}`,
+        {
+          errorMessage: data.error,
+          botVersion: data.version,
+          platform: data.platform,
+        }
+      );
+    }
+
+    // 2. Alerta de drawdown alto si supera el 20%
+    if (data.drawdownPercent && data.drawdownPercent > 20) {
+      await createAlert(
+        auth.tenantId,
+        ALERT_TYPES.HIGH_DRAWDOWN,
+        `Advertencia: Drawdown alto detectado (${data.drawdownPercent.toFixed(1)}%). Considera reducir el riesgo.`,
+        {
+          drawdownPercent: data.drawdownPercent,
+        }
+      );
+    }
 
     // Verificar si hay comandos pendientes para el bot
     // (por ejemplo: STOP, RESTART, UPDATE_CONFIG)

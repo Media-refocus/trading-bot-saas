@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import AlertsBadge from "@/components/alerts-badge";
 
 export default function Navigation() {
   return (
@@ -33,13 +34,14 @@ export default function Navigation() {
                 href="/settings"
                 className="text-sm text-muted-foreground hover:text-foreground transition"
               >
-                Configuración
+                Configuracion
               </Link>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <AlertsBadge />
             <Button variant="ghost" size="sm">
-              Cerrar Sesión
+              Cerrar Sesion
             </Button>
           </div>
         </div>
