@@ -1,175 +1,101 @@
-# 🚀 PROMPT PARA NUEVA TERMINAL (Claude Code)
+# Trading Bot SaaS — CLAUDE.md
 
-## 📋 ESTADO ACTUAL - 24 FEB 2026 (BACKTESTER COMPLETO)
+## Project Overview
+SaaS multi-tenant que automatiza señales de trading XAUUSD desde Telegram → MetaTrader 5.
+Incluye backtester web, bot de operativa, provisioning de VPS, y dashboard.
 
-### ✅ LO QUE ESTÁ FUNCIONANDO
+## Stack
+- **Frontend:** Next.js 15 + TypeScript + Tailwind + shadcn/ui + lightweight-charts
+- **Backend:** tRPC v11 + Next.js API Routes + Prisma ORM
+- **DB:** SQLite (multi-tenant con tenantId)
+- **Auth:** NextAuth.js v5 beta
+- **Payments:** Stripe
+- **Bot:** Python (VPS Windows cliente, conecta via API REST)
 
-**1. Backtester Web Completo**
-- UI en `app/(dashboard)/backtester/page.tsx`
-- Router tRPC en `server/api/trpc/routers/backtester.ts`
-- Motor de simulación en `lib/backtest-engine.ts`
-- Parser de señales en `lib/parsers/signals-csv.ts`
-- **TODAS las 1516 señales generan trades** (cierre al final de cada rango)
+## Agent Team
 
-**2. Sistema de Cache Optimizado**
-- `lib/ticks-lru-cache.ts` - LRU cache de 500MB
-- `lib/ticks-batch-loader.ts` - Batch loading de ticks por día
-- `lib/backtest-cache.ts` - Cache de resultados por configuración
-- `lib/backtest-jobs.ts` - Sistema de jobs en background
+| Agent | Role | When to invoke |
+|-------|------|----------------|
+| `trading-architect` | Arquitectura, schema DB, decisiones de diseño | Antes de cambios estructurales |
+| `trading-backend` | tRPC routers, Prisma, API, bot integration | Features de backend |
+| `trading-frontend` | Dashboard, UI, charts, componentes | Features de frontend |
+| `trading-devops` | Provisioning, scripts, deploy, monitoring | Infra y deploy |
+| `trading-qa` | Tests, security audit, code review, trading logic | Después de cada feature |
 
-**3. Sistema de Autenticación**
-- Registro: `app/api/register/route.ts`
-- Login: Usa NextAuth con credentials
-- Base de datos SQLite funcionando
+### Team workflow
+1. **Architect** diseña el approach y schema
+2. **Backend** implementa API + DB
+3. **Frontend** implementa UI
+4. **DevOps** si toca infra/provisioning
+5. **QA** revisa SIEMPRE al final — security + correctness + edge cases
 
-**4. Datos Disponibles**
-- `signals_simple.csv`: 388 señales (Oct 2025 - Feb 2026)
-- `signals_intradia.csv`: 1516 señales intradía (Ago 2024 - Feb 2026)
-- `docs/telegram_raw_messages.csv`: 27,439 mensajes raw
+### Critical rule for QA
+QA agent MUST run after every significant feature. This is a **financial application** — bugs = real money lost.
 
-**5. Ticks MT5 (COMPLETOS)**
-- **116,528,150 ticks** en SQLite (Prisma)
-- Rango: **May 2024 - Feb 2026** (cubre TODAS las señales)
-- Ubicación: Base de datos Prisma (`prisma/dev.db`)
-- Archivos fuente: `data/ticks/XAUUSD_2024.csv.gz`, `XAUUSD_2025.csv.gz`, `XAUUSD_2026.csv.gz`
-
----
-
-## ⚡ FUNCIONALIDADES IMPLEMENTADAS
-
-### Cierre de Posiciones Automático
-- Cada señal se cierra al recibir el mensaje "cerramos rango" de Telegram
-- `closeTimestamp` se usa como límite de tiempo
-- Si el trade no cerró por TP/SL, se cierra al último precio
-
-### Stop Loss Fijo
-- Implementado SL de emergencia configurable
-- Se activa cuando el precio se mueve `stopLossPips` en contra
-
-### LRU Cache
-- Límite de 500MB para backtests completos
-- Auto-evicción de días antiguos
-- 338 días cargados en ~75 segundos
-
----
-
-## 🎯 MEJORES RESULTADOS ENCONTRADOS
-
-| Config | Profit | Win Rate | Max DD |
-|--------|--------|----------|--------|
-| TP 6, SL 18, grid 6x6 | $7,294 | 66% | bajo |
-| TP 10, SL 50, grid 10x10 | $24,242 | 69% | medio |
-| TP 15, SL 75, grid 15x15 | $53,082 | 71% | medio |
-| **TP 20, SL 100, grid 20x20** | **$109,447** | **72%** | $8,044 |
-
-Con $10,000 inicial: ~1,000% retorno en 18 meses
-
----
-
-## 🎯 ENDPOINTS tRPC DISPONIBLES
-
-| Endpoint | Descripción |
-|----------|-------------|
-| `backtester.execute` | Backtest síncrono (usa cache) |
-| `backtester.executeAsync` | Crea job en background |
-| `backtester.getJobStatus` | Estado de un job |
-| `backtester.getAllJobs` | Todos los jobs |
-| `backtester.getCacheStatus` | Estado del cache de ticks |
-| `backtester.getSignalsInfo` | Info de señales |
-| `backtester.listSignalSources` | Lista archivos de señales |
-
----
-
-## 📂 ARCHIVOS CLAVE
-
-| Archivo | Descripción |
-|---------|-------------|
-| `lib/backtest-engine.ts` | Motor de simulación con SL/TP/Trailing |
-| `lib/ticks-lru-cache.ts` | Cache LRU de 500MB |
-| `lib/ticks-batch-loader.ts` | Batch loading optimizado |
-| `server/api/trpc/routers/backtester.ts` | Router tRPC |
-| `components/backtester/` | Componentes UI |
-
----
-
-## 🔧 STACK TECNOLÓGICO
-
-- **Frontend:** Next.js 15, TypeScript, Tailwind CSS
-- **Backend:** tRPC v11, Prisma ORM
-- **UI:** shadcn/ui (Button, Card, Input, Label)
-- **Database:** SQLite (desarrollo) / PostgreSQL (producción)
-- **Auth:** NextAuth con credentials provider
-- **Cache:** LRU en memoria (500MB)
-
----
-
-## 🚀 ARRANCAR Y PROBAR
-
-```bash
-# Arrancar servidor
-cd C:\Users\guill\Projects\trading-bot-saas
-npm run dev
-
-# Probar backtest
-curl -X POST "http://localhost:3000/api/trpc/backtester.execute" \
-  -H "Content-Type: application/json" \
-  -d '{"json":{"config":{"signalsSource":"signals_intradia.csv","useRealPrices":true,"takeProfitPips":20,"stopLossPips":100,"pipsDistance":20,"maxLevels":20,"lotajeBase":0.1},"signalLimit":1516}}'
+## Project Structure
+```
+app/(auth)/           — Login, Register
+app/(dashboard)/      — Dashboard, Backtester, Settings, Setup
+app/api/bot/          — Bot REST endpoints (heartbeat, config, signals, status)
+app/api/signals/      — Signal ingestion from Telegram
+components/           — UI components (backtester/, ui/)
+lib/                  — Core logic (backtest-engine, ticks-cache, parsers)
+server/api/trpc/      — tRPC server (routers: backtester, auth, tenant, strategies)
+prisma/               — Schema + migrations
+operative/            — Trading strategies configs + analysis
+provisioning/         — VPS setup scripts (Windows + Linux)
+docs/                 — Analysis, historical data, guides
 ```
 
-Abrir http://localhost:3000/backtester
+## Key branches
+- `master` — stable
+- `feature/bot-operativa` — bot Python + provisioning + dashboard updates
 
----
+## Multi-tenant rules
+- EVERY DB query MUST filter by `tenantId`
+- EVERY API endpoint MUST verify tenant ownership
+- Bot API endpoints validate per-tenant API key
+- Data NEVER leaks between tenants
 
-## ⚠️ PENDIENTE / PRÓXIMOS PASOS
+## Workflow Orchestration (Injected by launch-cc.sh)
 
-1. **UI del backtester** - Mostrar resultados en tiempo real
-2. **Optimizador de estrategias** - Probar múltiples configuraciones
-3. **Guardar estrategias** - Persistir configuraciones favoritas
-4. **Sistema de colas** - Backtests pesados sin bloquear UI
-5. **Tests automatizados** - Evitar regresiones
+### 1. Plan First
+- Tarea >3 pasos → escribe plan en `tasks/todo.md` con checkboxes ANTES de codear
+- Si algo va mal → STOP y re-plan. No seguir empujando
+- Incluye pasos de verificación en el plan, no solo implementación
+- Specs detalladas upfront → menos ambigüedad
 
----
+### 2. Self-Improvement Loop
+- Después de CUALQUIER corrección → actualiza `tasks/lessons.md` con el patrón
+- Escribe reglas que prevengan el mismo error
+- Revisa lessons.md al inicio de cada sesión
+- Itera hasta que la tasa de errores baje
 
-## 🔄 PR AGENT LOOP — REGLAS DE TRABAJO (2026-02-20)
+### 3. Verification Before Done
+- NUNCA marcar tarea como completada sin demostrar que funciona
+- Diff entre comportamiento esperado vs actual
+- Pregúntate: "¿Un staff engineer aprobaría esto?"
+- Ejecuta tests, revisa logs, demuestra que es correcto
 
-Este repo usa el sistema de Deterministic PR Agent Loop. Como CC trabajando aquí:
+### 4. Demand Elegance (Balanced)
+- Para cambios no triviales: "¿hay una forma más elegante?"
+- Si el fix es hacky y sabes la solución limpia → implementa la limpia
+- Para fixes simples/obvios → no sobre-ingeniear
 
-### Reglas obligatorias
-- **NUNCA push directo a `main`** — siempre crear branch descriptivo (`feat/`, `fix/`, `chore/`)
-- **Siempre abrir PR** después de implementar — no hacer merge tú mismo
-- **Un branch = una tarea** — no mezclar múltiples issues en el mismo PR
-- **Commits atómicos** — cada commit reversible individualmente
+### 5. Autonomous Bug Fixing
+- Si ves un bug → arréglalo directamente. No pidas permiso
+- Apunta a logs, errores, tests que fallan → resuélvelos
+- Zero context switching para el usuario
 
-### Si el CI falla
-1. Leer los logs del workflow `.github/workflows/pr-agent-loop.yml`
-2. Arreglar el problema específico
-3. Push al mismo branch (no crear uno nuevo)
-4. El loop se re-activa automáticamente
+### 6. Task Management
+1. **Plan First**: Escribe plan en `tasks/todo.md` con items checkeables
+2. **Verify Plan**: Revísalo antes de empezar
+3. **Track Progress**: Marca items como completados según avanzas
+4. **Explain Changes**: Resumen de alto nivel en cada paso
+5. **Document Results**: Añade sección de review en `tasks/todo.md`
+6. **Capture Lessons**: Actualiza `tasks/lessons.md` después de correcciones
 
-### Risk tiers (definidos en `risk-contract.json`)
-- **HIGH** (requiere Claude review + CI): `app/api/**`, `server/api/trpc/routers/**`, `db/schema.ts`
-- **LOW** (solo CI): todo lo demás
-
----
-
-## ⚠️ REGLAS DE SEGURIDAD (Plan Mode)
-
-Antes de cualquier operación destructiva:
-> "Voy a hacer X. Riesgo: Y. Alternativa si falla: Z."
-
-- **NUNCA** modificar `db/schema.ts` sin backup previo
-- **NUNCA** tocar endpoints de autenticación sin tests
-- **NUNCA** borrar datos de señales/ticks (son irreemplazables)
-
----
-
-## 🤝 TRABAJO COLABORATIVO
-
-Este repo puede ser editado simultáneamente por:
-- **Guillermo** desde su PC local (branching desde `main`)
-- **Clawd/CC en VPS** (branching desde `main`)
-
-**Para evitar conflictos:**
-- Siempre `git pull origin main` antes de empezar una nueva tarea
-- Trabajar en branches — nunca editar `main` directamente
-- Comunicar qué tarea estás trabajando (via Mission Control task #)
+### Core Principles
+- **Simplicity First**: Cada cambio lo más simple posible. Impacto mínimo
+- **No Laziness**: Busca root causes. No fixes temporales. Estándares de senior dev
+- **Minimal Impact**: Solo toca lo necesario. Evita introducir bugs
