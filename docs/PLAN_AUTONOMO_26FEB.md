@@ -37,12 +37,24 @@ Avanzar el proyecto Trading Bot SaaS de forma autónoma mientras Guille come.
 ## Progreso
 
 ### Completado:
-- (se irá actualizando)
+- [x] Sincronización GitHub - Push de 4 commits
+- [x] Verificar que el servidor arranca - OK, sin errores
+- [x] Tests básicos para API REST - tests/api/bot/config.test.ts
+- [x] Documentación actualizada - ESTADO_SESION.md, API_BOT.md
+- [x] Script de setup - bot/setup.ps1
+- [x] Mejoras UI - Navegación con indicador de estado del bot
+
+### Commits realizados:
+1. `adc1f4a` feat: integración bot operativa con SaaS
+2. `49c8457` feat: dashboard de gestión de bot operativo
+3. `18af396` chore: añadir dependencias Radix UI
+4. `347344a` docs: tests, documentación y mejoras de navegación
 
 ### Bloqueos:
-- (ninguno por ahora)
+- Ninguno
 
 ---
 
 **Inicio:** 26 Feb 2026 ~14:00
-**Fin estimado:** ~15:30
+**Fin:** 26 Feb 2026 ~14:30
+**Estado:** ✅ Completado
