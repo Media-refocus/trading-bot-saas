@@ -61,7 +61,6 @@ import Link from "next/link";
 
 // ==================== TYPES ====================
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type BotConfig = any;
 
 // ==================== COMPONENTS ====================

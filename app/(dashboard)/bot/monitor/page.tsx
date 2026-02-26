@@ -35,13 +35,9 @@ import Link from "next/link";
 
 // ==================== TYPES ====================
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Position = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type BotStatus = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Signal = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Trade = any;
 
 // ==================== COMPONENTS ====================

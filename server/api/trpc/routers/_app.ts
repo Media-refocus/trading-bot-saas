@@ -5,6 +5,7 @@ import { backtesterRouter } from "./backtester";
 import { strategiesRouter } from "./strategies";
 import { botRouter } from "./bot";
 import { marketplaceRouter } from "./marketplace";
+import { notificationsRouter } from "./notifications";
 
 export const appRouter = router({
   auth: authRouter,
@@ -13,6 +14,7 @@ export const appRouter = router({
   strategies: strategiesRouter,
   bot: botRouter,
   marketplace: marketplaceRouter,
+  notifications: notificationsRouter,
 });
 
 export type AppRouter = typeof appRouter;

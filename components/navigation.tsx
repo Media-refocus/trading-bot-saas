@@ -1,14 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { Activity, Settings, BarChart3, Bot, LogOut, Circle, Store } from "lucide-react";
+import { NotificationBell } from "@/components/notification-bell";
 
 export default function Navigation() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    router.push("/login");
+    router.refresh();
+  };
 
   // Obtener estado del bot (solo si estamos en rutas del dashboard)
   const { data: botStatus } = trpc.bot.getStatus.useQuery(undefined, {
@@ -76,15 +85,21 @@ export default function Navigation() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <Link href="/bot/monitor">
               <Button variant="outline" size="sm" className="gap-2">
                 <Activity className="h-4 w-4" />
                 Monitor
               </Button>
             </Link>
-            <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2 text-muted-foreground"
+              onClick={handleLogout}
+            >
               <LogOut className="h-4 w-4" />
-              Cerrar Sesión
+              Cerrar Sesion
             </Button>
           </div>
         </div>

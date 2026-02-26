@@ -1,12 +1,17 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// ============================================
+// Prisma Schema para PostgreSQL (Produccion)
+// ============================================
+// Para usar este schema:
+// 1. Copia este contenido a schema.prisma
+// 2. Configura DATABASE_URL en .env.production
+// 3. Ejecuta: npx prisma migrate deploy
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -34,6 +39,8 @@ model Tenant {
 
   // Marketplace
   publishedStrategies PublishedStrategy[]
+
+  @@index([email])
 }
 
 model User {
@@ -54,7 +61,9 @@ model User {
   publishedStrategies PublishedStrategy[]
   strategyLikes    StrategyLike[]
   strategyComments StrategyComment[]
-  notifications    Notification[]
+
+  @@index([email])
+  @@index([tenantId])
 }
 
 model Account {
@@ -73,6 +82,7 @@ model Account {
   session_state     String?
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -81,6 +91,9 @@ model Session {
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expires      DateTime
+
+  @@index([userId])
+  @@index([sessionToken])
 }
 
 model VerificationToken {
@@ -109,6 +122,9 @@ model TradingAccount {
   updatedAt           DateTime @updatedAt
 
   positions           Position[]
+
+  @@index([tenantId])
+  @@index([userId])
 }
 
 model Signal {
@@ -118,9 +134,9 @@ model Signal {
   botConfigId     String?
   botConfig       BotConfig? @relation(fields: [botConfigId], references: [id], onDelete: SetNull)
 
-  // Señal original de Telegram
+  // Senal original de Telegram
   side            String              // "BUY", "SELL"
-  price           Float?
+  price           Double?
   symbol          String              // "XAUUSD"
   messageText     String
   receivedAt      DateTime @default(now())
@@ -164,11 +180,11 @@ model Position {
 
   side            String              // "BUY", "SELL"
   symbol          String              // "XAUUSD"
-  lotSize         Float
-  openPrice       Float
-  closePrice      Float?
-  stopLoss        Float?
-  takeProfit      Float?
+  lotSize         Double
+  openPrice       Double
+  closePrice      Double?
+  stopLoss        Double?
+  takeProfit      Double?
 
   // Estado
   status          String              @default("OPEN") // "OPEN", "CLOSED", "PENDING"
@@ -176,14 +192,17 @@ model Position {
   closedAt        DateTime?
 
   // Resultado
-  profitPips      Float?
-  profitMoney     Float?
+  profitPips      Double?
+  profitMoney     Double?
 
   // Grid levels
   level           Int                 @default(0) // 0=base, 1=primer promedio, etc.
 
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([signalId])
 }
 
 model Subscription {
@@ -199,7 +218,9 @@ model Subscription {
   currentPeriodEnd   DateTime?
 
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 // Backtesting System
@@ -212,23 +233,23 @@ model Backtest {
   strategyName      String              // "Toni G4", "Xisco G2", "Custom"
   status            String              @default("PENDING") // "PENDING", "RUNNING", "COMPLETED", "ERROR"
 
-  // Parámetros de configuración (JSON)
+  // Parametros de configuracion (JSON)
   parameters        Json                // { lotaje, pipsDistance, maxLevels, takeProfit, stopLoss, useStopLoss, restrictionType }
 
   // Resultados
   totalTrades       Int                 @default(0)
-  totalProfit       Float               @default(0)
-  totalProfitPips   Float               @default(0)
-  winRate          Float               @default(0)
-  maxDrawdown       Float               @default(0)
-  profitFactor      Float               @default(0)
+  totalProfit       Double              @default(0)
+  totalProfitPips   Double              @default(0)
+  winRate          Double               @default(0)
+  maxDrawdown       Double              @default(0)
+  profitFactor      Double              @default(0)
 
-  // Control de ejecución
+  // Control de ejecucion
   startedAt         DateTime?
   completedAt       DateTime?
   error            String?
 
-  // Tiempo de simulación
+  // Tiempo de simulacion
   ticksProcessed    Int                 @default(0)
   totalTicks        Int                 @default(0)
 
@@ -236,6 +257,9 @@ model Backtest {
   updatedAt         DateTime             @updatedAt
 
   trades           SimulatedTrade[]
+
+  @@index([tenantId])
+  @@index([status])
 }
 
 model SimulatedTrade {
@@ -246,49 +270,52 @@ model SimulatedTrade {
   backtestId      String
   backtest        Backtest  @relation(fields: [backtestId], references: [id], onDelete: Cascade)
 
-  // Referencia a señal original (si existe)
-  signalIndex     Int                 // Índice en el CSV de señales
+  // Referencia a senal original (si existe)
+  signalIndex     Int                 // Indice en el CSV de senales
 
   // Tipo de evento
   type            String              // "OPEN", "AVERAGE", "CLOSE", "TAKE_PROFIT", "STOP_LOSS"
 
-  // Datos de la operación
+  // Datos de la operacion
   side            String              // "BUY", "SELL"
-  price           Float
-  lotSize         Float
+  price           Double
+  lotSize         Double
   level           Int                 @default(0) // 0=base, 1=primer promedio, etc.
 
   // Resultado
-  profit          Float
-  profitPips      Float
+  profit          Double
+  profitPips      Double
 
-  // Timestamp de cuándo ocurrió (simulado)
+  // Timestamp de cuando ocurrio (simulado)
   timestamp       DateTime
 
   createdAt       DateTime             @default(now())
+
+  @@index([backtestId])
+  @@index([tenantId])
 }
 
 // ============================================
-// TICKS CACHE - Datos históricos para backtesting
+// TICKS CACHE - Datos historicos para backtesting
 // ============================================
-// Usamos SQLite como cache de disco para evitar cargar ~1GB en memoria.
-// Los ticks se importan una vez desde archivos .gz y luego las consultas son rápidas.
+// IMPORTANTE: Esta tabla puede tener 70M+ registros
+// Considera particionamiento o almacenamiento alternativo para produccion
 
 model TickData {
-  id        Int      @id @default(autoincrement())
+  id        BigInt   @id @default(autoincrement())
 
-  // Símbolo del activo
+  // Simbolo del activo
   symbol    String              // "XAUUSD"
 
-  // Timestamp del tick (almacenado como número para índice eficiente)
+  // Timestamp del tick
   timestamp DateTime            // UTC
 
   // Precios
-  bid       Float
-  ask       Float
-  spread    Float
+  bid       Double
+  ask       Double
+  spread    Double
 
-  // Índice compuesto para consultas rápidas por rango de fechas
+  // Indices para consultas rapidas
   @@index([symbol, timestamp])
   @@index([timestamp])
 }
@@ -304,11 +331,11 @@ model Strategy {
 
   // Nombre descriptivo
   name            String              // "Mi estrategia conservadora"
-  description     String?             // Descripción opcional
+  description     String?             // Descripcion opcional
 
-  // Parámetros de configuración
+  // Parametros de configuracion
   strategyName    String              @default("Custom") // "Toni G4", "Xisco G2", "Custom"
-  lotajeBase      Float               @default(0.1)
+  lotajeBase      Double              @default(0.1)
   numOrders       Int                 @default(1)
   pipsDistance    Int                 @default(10)
   maxLevels       Int                 @default(4)
@@ -319,11 +346,11 @@ model Strategy {
   trailingSLPercent Int              @default(50)
   restrictionType String?             // "RIESGO", "SIN_PROMEDIOS", "SOLO_1_PROMEDIO"
 
-  // Resultados del último backtest (para referencia)
+  // Resultados del ultimo backtest (para referencia)
   lastTotalTrades Int?
-  lastTotalProfit Float?
-  lastWinRate     Float?
-  lastMaxDrawdown Float?
+  lastTotalProfit Double?
+  lastWinRate     Double?
+  lastMaxDrawdown Double?
   lastTestedAt    DateTime?
 
   // Metadatos
@@ -344,7 +371,7 @@ model PublishedStrategy {
   tenantId        String
   tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  // Autor (quien publicó)
+  // Autor (quien publico)
   authorId        String
   author          User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
@@ -353,14 +380,14 @@ model PublishedStrategy {
   parentStrategy PublishedStrategy? @relation("StrategyForks", fields: [parentStrategyId], references: [id], onDelete: SetNull)
   forks            PublishedStrategy[] @relation("StrategyForks")
 
-  // Información básica
+  // Informacion basica
   name            String
   description     String?
   version         Int      @default(1)
 
-  // Parámetros de configuración (copiados de Strategy)
+  // Parametros de configuracion (copiados de Strategy)
   strategyName    String              @default("Custom")
-  lotajeBase      Float               @default(0.1)
+  lotajeBase      Double              @default(0.1)
   numOrders       Int                 @default(1)
   pipsDistance    Int                 @default(10)
   maxLevels       Int                 @default(4)
@@ -371,19 +398,19 @@ model PublishedStrategy {
   trailingSLPercent Int              @default(50)
   restrictionType String?             // "RIESGO", "SIN_PROMEDIOS", "SOLO_1_PROMEDIO"
 
-  // Resultados del backtest (snapshot al publicación)
+  // Resultados del backtest (snapshot al publicacion)
   totalTrades     Int      @default(0)
-  totalProfit     Float    @default(0)
-  winRate         Float    @default(0)
-  maxDrawdown     Float    @default(0)
-  profitFactor    Float    @default(0)
+  totalProfit     Double   @default(0)
+  winRate         Double   @default(0)
+  maxDrawdown     Double   @default(0)
+  profitFactor    Double   @default(0)
 
-  // Métricas sociales
+  // Metricas sociales
   likesCount      Int      @default(0)
   forksCount     Int      @default(0)
   downloadsCount Int      @default(0)
 
-  // Categorización
+  // Categorizacion
   tags            Json?    // Array de strings serializado: ["tag1", "tag2"]
   isPublic        Boolean @default(true)
 
@@ -403,7 +430,7 @@ model PublishedStrategy {
 }
 
 // ============================================
-// BOT CONFIGURATION - Configuración del bot por tenant
+// BOT CONFIGURATION - Configuracion del bot por tenant
 // ============================================
 
 model BotConfig {
@@ -411,33 +438,33 @@ model BotConfig {
   tenantId        String   @unique
   tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  // API Key para autenticación del bot (hasheada con bcrypt)
+  // API Key para autenticacion del bot (hasheada con bcrypt)
   apiKeyHash      String
 
   // Estado del bot
   status          String   @default("OFFLINE") // "OFFLINE", "ONLINE", "ERROR", "PAUSED"
 
-  // Configuración de Telegram (encriptada)
+  // Configuracion de Telegram (encriptada)
   telegramApiIdEnc     String?
   telegramApiHashEnc   String?
   telegramSessionEnc   String?
   telegramChannels     Json?    // [{id, accessHash}]
 
-  // Configuración de trading
+  // Configuracion de trading
   symbol          String   @default("XAUUSD")
   magicNumber     Int      @default(20250101)
 
-  // Parámetros de entrada (entry)
-  entryLot        Float    @default(0.1)
+  // Parametros de entrada (entry)
+  entryLot        Double   @default(0.1)
   entryNumOrders  Int      @default(1)
   entryTrailingActivate Int?    // pips para activar trailing
   entryTrailingStep     Int?    // pips step del trailing
   entryTrailingBack     Int?    // pips de retroceso
   entryTrailingBuffer   Int?    // buffer en pips
 
-  // Parámetros de promedios (grid)
+  // Parametros de promedios (grid)
   gridStepPips    Int      @default(10)
-  gridLot         Float    @default(0.1)
+  gridLot         Double   @default(0.1)
   gridMaxLevels   Int      @default(4)
   gridNumOrders   Int      @default(1)
   gridTolerancePips Int    @default(1)
@@ -475,7 +502,7 @@ model BotAccount {
   serverEnc       String
   pathEnc         String?
 
-  // Configuración específica de la cuenta
+  // Configuracion especifica de la cuenta
   symbol          String   @default("XAUUSD")
   magic           Int
 
@@ -483,10 +510,10 @@ model BotAccount {
   isActive        Boolean  @default(true)
   lastSyncAt      DateTime?
 
-  // Métricas últimas del heartbeat
-  lastBalance     Float?
-  lastEquity      Float?
-  lastMargin      Float?
+  // Metricas ultimas del heartbeat
+  lastBalance     Double?
+  lastEquity      Double?
+  lastMargin      Double?
 
   // Relaciones
   trades          Trade[]
@@ -507,9 +534,9 @@ model BotHeartbeat {
   botConfigId     String
   botConfig       BotConfig @relation(fields: [botConfigId], references: [id], onDelete: Cascade)
 
-  // Información del heartbeat
+  // Informacion del heartbeat
   timestamp       DateTime @default(now())
-  version         String?  // Versión del bot
+  version         String?  // Version del bot
   uptimeSeconds   Int?
   mt5Connected    Boolean  @default(false)
   telegramConnected Boolean @default(false)
@@ -518,9 +545,9 @@ model BotHeartbeat {
   openPositions   Int      @default(0)
   pendingOrders   Int      @default(0)
 
-  // Métricas
-  memoryMB        Float?
-  cpuPercent      Float?
+  // Metricas
+  memoryMB        Double?
+  cpuPercent      Double?
 
   // Error (si lo hay)
   errorMessage    String?
@@ -550,25 +577,25 @@ model Trade {
 
   // Apertura
   mt5Ticket       Int?                // Ticket en MT5
-  openPrice       Float
-  lotSize         Float
+  openPrice       Double
+  lotSize         Double
   openedAt        DateTime @default(now())
 
   // Cierre
-  closePrice      Float?
+  closePrice      Double?
   closedAt        DateTime?
   closeReason     String?             // "TAKE_PROFIT", "STOP_LOSS", "MANUAL", "GRID_STEP", "VIRTUAL_SL"
 
   // SL/TP
-  stopLoss        Float?
-  takeProfit      Float?
-  virtualSL       Float?              // Trailing SL virtual
+  stopLoss        Double?
+  takeProfit      Double?
+  virtualSL       Double?              // Trailing SL virtual
 
   // Resultado
-  profitPips      Float?
-  profitMoney     Float?
-  commission      Float?
-  swap            Float?
+  profitPips      Double?
+  profitMoney     Double?
+  commission      Double?
+  swap            Double?
 
   // Estado
   status          String  @default("OPEN") // "PENDING", "OPEN", "CLOSED", "FAILED"
@@ -594,23 +621,23 @@ model BotPosition {
   botAccount      BotAccount @relation(fields: [botAccountId], references: [id], onDelete: Cascade)
   tradeId         String?  @unique
 
-  // Datos de la posición
+  // Datos de la posicion
   mt5Ticket       Int
   symbol          String
   side            String
   level           Int      @default(0)
 
   // Estado actual
-  openPrice       Float
-  currentPrice    Float?
-  lotSize         Float
-  stopLoss        Float?
-  takeProfit      Float?
-  virtualSL       Float?
+  openPrice       Double
+  currentPrice    Double?
+  lotSize         Double
+  stopLoss        Double?
+  takeProfit      Double?
+  virtualSL       Double?
 
   // P&L no realizado
-  unrealizedPL    Float?
-  unrealizedPips  Float?
+  unrealizedPL    Double?
+  unrealizedPips  Double?
 
   // Timestamps
   openedAt        DateTime
@@ -658,26 +685,3 @@ model StrategyComment {
 
   @@index([publishedStrategyId])
 }
-
-// ============================================
-// NOTIFICATION - Notificaciones del sistema
-// ============================================
-
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  type      String              // "INFO", "SUCCESS", "WARNING", "ERROR"
-  title     String
-  message   String
-  link      String?             // URL opcional para navegar al hacer click
-
-  isRead    Boolean  @default(false)
-
-  createdAt DateTime @default(now())
-
-  @@index([userId, isRead])
-  @@index([userId, createdAt])
-}
-
