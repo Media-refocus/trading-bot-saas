@@ -31,3 +31,19 @@ Started: Initial setup
   - Stripe SDK requires specific apiVersion - always use latest from TypeScript types
   - Singleton pattern prevents multiple Stripe instances in dev hot reload
 ---
+
+## [2026-02-26 23:32] - US-002
+- Added PlanType enum (BASIC, PRO, ENTERPRISE) to Prisma schema
+- Added SubscriptionStatus enum (TRIAL, ACTIVE, PAST_DUE, CANCELED, PAUSED)
+- Updated Subscription model: plan (PlanType), status (SubscriptionStatus), trialEnd (DateTime?)
+- Added plan field to Tenant model with default "TRIAL"
+- Ran prisma migrate dev --name stripe-plans (SQLite dev.db created)
+- Typecheck and build pass
+- **Files changed:**
+  - prisma/schema.prisma (modified)
+  - prisma/migrations/20260226223205_stripe_plans/ (new, but not tracked per .gitignore)
+- **Learnings for future iterations:**
+  - Project intentionally ignores migration.sql files in .gitignore (only tracks schema)
+  - Run migrations with: DATABASE_URL="file:./dev.db" npx prisma migrate dev --name <name>
+  - Prisma enums are better than string types for type safety
+---
