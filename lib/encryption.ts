@@ -1,6 +1,8 @@
 /**
  * Utilidades de cifrado para credenciales sensibles
  * Usa AES-256-GCM para cifrar credenciales MT5 y Telegram
+ *
+ * IMPORTANTE: En producción, CREDENTIALS_ENCRYPTION_KEY es OBLIGATORIO
  */
 
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
@@ -9,12 +11,6 @@ import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 // Generar con: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 const ENCRYPTION_KEY = process.env.CREDENTIALS_ENCRYPTION_KEY;
 
-if (!ENCRYPTION_KEY) {
-  console.warn(
-    "⚠️ CREDENTIALS_ENCRYPTION_KEY no definida. Las credenciales no se cifrarán."
-  );
-}
-
 /**
  * Cifra un texto plano usando AES-256-GCM
  * @param plaintext - Texto a cifrar (ej: contraseña MT5)
@@ -22,7 +18,17 @@ if (!ENCRYPTION_KEY) {
  */
 export function encryptCredential(plaintext: string): string {
   if (!ENCRYPTION_KEY) {
+    // En producción, la clave de encriptación es OBLIGATORIA
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "CREDENTIALS_ENCRYPTION_KEY must be set in production. " +
+          "Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
+      );
+    }
     // En desarrollo sin clave, guardar con prefijo para identificar
+    console.warn(
+      "⚠️ CREDENTIALS_ENCRYPTION_KEY no definida. Las credenciales no se cifrarán."
+    );
     return `PLAINTEXT:${plaintext}`;
   }
 
@@ -50,6 +56,10 @@ export function encryptCredential(plaintext: string): string {
 export function decryptCredential(encrypted: string): string {
   // Si no había clave de cifrado, el valor tiene prefijo PLAINTEXT:
   if (encrypted.startsWith("PLAINTEXT:")) {
+    // En producción no permitimos credenciales en texto plano
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Cannot decrypt plaintext credentials in production");
+    }
     return encrypted.slice(10);
   }
 

@@ -189,7 +189,7 @@ export interface TradeDetail {
   // Salida
   exitPrice: number;             // Precio de cierre
   exitTime: Date;                // Cuándo se cerró
-  exitReason: "TAKE_PROFIT" | "STOP_LOSS" | "TRAILING_SL";
+  exitReason: "TAKE_PROFIT" | "STOP_LOSS" | "TRAILING_SL" | "SIGNAL_CLOSE";
 
   // Métricas
   totalLots: number;             // Suma de lotes
@@ -256,7 +256,12 @@ export class BacktestEngine {
    * Inicia una nueva señal
    */
   startSignal(side: Side, price: number, signalIndex: number = 0, signalTimestamp: Date = new Date()): void {
-    // Guardar info de la señal actual
+    // BUGFIX: Validar precio de entrada
+    if (price <= 0) {
+      throw new Error(`Precio de entrada invalido: ${price}. La senal ${signalIndex} no tiene precio valido.`);
+    }
+
+    // Guardar info de la senal actual
     this.currentSignalIndex = signalIndex;
     this.currentSignalTimestamp = signalTimestamp;
     this.currentSignalPrice = price;
@@ -696,7 +701,7 @@ export class BacktestEngine {
   /**
    * Cierra todas las operaciones (cuando SL de entrada o emergencia)
    */
-  private closeAllPositions(currentPrice: number, reason: "TAKE_PROFIT" | "STOP_LOSS", closeTimestamp: Date = new Date()): SimulatedTrade[] {
+  private closeAllPositions(currentPrice: number, reason: "TAKE_PROFIT" | "STOP_LOSS" | "SIGNAL_CLOSE", closeTimestamp: Date = new Date()): SimulatedTrade[] {
     const closingTrades: SimulatedTrade[] = [];
     const isBuy = this.side === "BUY";
     const levels: TradeLevel[] = [];
@@ -711,7 +716,7 @@ export class BacktestEngine {
           continue;
         }
 
-        // Calcular profit/loss con precisión Decimal
+        // Calcular profit/loss con precision Decimal
         const profitPips = Finance.toNumber(
           isBuy
             ? Finance.div(Finance.sub(currentPrice, trade.price), PIP_VALUE)
@@ -724,7 +729,7 @@ export class BacktestEngine {
 
         const closingTrade: SimulatedTrade = {
           ...trade,
-          type: reason,
+          type: reason === "SIGNAL_CLOSE" ? "CLOSE" : reason,
           profit,
           profitPips,
         };
@@ -755,9 +760,11 @@ export class BacktestEngine {
     if (this.currentEntryTime && this.currentSignalTimestamp) {
       const durationMinutes = (closeTimestamp.getTime() - this.currentEntryTime.getTime()) / 60000;
 
-      // Determinar razón de salida real
-      let exitReason: "TAKE_PROFIT" | "STOP_LOSS" | "TRAILING_SL" = "STOP_LOSS";
-      if (reason === "STOP_LOSS" && this.entrySL !== null) {
+      // Determinar razon de salida real
+      let exitReason: "TAKE_PROFIT" | "STOP_LOSS" | "TRAILING_SL" | "SIGNAL_CLOSE" = "STOP_LOSS";
+      if (reason === "SIGNAL_CLOSE") {
+        exitReason = "SIGNAL_CLOSE";
+      } else if (reason === "STOP_LOSS" && this.entrySL !== null) {
         exitReason = "TRAILING_SL";
       } else if (reason === "TAKE_PROFIT") {
         exitReason = "TAKE_PROFIT";
@@ -797,7 +804,7 @@ export class BacktestEngine {
   }
 
   /**
-   * Cierra posiciones que quedaron abiertas al final de una señal
+   * Cierra posiciones que quedaron abiertas al final de una senal
    * Se llama cuando se acaban los ticks y el trade sigue abierto
    * Esto representa el cierre real cuando llega el mensaje "cerramos rango" de Telegram
    */
@@ -806,8 +813,9 @@ export class BacktestEngine {
       return [];
     }
 
-    console.log(`[Engine] Cerrando posiciones pendientes al final de señal - precio: ${lastPrice.toFixed(2)}`);
-    return this.closeAllPositions(lastPrice, "STOP_LOSS", closeTimestamp);
+    console.log(`[Engine] Cerrando posiciones pendientes al final de senal - precio: ${lastPrice.toFixed(2)}`);
+    // BUGFIX: Usar SIGNAL_CLOSE en lugar de STOP_LOSS para distinguir cierre por fin de senal
+    return this.closeAllPositions(lastPrice, "SIGNAL_CLOSE", closeTimestamp);
   }
 
   /**

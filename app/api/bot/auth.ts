@@ -1,11 +1,18 @@
 /**
  * Middleware de autenticación para endpoints del bot
  * Valida API key y proporciona contexto del bot
+ * Incluye rate limiting para proteger contra abuso
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { extractApiKeyFromHeader, validateApiKey } from "@/lib/api-key";
+import {
+  checkRateLimit,
+  getClientIp,
+  RATE_LIMITS,
+  createRateLimitHeaders,
+} from "@/lib/rate-limit";
 
 // Cache de bot configs para evitar consultas repetidas
 // TTL: 60 segundos
@@ -29,6 +36,35 @@ export interface BotAuthResult {
 export interface BotAuthError {
   success: false;
   error: NextResponse;
+}
+
+/**
+ * Verifica rate limiting antes de procesar la autenticacion
+ * Se aplica por IP para proteger contra ataques de fuerza bruta
+ */
+export function checkBotRateLimit(
+  request: NextRequest
+): { allowed: true } | { allowed: false; error: NextResponse } {
+  const clientIp = getClientIp(request);
+  const rateLimitKey = `bot:${clientIp}`;
+  const result = checkRateLimit(rateLimitKey, RATE_LIMITS.bot);
+
+  if (!result.allowed) {
+    const headers = createRateLimitHeaders(result);
+    return {
+      allowed: false,
+      error: NextResponse.json(
+        {
+          error: "Rate limit exceeded",
+          message: `Demasiadas solicitudes. Intenta de nuevo en ${result.retryAfter} segundos.`,
+          retryAfter: result.retryAfter,
+        },
+        { status: 429, headers }
+      ),
+    };
+  }
+
+  return { allowed: true };
 }
 
 /**

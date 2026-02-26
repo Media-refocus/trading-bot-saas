@@ -249,8 +249,14 @@ export const backtesterRouter = router({
           }
 
           if (enrichedSignals.length > 0) {
-            signals = enrichedSignals;
-            console.log(`[Backtester] Enriquecidas ${enrichedSignals.length} senales con precios reales`);
+            // BUGFIX: Validar senales con precio valido
+            const validSignals = enrichedSignals.filter(s => s.entryPrice > 0);
+            const skippedCount = enrichedSignals.length - validSignals.length;
+            if (skippedCount > 0) {
+              console.log(`[Backtester] Saltadas ${skippedCount} senales sin precio valido`);
+            }
+            signals = validSignals;
+            console.log(`[Backtester] Enriquecidas ${validSignals.length} senales con precios reales`);
           }
         }
         // ==================== FIN BATCH LOADING ====================

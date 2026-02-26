@@ -1,8 +1,31 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
+import {
+  checkRateLimit,
+  getClientIp,
+  RATE_LIMITS,
+  createRateLimitHeaders,
+} from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  // Rate limiting por IP
+  const clientIp = getClientIp(request);
+  const rateLimitKey = `register:${clientIp}`;
+  const rateLimitResult = checkRateLimit(rateLimitKey, RATE_LIMITS.register);
+
+  if (!rateLimitResult.allowed) {
+    const headers = createRateLimitHeaders(rateLimitResult);
+    return NextResponse.json(
+      {
+        error: "Demasiados intentos de registro",
+        message: `Por favor espera ${rateLimitResult.retryAfter} segundos antes de intentar de nuevo.`,
+        retryAfter: rateLimitResult.retryAfter,
+      },
+      { status: 429, headers }
+    );
+  }
+
   try {
     const { name, email, password } = await request.json();
 

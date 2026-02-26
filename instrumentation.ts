@@ -8,9 +8,14 @@
  * - Arranque instantáneo
  */
 
+import { validateProductionConfig } from "@/lib/config";
+
 export async function register() {
   // Solo ejecutar en el servidor, no en edge
   if (process.env.NEXT_RUNTIME === "nodejs") {
+    // Validar configuracion obligatoria en produccion
+    validateProductionConfig();
+
     console.log("[Server] ========================================");
     console.log("[Server] Trading Bot SaaS - Backtester");
     console.log("[Server] ========================================");
