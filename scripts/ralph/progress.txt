@@ -5,10 +5,11 @@ Started: Initial setup
 ## Codebase Patterns
 - Multi-tenant: every DB query must filter by tenantId
 - Auth: NextAuth v5 with getServerSession, session includes tenantId
+- Client-side auth: useSession hook from "next-auth/react" (SessionProvider in components/providers.tsx)
 - tRPC routers in server/api/trpc/routers/, registered in _app.ts
 - API routes (non-tRPC) in app/api/
 - UI components: shadcn/ui from @/components/ui/
-- Pages: app/(dashboard)/ for authenticated, app/(auth)/ for login/register
+- Pages: app/(dashboard)/ for authenticated, app/(auth)/ for login/register, app/(marketing)/ for public pages
 - Prisma client: import from @/lib/prisma (singleton pattern)
 - Existing Subscription model in schema.prisma (line ~189)
 - Registration flow: app/api/register/route.ts
@@ -46,4 +47,34 @@ Started: Initial setup
   - Project intentionally ignores migration.sql files in .gitignore (only tracks schema)
   - Run migrations with: DATABASE_URL="file:./dev.db" npx prisma migrate dev --name <name>
   - Prisma enums are better than string types for type safety
+---
+
+## [2026-02-26 23:45] - US-003
+- Updated register route to auto-create trial subscription
+- Uses Prisma $transaction for atomic creation of tenant, user, and subscription
+- Trial subscription: plan=PRO, status=TRIAL, trialEnd=now+14days
+- Typecheck and build pass
+- **Files changed:**
+  - app/api/register/route.ts (modified)
+- **Learnings for future iterations:**
+  - Use Prisma $transaction when creating related entities to ensure atomicity
+  - Trial users get PRO features (per PRD notes)
+---
+
+## [2026-02-26 23:55] - US-004
+- Created marketing layout with header/footer navigation
+- Created pricing page at app/(marketing)/pricing/page.tsx
+- Shows 3 plan cards (Basic €57, Pro €147, Enterprise €347) with feature comparison
+- Pro plan highlighted as "Most Popular" with Badge component
+- CTA buttons: "Start Free Trial" (not logged in) / "Subscribe" (logged in)
+- Includes ROI section and FAQs from docs/PLANS.md
+- Uses useSession from next-auth/react for auth state
+- Typecheck and build pass
+- **Files changed:**
+  - app/(marketing)/layout.tsx (new)
+  - app/(marketing)/pricing/page.tsx (new)
+- **Learnings for future iterations:**
+  - SessionProvider is already set up in components/providers.tsx
+  - Use useSession hook from "next-auth/react" for client-side auth state
+  - shadcn Badge, Card, Button components work well for pricing cards
 ---

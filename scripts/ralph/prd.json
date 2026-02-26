@@ -42,7 +42,7 @@
         "Typecheck passes"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "notes": "Check app/api/register/route.ts for current flow"
     },
     {
@@ -58,7 +58,7 @@
         "Typecheck passes"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": "Reference docs/PLANS.md for exact features per plan. Use shadcn Card, Badge, Button."
     },
     {
