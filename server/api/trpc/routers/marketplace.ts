@@ -10,36 +10,8 @@
  */
 
 import { z } from "zod";
-import { procedure, router } from "../init";
+import { procedure, protectedProcedure, router } from "../init";
 import { prisma } from "@/lib/prisma";
-
-// ============================================
-// HELPER: Obtener usuario actual
-// ============================================
-// TODO: Reemplazar con contexto de autenticacion real (ctx.user)
-async function getCurrentUser() {
-  let user = await prisma.user.findFirst();
-
-  if (!user) {
-    // Crear usuario por defecto si no existe
-    let tenant = await prisma.tenant.findFirst();
-    if (!tenant) {
-      tenant = await prisma.tenant.create({
-        data: { name: "Default Tenant", email: "default@example.com" },
-      });
-    }
-    user = await prisma.user.create({
-      data: {
-        email: "default@example.com",
-        password: "hashed",
-        name: "Usuario por defecto",
-        tenantId: tenant.id,
-      },
-    });
-  }
-
-  return user;
-}
 
 // ============================================
 // SCHEMAS
@@ -177,14 +149,15 @@ export const marketplaceRouter = router({
   /**
    * Publica una estrategia al marketplace
    */
-  publish: procedure
+  publish: protectedProcedure
     .input(PublishInputSchema)
-    .mutation(async ({ input }) => {
-      const user = await getCurrentUser();
-
-      // Obtener la estrategia original
-      const originalStrategy = await prisma.strategy.findUnique({
-        where: { id: input.strategyId },
+    .mutation(async ({ ctx, input }) => {
+      // Obtener la estrategia original (debe pertenecer al usuario)
+      const originalStrategy = await prisma.strategy.findFirst({
+        where: {
+          id: input.strategyId,
+          tenantId: ctx.user.tenantId,
+        },
       });
 
       if (!originalStrategy) {
@@ -194,8 +167,8 @@ export const marketplaceRouter = router({
       // Crear la operativa publicada
       const published = await prisma.publishedStrategy.create({
         data: {
-          tenantId: user.tenantId,
-          authorId: user.id,
+          tenantId: ctx.user.tenantId,
+          authorId: ctx.user.id,
           name: input.name,
           description: input.description,
           tags: input.tags || [],
@@ -229,14 +202,12 @@ export const marketplaceRouter = router({
   /**
    * Hace fork de una operativa (la copia a tus estrategias)
    */
-  fork: procedure
+  fork: protectedProcedure
     .input(z.object({
       publishedId: z.string(),
       name: z.string().optional(),
     }))
-    .mutation(async ({ input }) => {
-      const user = await getCurrentUser();
-
+    .mutation(async ({ ctx, input }) => {
       // Obtener la operativa publicada
       const published = await prisma.publishedStrategy.findUnique({
         where: { id: input.publishedId },
@@ -249,7 +220,7 @@ export const marketplaceRouter = router({
       // Crear estrategia local a partir del fork
       const forked = await prisma.strategy.create({
         data: {
-          tenantId: user.tenantId,
+          tenantId: ctx.user.tenantId,
           name: input.name || `${published.name} (fork)`,
           description: published.description,
           strategyName: published.strategyName,
@@ -283,11 +254,9 @@ export const marketplaceRouter = router({
    * Toggle like: anade o quita like segun el estado actual
    * Registra en la tabla StrategyLike y actualiza likesCount
    */
-  toggleLike: procedure
+  toggleLike: protectedProcedure
     .input(z.object({ publishedStrategyId: z.string() }))
-    .mutation(async ({ input }) => {
-      const user = await getCurrentUser();
-
+    .mutation(async ({ ctx, input }) => {
       // Verificar que la estrategia existe
       const strategy = await prisma.publishedStrategy.findUnique({
         where: { id: input.publishedStrategyId },
@@ -302,7 +271,7 @@ export const marketplaceRouter = router({
       const existingLike = await prisma.strategyLike.findUnique({
         where: {
           userId_publishedStrategyId: {
-            userId: user.id,
+            userId: ctx.user.id,
             publishedStrategyId: input.publishedStrategyId,
           },
         },
@@ -329,7 +298,7 @@ export const marketplaceRouter = router({
         await prisma.$transaction([
           prisma.strategyLike.create({
             data: {
-              userId: user.id,
+              userId: ctx.user.id,
               publishedStrategyId: input.publishedStrategyId,
             },
           }),
@@ -353,11 +322,9 @@ export const marketplaceRouter = router({
    * Obtiene el estado de like del usuario actual para una estrategia
    * Retorna si el usuario ya dio like y el contador total de likes
    */
-  getLikeStatus: procedure
+  getLikeStatus: protectedProcedure
     .input(z.object({ publishedStrategyId: z.string() }))
-    .query(async ({ input }) => {
-      const user = await getCurrentUser();
-
+    .query(async ({ ctx, input }) => {
       // Obtener la estrategia con su contador de likes
       const strategy = await prisma.publishedStrategy.findUnique({
         where: { id: input.publishedStrategyId },
@@ -372,7 +339,7 @@ export const marketplaceRouter = router({
       const like = await prisma.strategyLike.findUnique({
         where: {
           userId_publishedStrategyId: {
-            userId: user.id,
+            userId: ctx.user.id,
             publishedStrategyId: input.publishedStrategyId,
           },
         },
@@ -431,11 +398,9 @@ export const marketplaceRouter = router({
    * Anade un comentario a una estrategia
    * Retorna el comentario creado con info del autor
    */
-  addComment: procedure
+  addComment: protectedProcedure
     .input(CommentInputSchema)
-    .mutation(async ({ input }) => {
-      const user = await getCurrentUser();
-
+    .mutation(async ({ ctx, input }) => {
       // Verificar que la estrategia existe
       const strategy = await prisma.publishedStrategy.findUnique({
         where: { id: input.publishedStrategyId },
@@ -449,7 +414,7 @@ export const marketplaceRouter = router({
       // Crear el comentario
       const comment = await prisma.strategyComment.create({
         data: {
-          userId: user.id,
+          userId: ctx.user.id,
           publishedStrategyId: input.publishedStrategyId,
           content: input.content,
         },
@@ -521,15 +486,13 @@ export const marketplaceRouter = router({
    * Verifica si el usuario actual ha dado like a una operativa
    * @deprecated Use getLikeStatus instead
    */
-  hasLiked: procedure
+  hasLiked: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .query(async ({ input }) => {
-      const user = await getCurrentUser();
-
+    .query(async ({ ctx, input }) => {
       const like = await prisma.strategyLike.findUnique({
         where: {
           userId_publishedStrategyId: {
-            userId: user.id,
+            userId: ctx.user.id,
             publishedStrategyId: input.id,
           },
         },
@@ -718,11 +681,9 @@ export const marketplaceRouter = router({
    * Elimina una operativa publicada (solo el autor)
    * Verifica que el usuario que hace unpublish es el autor de la estrategia
    */
-  unpublish: procedure
+  unpublish: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      const user = await getCurrentUser();
-
+    .mutation(async ({ ctx, input }) => {
       // Obtener la estrategia para verificar autoria
       const strategy = await prisma.publishedStrategy.findUnique({
         where: { id: input.id },
@@ -734,7 +695,7 @@ export const marketplaceRouter = router({
       }
 
       // Verificar que el usuario es el autor
-      if (strategy.authorId !== user.id) {
+      if (strategy.authorId !== ctx.user.id) {
         throw new Error("No tienes permiso para eliminar esta estrategia. Solo el autor puede unpublish.");
       }
 

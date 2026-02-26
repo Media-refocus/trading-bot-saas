@@ -3,6 +3,18 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,74 +36,85 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError("Credenciales inválidas");
+        setError("Credenciales invalidas. Verifica tu email y password.");
       } else {
         router.push("/dashboard");
         router.refresh();
       }
     } catch {
-      setError("Error al iniciar sesión");
+      setError("Error al iniciar sesion. Intenta nuevamente.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="bg-slate-800 p-8 rounded-lg shadow-lg">
-      <h1 className="text-3xl font-bold text-white mb-6 text-center">
-        Iniciar Sesión
-      </h1>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {error && (
-          <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-2 rounded">
-            {error}
+    <Card className="w-full border-slate-700 bg-slate-800/50 backdrop-blur">
+      <CardHeader className="space-y-1 text-center">
+        <CardTitle className="text-2xl font-bold text-white">
+          Iniciar Sesion
+        </CardTitle>
+        <CardDescription className="text-slate-400">
+          Ingresa tus credenciales para acceder a tu cuenta
+        </CardDescription>
+      </CardHeader>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4">
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-slate-300">
+              Email
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="tu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={isLoading}
+              className="bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus-visible:ring-blue-500"
+            />
           </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
-        </button>
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-slate-300">
+              Password
+            </Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Tu password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={isLoading}
+              className="bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus-visible:ring-blue-500"
+            />
+          </div>
+        </CardContent>
+        <CardFooter className="flex flex-col gap-4">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {isLoading ? "Iniciando sesion..." : "Iniciar Sesion"}
+          </Button>
+          <p className="text-center text-slate-400 text-sm">
+            No tienes cuenta?{" "}
+            <Link
+              href="/register"
+              className="text-blue-400 hover:text-blue-300 font-medium"
+            >
+              Registrate
+            </Link>
+          </p>
+        </CardFooter>
       </form>
-
-      <p className="text-center text-slate-400 mt-6">
-        ¿No tienes cuenta?{" "}
-        <a href="/register" className="text-blue-400 hover:text-blue-300">
-          Regístrate
-        </a>
-      </p>
-    </div>
+    </Card>
   );
 }

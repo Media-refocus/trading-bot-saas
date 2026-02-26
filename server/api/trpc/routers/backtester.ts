@@ -9,7 +9,8 @@
  */
 
 import { z } from "zod";
-import { procedure, router } from "../init";
+import { procedure, protectedProcedure, router } from "../init";
+import { prisma } from "@/lib/prisma";
 import {
   BacktestEngine,
   BacktestConfig,
@@ -366,7 +367,7 @@ export const backtesterRouter = router({
   /**
    * Guarda el resultado de un backtest como estrategia
    */
-  saveAsStrategy: procedure
+  saveAsStrategy: protectedProcedure
     .input(z.object({
       name: z.string().min(1).max(100),
       description: z.string().max(500).optional(),
@@ -378,22 +379,10 @@ export const backtesterRouter = router({
         maxDrawdown: z.number(),
       }),
     }))
-    .mutation(async ({ input }) => {
-      const { prisma } = await import("@/lib/prisma");
-
-      let tenant = await prisma.tenant.findFirst();
-      if (!tenant) {
-        tenant = await prisma.tenant.create({
-          data: {
-            name: "Default Tenant",
-            email: "default@example.com",
-          },
-        });
-      }
-
+    .mutation(async ({ ctx, input }) => {
       const strategy = await prisma.strategy.create({
         data: {
-          tenantId: tenant.id,
+          tenantId: ctx.user.tenantId,
           name: input.name,
           description: input.description,
           strategyName: input.config.strategyName,

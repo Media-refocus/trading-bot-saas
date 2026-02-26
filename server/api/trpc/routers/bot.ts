@@ -6,10 +6,12 @@
  * - Gestionar cuentas MT5
  * - Ver API keys
  * - Ver estado y estadísticas
+ *
+ * Todos los endpoints requieren autenticación y usan el tenant del usuario.
  */
 
 import { z } from "zod";
-import { procedure, router } from "../init";
+import { procedure, protectedProcedure, router } from "../init";
 import { prisma } from "@/lib/prisma";
 import { generateApiKey } from "@/lib/api-key";
 import { encryptCredential } from "@/lib/encryption";
@@ -59,21 +61,11 @@ export const botRouter = router({
   /**
    * Obtiene la configuración del bot del tenant actual
    */
-  getConfig: procedure.query(async () => {
-    // TODO: Obtener tenantId del contexto de autenticación
-    // Por ahora, usar el primer tenant
-    let tenant = await prisma.tenant.findFirst();
-    if (!tenant) {
-      tenant = await prisma.tenant.create({
-        data: {
-          name: "Default Tenant",
-          email: "default@example.com",
-        },
-      });
-    }
+  getConfig: protectedProcedure.query(async ({ ctx }) => {
+    const tenantId = ctx.user.tenantId;
 
     const botConfig = await prisma.botConfig.findUnique({
-      where: { tenantId: tenant.id },
+      where: { tenantId },
       include: {
         botAccounts: {
           orderBy: { createdAt: "asc" },
@@ -140,23 +132,14 @@ export const botRouter = router({
   /**
    * Crea o actualiza la configuración del bot
    */
-  upsertConfig: procedure
+  upsertConfig: protectedProcedure
     .input(BotConfigInputSchema)
-    .mutation(async ({ input }) => {
-      // TODO: Obtener tenantId del contexto de autenticación
-      let tenant = await prisma.tenant.findFirst();
-      if (!tenant) {
-        tenant = await prisma.tenant.create({
-          data: {
-            name: "Default Tenant",
-            email: "default@example.com",
-          },
-        });
-      }
+    .mutation(async ({ ctx, input }) => {
+      const tenantId = ctx.user.tenantId;
 
       // Verificar si ya existe config
       const existing = await prisma.botConfig.findUnique({
-        where: { tenantId: tenant.id },
+        where: { tenantId },
       });
 
       if (existing) {
@@ -187,7 +170,7 @@ export const botRouter = router({
 
         return prisma.botConfig.create({
           data: {
-            tenantId: tenant.id,
+            tenantId,
             apiKeyHash,
             symbol: input.symbol,
             magicNumber: input.magicNumber,

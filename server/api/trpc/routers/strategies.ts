@@ -6,7 +6,7 @@
  */
 
 import { z } from "zod";
-import { procedure, router } from "../init";
+import { procedure, protectedProcedure, router } from "../init";
 import { prisma } from "@/lib/prisma";
 
 // Schema para crear/actualizar estrategia
@@ -28,25 +28,11 @@ const StrategyInputSchema = z.object({
 
 export const strategiesRouter = router({
   /**
-   * Lista todas las estrategias del usuario
+   * Lista todas las estrategias del usuario autenticado
    */
-  list: procedure.query(async ({ ctx }) => {
-    // Por ahora usamos un tenant por defecto
-    // TODO: Obtener tenant del contexto de autenticación
-    let tenant = await prisma.tenant.findFirst();
-
-    if (!tenant) {
-      // Crear tenant por defecto si no existe
-      tenant = await prisma.tenant.create({
-        data: {
-          name: "Default Tenant",
-          email: "default@example.com",
-        },
-      });
-    }
-
+  list: protectedProcedure.query(async ({ ctx }) => {
     const strategies = await prisma.strategy.findMany({
-      where: { tenantId: tenant.id, isActive: true },
+      where: { tenantId: ctx.user.tenantId, isActive: true },
       orderBy: [
         { isFavorite: "desc" },
         { updatedAt: "desc" },
@@ -59,11 +45,14 @@ export const strategiesRouter = router({
   /**
    * Obtiene una estrategia por ID
    */
-  get: procedure
+  get: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .query(async ({ input }) => {
-      const strategy = await prisma.strategy.findUnique({
-        where: { id: input.id },
+    .query(async ({ ctx, input }) => {
+      const strategy = await prisma.strategy.findFirst({
+        where: {
+          id: input.id,
+          tenantId: ctx.user.tenantId,
+        },
       });
 
       return strategy;
@@ -72,23 +61,12 @@ export const strategiesRouter = router({
   /**
    * Crea una nueva estrategia
    */
-  create: procedure
+  create: protectedProcedure
     .input(StrategyInputSchema)
-    .mutation(async ({ input }) => {
-      let tenant = await prisma.tenant.findFirst();
-
-      if (!tenant) {
-        tenant = await prisma.tenant.create({
-          data: {
-            name: "Default Tenant",
-            email: "default@example.com",
-          },
-        });
-      }
-
+    .mutation(async ({ ctx, input }) => {
       const strategy = await prisma.strategy.create({
         data: {
-          tenantId: tenant.id,
+          tenantId: ctx.user.tenantId,
           ...input,
         },
       });
@@ -99,12 +77,21 @@ export const strategiesRouter = router({
   /**
    * Actualiza una estrategia existente
    */
-  update: procedure
+  update: protectedProcedure
     .input(z.object({
       id: z.string(),
       data: StrategyInputSchema.partial(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      // Verificar que la estrategia pertenece al tenant del usuario
+      const existing = await prisma.strategy.findFirst({
+        where: { id: input.id, tenantId: ctx.user.tenantId },
+      });
+
+      if (!existing) {
+        throw new Error("Estrategia no encontrada");
+      }
+
       const strategy = await prisma.strategy.update({
         where: { id: input.id },
         data: input.data,
@@ -114,9 +101,9 @@ export const strategiesRouter = router({
     }),
 
   /**
-   * Actualiza los resultados del último backtest
+   * Actualiza los resultados del ultimo backtest
    */
-  updateResults: procedure
+  updateResults: protectedProcedure
     .input(z.object({
       id: z.string(),
       results: z.object({
@@ -126,7 +113,16 @@ export const strategiesRouter = router({
         maxDrawdown: z.number(),
       }),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      // Verificar que la estrategia pertenece al tenant del usuario
+      const existing = await prisma.strategy.findFirst({
+        where: { id: input.id, tenantId: ctx.user.tenantId },
+      });
+
+      if (!existing) {
+        throw new Error("Estrategia no encontrada");
+      }
+
       const strategy = await prisma.strategy.update({
         where: { id: input.id },
         data: {
@@ -144,17 +140,21 @@ export const strategiesRouter = router({
   /**
    * Marca/desmarca como favorita
    */
-  toggleFavorite: procedure
+  toggleFavorite: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      const current = await prisma.strategy.findUnique({
-        where: { id: input.id },
+    .mutation(async ({ ctx, input }) => {
+      const current = await prisma.strategy.findFirst({
+        where: { id: input.id, tenantId: ctx.user.tenantId },
         select: { isFavorite: true },
       });
 
+      if (!current) {
+        throw new Error("Estrategia no encontrada");
+      }
+
       const strategy = await prisma.strategy.update({
         where: { id: input.id },
-        data: { isFavorite: !current?.isFavorite },
+        data: { isFavorite: !current.isFavorite },
       });
 
       return strategy;
@@ -163,10 +163,19 @@ export const strategiesRouter = router({
   /**
    * Elimina una estrategia (soft delete)
    */
-  delete: procedure
+  delete: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      const strategy = await prisma.strategy.update({
+    .mutation(async ({ ctx, input }) => {
+      // Verificar que la estrategia pertenece al tenant del usuario
+      const existing = await prisma.strategy.findFirst({
+        where: { id: input.id, tenantId: ctx.user.tenantId },
+      });
+
+      if (!existing) {
+        throw new Error("Estrategia no encontrada");
+      }
+
+      await prisma.strategy.update({
         where: { id: input.id },
         data: { isActive: false },
       });
@@ -177,11 +186,11 @@ export const strategiesRouter = router({
   /**
    * Duplica una estrategia
    */
-  duplicate: procedure
+  duplicate: protectedProcedure
     .input(z.object({ id: z.string(), newName: z.string().optional() }))
-    .mutation(async ({ input }) => {
-      const original = await prisma.strategy.findUnique({
-        where: { id: input.id },
+    .mutation(async ({ ctx, input }) => {
+      const original = await prisma.strategy.findFirst({
+        where: { id: input.id, tenantId: ctx.user.tenantId },
       });
 
       if (!original) {
