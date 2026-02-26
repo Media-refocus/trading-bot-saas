@@ -83,6 +83,12 @@ export function checkBotRateLimit(
 export async function authenticateBot(
   request: NextRequest
 ): Promise<BotAuthResult | BotAuthError> {
+  // Verificar rate limiting primero
+  const rateLimitCheck = checkBotRateLimit(request);
+  if (!rateLimitCheck.allowed) {
+    return { success: false, error: rateLimitCheck.error };
+  }
+
   const authHeader = request.headers.get("authorization");
   const apiKey = extractApiKeyFromHeader(authHeader);
 
@@ -95,9 +101,6 @@ export async function authenticateBot(
       ),
     };
   }
-
-  // Obtener versión del bot del header (opcional)
-  const botVersion = request.headers.get("x-bot-version") || "unknown";
 
   // Buscar en cache primero
   const cached = botConfigCache.get(apiKey);
