@@ -1,0 +1,156 @@
+{
+  "project": "Trading Bot SaaS",
+  "branchName": "ralph/stripe-integration",
+  "description": "Stripe subscription system — pricing page, checkout, webhooks, billing portal, plan enforcement",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Stripe SDK setup and env config",
+      "description": "Install Stripe SDK, configure env vars, create lib/stripe.ts helper",
+      "acceptanceCriteria": [
+        "npm install stripe @stripe/stripe-js",
+        "Add STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to .env.example",
+        "Create lib/stripe.ts with server-side Stripe client",
+        "Create lib/stripe-client.ts with client-side loadStripe",
+        "Typecheck passes (npx tsc --noEmit)"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Use stripe@latest. Keys are test mode for now."
+    },
+    {
+      "id": "US-002",
+      "title": "Update Prisma schema for Stripe fields",
+      "description": "Add plan field to Subscription, add trialEnd to Tenant, ensure schema supports trial + 3 plans",
+      "acceptanceCriteria": [
+        "Subscription model has: plan (BASIC/PRO/ENTERPRISE), stripeSubId, stripePriceId, status (TRIAL/ACTIVE/PAST_DUE/CANCELED/PAUSED), trialEnd DateTime?",
+        "Tenant model has: stripeCustomerId (already exists), plan String default 'TRIAL'",
+        "Run prisma migrate dev --name stripe-plans successfully",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Subscription model already exists with basic fields. Extend it. Don't break existing data."
+    },
+    {
+      "id": "US-003",
+      "title": "Auto-create trial subscription on register",
+      "description": "When a user registers, auto-create a 14-day trial Subscription with PRO features",
+      "acceptanceCriteria": [
+        "Registration endpoint creates Subscription with status=TRIAL, plan=PRO, trialEnd=now+14days",
+        "Existing register flow at app/api/register/route.ts is updated",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Check app/api/register/route.ts for current flow"
+    },
+    {
+      "id": "US-004",
+      "title": "Pricing page with 3 plans",
+      "description": "Create /pricing page showing Basic €57, Pro €147, Enterprise €347 with feature comparison",
+      "acceptanceCriteria": [
+        "Page at app/(marketing)/pricing/page.tsx",
+        "Shows 3 plan cards with prices and features from docs/PLANS.md",
+        "Pro plan highlighted as 'Most Popular'",
+        "CTA buttons: 'Start Free Trial' (if not logged in) or 'Subscribe' (if logged in)",
+        "Responsive design with shadcn/ui components",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Reference docs/PLANS.md for exact features per plan. Use shadcn Card, Badge, Button."
+    },
+    {
+      "id": "US-005",
+      "title": "Stripe Checkout session API",
+      "description": "Create API endpoint to generate Stripe Checkout session for plan subscription",
+      "acceptanceCriteria": [
+        "POST /api/stripe/checkout route that creates a Checkout Session",
+        "Accepts { planId: 'basic'|'pro'|'enterprise' }",
+        "Creates or retrieves Stripe Customer (linked to tenant.stripeCustomerId)",
+        "Returns checkout session URL",
+        "Protected: requires authenticated user",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Use Stripe Price IDs from env: STRIPE_PRICE_BASIC, STRIPE_PRICE_PRO, STRIPE_PRICE_ENTERPRISE. Success URL: /dashboard?checkout=success. Cancel URL: /pricing."
+    },
+    {
+      "id": "US-006",
+      "title": "Stripe Webhook handler",
+      "description": "Handle Stripe webhook events to sync subscription status",
+      "acceptanceCriteria": [
+        "POST /api/stripe/webhook route",
+        "Verifies Stripe signature with STRIPE_WEBHOOK_SECRET",
+        "Handles: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted, invoice.payment_failed",
+        "Updates Subscription model status and dates accordingly",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Use raw body parsing (not JSON) for webhook signature verification. Export const runtime = 'nodejs' if needed."
+    },
+    {
+      "id": "US-007",
+      "title": "Billing portal API endpoint",
+      "description": "Create endpoint to redirect users to Stripe Customer Portal for managing subscription",
+      "acceptanceCriteria": [
+        "POST /api/stripe/portal route",
+        "Creates Stripe billing portal session",
+        "Returns portal URL",
+        "Protected: requires authenticated user with stripeCustomerId",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Return URL should be /dashboard"
+    },
+    {
+      "id": "US-008",
+      "title": "Plan enforcement middleware",
+      "description": "Create helper to check user plan and enforce feature gates",
+      "acceptanceCriteria": [
+        "lib/plan-gates.ts with getPlanFeatures(plan) returning feature flags",
+        "Features gated: backtester (enterprise), circuitBreaker (pro+), telegramBot (pro+), analytics (pro+), apiAccess (enterprise)",
+        "tRPC middleware or helper to check plan before protected procedures",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "Trial users get PRO features. Check docs/PLANS.md for exact feature matrix."
+    },
+    {
+      "id": "US-009",
+      "title": "Subscription status in dashboard header",
+      "description": "Show current plan and trial countdown in the dashboard navigation",
+      "acceptanceCriteria": [
+        "Badge in navigation showing current plan (Trial, Basic, Pro, Enterprise)",
+        "If trial: show 'X days left' countdown",
+        "If past_due: show warning banner",
+        "If paused: show upgrade CTA",
+        "Link to /pricing or billing portal",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "Update components/navigation.tsx. Use tRPC to fetch subscription status."
+    },
+    {
+      "id": "US-010",
+      "title": "Trial expiry check and auto-pause",
+      "description": "Check trial expiry on login and API calls, auto-pause expired trials",
+      "acceptanceCriteria": [
+        "Middleware or auth callback checks if trial has expired",
+        "If expired and no active subscription: set status=PAUSED",
+        "Paused users see upgrade page instead of dashboard",
+        "Bot API returns 403 for paused tenants",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "Don't delete data — just pause access. User can reactivate by subscribing."
+    }
+  ]
+}

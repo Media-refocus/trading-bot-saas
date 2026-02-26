@@ -1,0 +1,17 @@
+# Ralph Progress Log
+Started: Initial setup
+---
+
+## Codebase Patterns
+- Multi-tenant: every DB query must filter by tenantId
+- Auth: NextAuth v5 with getServerSession, session includes tenantId
+- tRPC routers in server/api/trpc/routers/, registered in _app.ts
+- API routes (non-tRPC) in app/api/
+- UI components: shadcn/ui from @/components/ui/
+- Pages: app/(dashboard)/ for authenticated, app/(auth)/ for login/register
+- Prisma client: import from @/lib/prisma (singleton pattern)
+- Existing Subscription model in schema.prisma (line ~189)
+- Registration flow: app/api/register/route.ts
+- Navigation: components/navigation.tsx
+- Middleware: middleware.ts (route protection)
+---
