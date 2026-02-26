@@ -27,6 +27,10 @@ model Tenant {
   backtests       Backtest[]
   simulatedTrades  SimulatedTrade[]
   strategies       Strategy[]
+
+  // Bot Operativa
+  botConfigs      BotConfig[]
+  trades          Trade[]
 }
 
 model User {
@@ -104,17 +108,27 @@ model Signal {
   id              String   @id @default(cuid())
   tenantId        String
   tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  botConfigId     String?
+  botConfig       BotConfig? @relation(fields: [botConfigId], references: [id], onDelete: SetNull)
 
   // Señal original de Telegram
   side            String              // "BUY", "SELL"
-  price           Float
+  price           Float?
   symbol          String              // "XAUUSD"
   messageText     String
-  receivedAt     DateTime  @default(now())
+  receivedAt      DateTime @default(now())
+
+  // Origen (Telegram)
+  channelId       String?
+  channelName     String?
+  messageId       String?
 
   // Estado de procesamiento
-  status          String              @default("PENDING") // "PENDING", "EXECUTED", "FAILED", "CANCELLED"
-  executedAt      DateTime?
+  status          String              @default("PENDING") // "PENDING", "PROCESSING", "EXECUTED", "FAILED", "CANCELLED"
+  processedAt     DateTime?
+
+  // Tipo especial
+  isCloseSignal   Boolean @default(false) // "cerramos rango"
 
   // Restricciones del canal
   restrictionType String?             // "RIESGO", "SIN_PROMEDIOS", "SOLO_1_PROMEDIO", null
@@ -122,7 +136,13 @@ model Signal {
 
   // Resultados
   positions       Position[]
+  trades          Trade[]
+  errorMessage    String?
+
   createdAt       DateTime  @default(now())
+
+  @@index([tenantId, receivedAt])
+  @@index([botConfigId, status])
 }
 
 model Position {
@@ -306,5 +326,226 @@ model Strategy {
   updatedAt       DateTime            @updatedAt
 
   @@index([tenantId])
+}
+
+// ============================================
+// BOT CONFIGURATION - Configuración del bot por tenant
+// ============================================
+
+model BotConfig {
+  id              String   @id @default(cuid())
+  tenantId        String   @unique
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // API Key para autenticación del bot (hasheada con bcrypt)
+  apiKeyHash      String
+
+  // Estado del bot
+  status          String   @default("OFFLINE") // "OFFLINE", "ONLINE", "ERROR", "PAUSED"
+
+  // Configuración de Telegram (encriptada)
+  telegramApiIdEnc     String?
+  telegramApiHashEnc   String?
+  telegramSessionEnc   String?
+  telegramChannels     Json?    // [{id, accessHash}]
+
+  // Configuración de trading
+  symbol          String   @default("XAUUSD")
+  magicNumber     Int      @default(20250101)
+
+  // Parámetros de entrada (entry)
+  entryLot        Float    @default(0.1)
+  entryNumOrders  Int      @default(1)
+  entryTrailingActivate Int?    // pips para activar trailing
+  entryTrailingStep     Int?    // pips step del trailing
+  entryTrailingBack     Int?    // pips de retroceso
+  entryTrailingBuffer   Int?    // buffer en pips
+
+  // Parámetros de promedios (grid)
+  gridStepPips    Int      @default(10)
+  gridLot         Float    @default(0.1)
+  gridMaxLevels   Int      @default(4)
+  gridNumOrders   Int      @default(1)
+  gridTolerancePips Int    @default(1)
+
+  // Restricciones
+  restrictionType String?  // "RIESGO", "SIN_PROMEDIOS", "SOLO_1_PROMEDIO"
+  maxLevels       Int      @default(4)
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relaciones
+  heartbeats      BotHeartbeat[]
+  signals         Signal[]
+  trades          Trade[]
+  botAccounts     BotAccount[]
+
+  @@index([tenantId])
+  @@index([apiKeyHash])
+}
+
+// ============================================
+// BOT ACCOUNT - Cuentas MT5 asociadas al bot
+// ============================================
+
+model BotAccount {
+  id              String   @id @default(cuid())
+  botConfigId     String
+  botConfig       BotConfig @relation(fields: [botConfigId], references: [id], onDelete: Cascade)
+
+  // Credenciales MT5 (encriptadas con AES-256-GCM)
+  loginEnc        String
+  passwordEnc     String
+  serverEnc       String
+  pathEnc         String?
+
+  // Configuración específica de la cuenta
+  symbol          String   @default("XAUUSD")
+  magic           Int
+
+  // Estado
+  isActive        Boolean  @default(true)
+  lastSyncAt      DateTime?
+
+  // Métricas últimas del heartbeat
+  lastBalance     Float?
+  lastEquity      Float?
+  lastMargin      Float?
+
+  // Relaciones
+  trades          Trade[]
+  positions       BotPosition[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([botConfigId])
+}
+
+// ============================================
+// BOT HEARTBEAT - Heartbeats del bot
+// ============================================
+
+model BotHeartbeat {
+  id              String   @id @default(cuid())
+  botConfigId     String
+  botConfig       BotConfig @relation(fields: [botConfigId], references: [id], onDelete: Cascade)
+
+  // Información del heartbeat
+  timestamp       DateTime @default(now())
+  version         String?  // Versión del bot
+  uptimeSeconds   Int?
+  mt5Connected    Boolean  @default(false)
+  telegramConnected Boolean @default(false)
+
+  // Estado de posiciones
+  openPositions   Int      @default(0)
+  pendingOrders   Int      @default(0)
+
+  // Métricas
+  memoryMB        Float?
+  cpuPercent      Float?
+
+  // Error (si lo hay)
+  errorMessage    String?
+
+  @@index([botConfigId, timestamp])
+}
+
+// ============================================
+// TRADE - Operaciones ejecutadas por el bot
+// ============================================
+
+model Trade {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  botConfigId     String?
+  botConfig       BotConfig? @relation(fields: [botConfigId], references: [id], onDelete: SetNull)
+  botAccountId    String?
+  botAccount      BotAccount? @relation(fields: [botAccountId], references: [id], onDelete: SetNull)
+  signalId        String?
+  signal          Signal?  @relation(fields: [signalId], references: [id], onDelete: SetNull)
+
+  // Datos del trade
+  side            String              // "BUY", "SELL"
+  symbol          String
+  level           Int     @default(0) // 0=entrada, 1+=promedio
+
+  // Apertura
+  mt5Ticket       Int?                // Ticket en MT5
+  openPrice       Float
+  lotSize         Float
+  openedAt        DateTime @default(now())
+
+  // Cierre
+  closePrice      Float?
+  closedAt        DateTime?
+  closeReason     String?             // "TAKE_PROFIT", "STOP_LOSS", "MANUAL", "GRID_STEP", "VIRTUAL_SL"
+
+  // SL/TP
+  stopLoss        Float?
+  takeProfit      Float?
+  virtualSL       Float?              // Trailing SL virtual
+
+  // Resultado
+  profitPips      Float?
+  profitMoney     Float?
+  commission      Float?
+  swap            Float?
+
+  // Estado
+  status          String  @default("OPEN") // "PENDING", "OPEN", "CLOSED", "FAILED"
+
+  // Error
+  errorMessage    String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, openedAt])
+  @@index([botConfigId, status])
+  @@index([signalId])
+}
+
+// ============================================
+// BOT POSITION - Posiciones actuales del bot en vivo
+// ============================================
+
+model BotPosition {
+  id              String   @id @default(cuid())
+  botAccountId    String
+  botAccount      BotAccount @relation(fields: [botAccountId], references: [id], onDelete: Cascade)
+  tradeId         String?  @unique
+
+  // Datos de la posición
+  mt5Ticket       Int
+  symbol          String
+  side            String
+  level           Int      @default(0)
+
+  // Estado actual
+  openPrice       Float
+  currentPrice    Float?
+  lotSize         Float
+  stopLoss        Float?
+  takeProfit      Float?
+  virtualSL       Float?
+
+  // P&L no realizado
+  unrealizedPL    Float?
+  unrealizedPips  Float?
+
+  // Timestamps
+  openedAt        DateTime
+  lastSyncAt      DateTime @default(now())
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([botAccountId, mt5Ticket])
+  @@index([botAccountId])
 }
 

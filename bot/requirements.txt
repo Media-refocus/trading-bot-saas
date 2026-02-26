@@ -1,0 +1,14 @@
+# Bot de Trading - Dependencias Python
+
+# MetaTrader5
+MetaTrader5>=5.0.45
+
+# Telegram
+telethon>=1.34.0
+
+# HTTP requests
+requests>=2.31.0
+urllib3>=2.0.0
+
+# Opcional: psutil para métricas de sistema
+psutil>=5.9.0
