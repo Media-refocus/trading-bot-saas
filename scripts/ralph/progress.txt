@@ -15,3 +15,19 @@ Started: Initial setup
 - Navigation: components/navigation.tsx
 - Middleware: middleware.ts (route protection)
 ---
+
+## [2026-02-26 23:xx] - US-001
+- Installed stripe and @stripe/stripe-js packages
+- Created lib/stripe.ts with server-side Stripe client (singleton pattern, apiVersion: 2025-02-24.acacia)
+- Created lib/stripe-client.ts with getStripe() helper for client-side loadStripe
+- Env vars already configured in .env.local.example and .env.production.example
+- Typecheck and build pass
+- **Files changed:**
+  - lib/stripe.ts (new)
+  - lib/stripe-client.ts (new)
+  - package.json (added dependencies)
+  - package-lock.json
+- **Learnings for future iterations:**
+  - Stripe SDK requires specific apiVersion - always use latest from TypeScript types
+  - Singleton pattern prevents multiple Stripe instances in dev hot reload
+---
