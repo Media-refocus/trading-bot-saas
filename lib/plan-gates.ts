@@ -325,6 +325,114 @@ export const PLAN_NAMES: Record<PlanType | "TRIAL", string> = {
 };
 
 /**
+ * Check if a tenant's trial has expired and auto-pause if needed
+ *
+ * This function:
+ * 1. Checks if the tenant has a TRIAL subscription
+ * 2. If trial has expired (trialEnd < now), updates status to PAUSED
+ * 3. Returns the updated subscription info
+ *
+ * @param tenantId - Tenant ID to check
+ * @returns Subscription info after potential update
+ */
+export async function checkAndUpdateExpiredTrial(
+  tenantId: string
+): Promise<SubscriptionInfo> {
+  const subscription = await prisma.subscription.findFirst({
+    where: { tenantId },
+    select: {
+      id: true,
+      status: true,
+      plan: true,
+      trialEnd: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // No subscription = treat as paused
+  if (!subscription) {
+    return {
+      status: "PAUSED",
+      plan: "BASIC",
+      trialEnd: null,
+    };
+  }
+
+  const now = new Date();
+
+  // Check if trial has expired
+  if (
+    subscription.status === "TRIAL" &&
+    subscription.trialEnd &&
+    subscription.trialEnd < now
+  ) {
+    // Trial expired - auto-pause
+    await prisma.subscription.update({
+      where: { id: subscription.id },
+      data: { status: "PAUSED" },
+    });
+
+    // Also update tenant plan
+    await prisma.tenant.update({
+      where: { id: tenantId },
+      data: { plan: "TRIAL" }, // Keep TRIAL as indicator of former trial user
+    });
+
+    return {
+      status: "PAUSED",
+      plan: subscription.plan,
+      trialEnd: subscription.trialEnd,
+    };
+  }
+
+  return {
+    status: subscription.status,
+    plan: subscription.plan,
+    trialEnd: subscription.trialEnd,
+  };
+}
+
+/**
+ * Check if a tenant has active access (not paused)
+ *
+ * @param tenantId - Tenant ID to check
+ * @returns true if tenant has active access
+ */
+export async function hasActiveAccess(tenantId: string): Promise<boolean> {
+  const subscription = await prisma.subscription.findFirst({
+    where: { tenantId },
+    select: {
+      status: true,
+      trialEnd: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!subscription) {
+    return false;
+  }
+
+  const now = new Date();
+
+  switch (subscription.status) {
+    case "TRIAL":
+      // Trial is active if trialEnd is in the future
+      return subscription.trialEnd ? subscription.trialEnd > now : false;
+
+    case "ACTIVE":
+    case "PAST_DUE": // Grace period
+      return true;
+
+    case "PAUSED":
+    case "CANCELED":
+      return false;
+
+    default:
+      return false;
+  }
+}
+
+/**
  * Plan prices for display (EUR/month)
  */
 export const PLAN_PRICES: Record<PlanType, number> = {

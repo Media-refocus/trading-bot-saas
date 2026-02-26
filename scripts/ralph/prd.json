@@ -149,7 +149,7 @@
         "Typecheck passes"
       ],
       "priority": 10,
-      "passes": false,
+      "passes": true,
       "notes": "Don't delete data — just pause access. User can reactivate by subscribing."
     }
   ]

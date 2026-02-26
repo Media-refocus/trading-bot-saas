@@ -174,3 +174,26 @@ Started: Initial setup
   - Warning banners should be outside the nav component to avoid layout shift
   - Badge onClick can trigger billing portal redirect - wrap in button for accessibility
 ---
+
+## [2026-02-27 12:00] - US-010
+- Added checkAndUpdateExpiredTrial() and hasActiveAccess() helpers to lib/plan-gates.ts
+- Updated bot auth (app/api/bot/auth.ts) to check subscription status after authentication
+- Bot API now returns 403 with code "SUBSCRIPTION_PAUSED" for paused tenants
+- Updated dashboard layout to check trial expiry on every access
+- If trial expired: auto-updates subscription status to PAUSED
+- If subscription PAUSED/CANCELED: shows UpgradeRequired component instead of dashboard
+- Created app/(dashboard)/upgrade-required.tsx with upgrade CTA and feature list
+- Paused users see message about expired trial with link to /pricing
+- User data is preserved - they can reactivate anytime by subscribing
+- Typecheck and build pass
+- **Files changed:**
+  - lib/plan-gates.ts (modified - added checkAndUpdateExpiredTrial, hasActiveAccess)
+  - app/api/bot/auth.ts (modified - added subscription check after bot auth)
+  - app/(dashboard)/layout.tsx (modified - added trial expiry check and conditional rendering)
+  - app/(dashboard)/upgrade-required.tsx (new - upgrade CTA component)
+- **Learnings for future iterations:**
+  - For server components, use conditional rendering instead of redirect to avoid redirect loops
+  - Subscription checks should happen at the layout level to protect all child routes
+  - Bot API authentication is separate from user auth - need to check subscription separately
+  - Auto-pausing expired trials preserves data while blocking access
+---
