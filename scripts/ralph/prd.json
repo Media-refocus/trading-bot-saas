@@ -104,7 +104,7 @@
         "Typecheck passes"
       ],
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "notes": "Return URL should be /dashboard"
     },
     {
@@ -118,7 +118,7 @@
         "Typecheck passes"
       ],
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "notes": "Trial users get PRO features. Check docs/PLANS.md for exact feature matrix."
     },
     {
@@ -134,7 +134,7 @@
         "Typecheck passes"
       ],
       "priority": 9,
-      "passes": false,
+      "passes": true,
       "notes": "Update components/navigation.tsx. Use tRPC to fetch subscription status."
     },
     {

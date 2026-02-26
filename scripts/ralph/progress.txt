@@ -118,3 +118,59 @@ Started: Initial setup
   - Stripe subscription IDs are unique, use upsert by stripeSubId
   - Always update tenant.plan when subscription changes for consistency
 ---
+
+## [2026-02-27 00:xx] - US-007
+- Created POST /api/stripe/portal route with auth protection
+- Uses auth() from lib/auth.ts to verify authenticated user
+- Checks tenant has stripeCustomerId before creating portal session
+- Creates Stripe billing portal session with return_url to /dashboard
+- Returns portal URL for client-side redirect
+- Typecheck and build pass
+- **Files changed:**
+  - app/api/stripe/portal/route.ts (new)
+- **Learnings for future iterations:**
+  - Billing portal requires existing stripeCustomerId - handle case where user hasn't subscribed yet
+  - Return URL pattern same as checkout: uses NEXT_PUBLIC_APP_URL env var
+---
+
+## [2026-02-27 10:xx] - US-008
+- Created lib/plan-gates.ts with comprehensive feature flags for each plan tier
+- Implemented getPlanFeatures(plan) returning PlanFeatures interface with 30+ feature flags
+- Features gated based on PLANS.md: backtester/monteCarlo/apiAccess (Enterprise), circuitBreaker/telegramBot/analyticsPro (Pro+)
+- Added hasFeature() helper to check individual feature access
+- Added getEffectivePlan() to determine actual plan based on subscription status (trial expiry handling)
+- Added getTenantSubscription() to fetch subscription info from DB
+- Created planGatedProcedure(feature) in init.ts for tRPC middleware
+- Created protectedProcedureWithPlan for context enrichment without gating
+- Fixed circular dependency between init.ts and plan-gates.ts by moving middleware creation to init.ts
+- Typecheck and build pass
+- **Files changed:**
+  - lib/plan-gates.ts (new)
+  - server/api/trpc/init.ts (modified - added plan-gated procedures)
+- **Learnings for future iterations:**
+  - Avoid circular deps between lib/ and server/api/trpc/ - tRPC middleware must be defined where `t` is initialized
+  - Plan gates should use `FORBIDDEN` error code for plan-related access denial
+  - Trial users get PRO features - effective plan is "TRIAL" which maps to PRO features
+  - Use planGatedProcedure("featureName") to protect tRPC routes, protectedProcedureWithPlan for UI visibility
+---
+
+## [2026-02-27 11:30] - US-009
+- Added getSubscription query to tenant router with comprehensive status info
+- Returns: status, plan, planName, effectivePlan, trialDaysRemaining, convenience flags (isTrial, isPastDue, isPaused, isActive)
+- Updated navigation.tsx with subscription status badge:
+  - Badge shows plan name (Pro (Trial), Básico, Pro, Enterprise)
+  - Trial countdown displayed as "(Xd)" suffix
+  - Warning icons for past_due (AlertTriangle) and paused (Zap)
+  - Badge variant changes based on status (destructive for past_due, outline for paused)
+- Added warning banner above nav for past_due and paused subscriptions
+- Banner includes contextual message and CTA (update payment / subscribe now)
+- Badge links to billing portal (if hasStripeCustomer) or /pricing page
+- Typecheck and build pass
+- **Files changed:**
+  - server/api/trpc/routers/tenant.ts (modified - added getSubscription query)
+  - components/navigation.tsx (modified - added subscription badge and warning banner)
+- **Learnings for future iterations:**
+  - Subscription queries should include convenience flags for UI logic (isTrial, isPastDue, etc.)
+  - Warning banners should be outside the nav component to avoid layout shift
+  - Badge onClick can trigger billing portal redirect - wrap in button for accessibility
+---
