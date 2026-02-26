@@ -41,7 +41,6 @@ class BotConfig:
     # Entry
     entry_lot: float
     entry_num_orders: int
-    entry_trailing: Optional[dict] = None  # {activate, step, back, buffer}
 
     # Grid
     grid_step_pips: int
@@ -49,6 +48,9 @@ class BotConfig:
     grid_max_levels: int
     grid_num_orders: int
     grid_tolerance_pips: int
+
+    # Entry optional (debe ir después de los obligatorios)
+    entry_trailing: Optional[dict] = None  # {activate, step, back, buffer}
 
     # Restrictions
     restriction_type: Optional[str] = None
