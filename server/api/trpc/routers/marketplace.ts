@@ -134,8 +134,11 @@ export const marketplaceRouter = router({
   get: procedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
-      const strategy = await prisma.publishedStrategy.findUnique({
-        where: { id: input.id },
+      const strategy = await prisma.publishedStrategy.findFirst({
+        where: {
+          id: input.id,
+          isPublic: true,
+        },
         include: {
           author: {
             select: { id: true, name: true, email: true },
@@ -355,7 +358,7 @@ export const marketplaceRouter = router({
    * Da like a una operativa (deprecated: usar toggleLike)
    * @deprecated Use toggleLike instead
    */
-  like: procedure
+  like: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       const strategy = await prisma.publishedStrategy.update({
@@ -370,7 +373,7 @@ export const marketplaceRouter = router({
    * Quita like de una operativa (deprecated: usar toggleLike)
    * @deprecated Use toggleLike instead
    */
-  unlike: procedure
+  unlike: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       const current = await prisma.publishedStrategy.findUnique({
@@ -570,7 +573,7 @@ export const marketplaceRouter = router({
   /**
    * Registra una descarga (cuando alguien usa la operativa)
    */
-  trackDownload: procedure
+  trackDownload: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       await prisma.publishedStrategy.update({
