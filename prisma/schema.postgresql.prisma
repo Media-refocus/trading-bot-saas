@@ -15,12 +15,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Plan types for subscriptions
+enum PlanType {
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+// Subscription status
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  PAUSED
+}
+
 // Multi-tenancy: Cada cliente tiene su tenant
 model Tenant {
   id              String         @id @default(cuid())
   name            String
   email           String         @unique
   stripeCustomerId String?       @unique
+  plan            String         @default("TRIAL") // TRIAL, BASIC, PRO, ENTERPRISE
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
@@ -61,6 +78,7 @@ model User {
   publishedStrategies PublishedStrategy[]
   strategyLikes    StrategyLike[]
   strategyComments StrategyComment[]
+  notifications    Notification[]
 
   @@index([email])
   @@index([tenantId])
@@ -73,13 +91,13 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?
-  access_token      String?
+  refresh_token     String?  @db.Text
+  access_token      String?  @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?
-  session_state     String?
+  id_token          String?  @db.Text
+  session_state     String?  @db.Text
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -138,7 +156,7 @@ model Signal {
   side            String              // "BUY", "SELL"
   price           Double?
   symbol          String              // "XAUUSD"
-  messageText     String
+  messageText     String              @db.Text
   receivedAt      DateTime @default(now())
 
   // Origen (Telegram)
@@ -199,7 +217,7 @@ model Position {
   level           Int                 @default(0) // 0=base, 1=primer promedio, etc.
 
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime @updatedAt
+  updatedAt       DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([signalId])
@@ -210,15 +228,17 @@ model Subscription {
   tenantId        String
   tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
+  plan            PlanType            // BASIC, PRO, ENTERPRISE
   stripePriceId    String?
   stripeSubId      String?   @unique
-  status          String              // "ACTIVE", "CANCELED", "PAST_DUE"
+  status          SubscriptionStatus  @default(TRIAL) // TRIAL, ACTIVE, PAST_DUE, CANCELED, PAUSED
+  trialEnd        DateTime?           // When trial ends
 
   currentPeriodStart DateTime?
   currentPeriodEnd   DateTime?
 
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime @updatedAt
+  updatedAt       DateTime  @updatedAt
 
   @@index([tenantId])
 }
@@ -331,7 +351,7 @@ model Strategy {
 
   // Nombre descriptivo
   name            String              // "Mi estrategia conservadora"
-  description     String?             // Descripcion opcional
+  description     String?
 
   // Parametros de configuracion
   strategyName    String              @default("Custom") // "Toni G4", "Xisco G2", "Custom"
@@ -472,6 +492,11 @@ model BotConfig {
   // Restricciones
   restrictionType String?  // "RIESGO", "SIN_PROMEDIOS", "SOLO_1_PROMEDIO"
   maxLevels       Int      @default(4)
+
+  // Limite de perdida diaria (proteccion)
+  dailyLossLimitPercent Double?   // Porcentaje maximo de perdida diaria (ej: 3.0 = 3%)
+  dailyLossCurrent      Double    @default(0)  // Perdida acumulada del dia actual
+  dailyLossResetAt      DateTime?  // Ultima vez que se reseteo el contador
 
   // Timestamps
   createdAt       DateTime @default(now())
@@ -684,4 +709,26 @@ model StrategyComment {
   updatedAt           DateTime @updatedAt
 
   @@index([publishedStrategyId])
+}
+
+// ============================================
+// NOTIFICATION - Notificaciones del sistema
+// ============================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      String              // "INFO", "SUCCESS", "WARNING", "ERROR"
+  title     String
+  message   String
+  link      String?             // URL opcional para navegar al hacer click
+
+  isRead    Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
 }

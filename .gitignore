@@ -55,3 +55,7 @@ data/ticks/*.csv.gz
 # Database files
 *.db
 !prisma/migrations/*.sql
+
+# Generated keys (security)
+scripts/generated-keys.txt
+generated-keys.txt
