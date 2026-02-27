@@ -1,0 +1,11 @@
+# Trading Bot - Requirements
+# ==========================
+
+# Core
+requests>=2.31.0
+
+# MetaTrader 5
+MetaTrader5>=5.0.45
+
+# Utils
+python-dotenv>=1.0.0

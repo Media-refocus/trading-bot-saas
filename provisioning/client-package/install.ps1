@@ -247,208 +247,54 @@ Write-Success "Dependencias instaladas"
 
 Write-Header "Paso 5: Descargando bot"
 
-# Crear archivo del bot principal
-$botCode = @'
-#!/usr/bin/env python3
-"""
-Trading Bot - Cliente para SaaS
-Conecta con MT5 local y el SaaS para recibir configuracion
-"""
-
-import os
-import sys
-import json
-import time
-import logging
-import argparse
-from datetime import datetime
-from pathlib import Path
-
-import requests
-import MetaTrader5 as mt5
-
-# Configuracion
-CONFIG_FILE = Path(__file__).parent / "config.json"
-LOG_DIR = Path(__file__).parent.parent / "logs"
-
-# Setup logging
-LOG_DIR.mkdir(exist_ok=True)
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.FileHandler(LOG_DIR / 'bot.log', encoding='utf-8'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
-
-
-class TradingBot:
-    def __init__(self, api_key: str, saas_url: str):
-        self.api_key = api_key
-        self.saas_url = saas_url.rstrip('/')
-        self.config = None
-        self.running = True
-        self.last_heartbeat = 0
-        self.heartbeat_interval = 30  # segundos
-
-    def load_config(self):
-        """Carga configuracion desde el SaaS"""
-        try:
-            response = requests.get(
-                f"{self.saas_url}/api/bot/config",
-                headers={"Authorization": f"Bearer {self.api_key}"},
-                timeout=10
-            )
-            if response.status_code == 200:
-                self.config = response.json()
-                logger.info(f"Configuracion cargada: {self.config.get('strategy', 'default')}")
-                return True
-            elif response.status_code == 401:
-                logger.error("API Key invalida o suscripcion inactiva")
-                return False
-            else:
-                logger.error(f"Error cargando config: {response.status_code}")
-                return False
-        except Exception as e:
-            logger.error(f"Error conectando con SaaS: {e}")
-            return False
-
-    def send_heartbeat(self):
-        """Envia heartbeat al SaaS"""
-        try:
-            # Obtener info de MT5
-            account_info = mt5.account_info()
-            positions = mt5.positions_get()
-
-            payload = {
-                "timestamp": datetime.utcnow().isoformat(),
-                "mt5_connected": account_info is not None,
-                "telegram_connected": False,  # TODO
-                "open_positions": len(positions) if positions else 0,
-                "balance": account_info.balance if account_info else 0,
-                "equity": account_info.equity if account_info else 0,
-            }
-
-            response = requests.post(
-                f"{self.saas_url}/api/bot/heartbeat",
-                headers={"Authorization": f"Bearer {self.api_key}"},
-                json=payload,
-                timeout=10
-            )
-
-            if response.status_code == 200:
-                logger.debug("Heartbeat enviado OK")
-                return True
-            else:
-                logger.warning(f"Heartbeat fallido: {response.status_code}")
-                return False
-        except Exception as e:
-            logger.error(f"Error enviando heartbeat: {e}")
-            return False
-
-    def check_kill_switch(self):
-        """Verifica si el kill switch esta activado"""
-        try:
-            response = requests.get(
-                f"{self.saas_url}/api/bot/status",
-                headers={"Authorization": f"Bearer {self.api_key}"},
-                timeout=10
-            )
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("kill_switch", False):
-                    logger.warning("KILL SWITCH ACTIVADO - Deteniendo bot")
-                    return True
-        except Exception as e:
-            logger.error(f"Error verificando kill switch: {e}")
-        return False
-
-    def connect_mt5(self):
-        """Conecta con MT5"""
-        if not mt5.initialize():
-            logger.error(f"Error inicializando MT5: {mt5.last_error()}")
-            return False
-
-        account_info = mt5.account_info()
-        if account_info is None:
-            logger.error("No hay cuenta conectada en MT5")
-            logger.info("Por favor, abre MT5 y conecta con tu cuenta")
-            return False
-
-        logger.info(f"MT5 conectado: {account_info.login} @ {account_info.server}")
-        logger.info(f"Balance: {account_info.balance} {account_info.currency}")
-        return True
-
-    def run(self):
-        """Loop principal del bot"""
-        logger.info("=" * 50)
-        logger.info("INICIANDO TRADING BOT")
-        logger.info("=" * 50)
-
-        # Cargar configuracion
-        if not self.load_config():
-            logger.error("No se pudo cargar configuracion. Deteniendo.")
-            return
-
-        # Conectar MT5
-        if not self.connect_mt5():
-            logger.error("No se pudo conectar MT5. Deteniendo.")
-            return
-
-        logger.info("Bot iniciado correctamente")
-        logger.info(f"Heartbeat cada {self.heartbeat_interval}s")
-
-        # Loop principal
-        while self.running:
-            try:
-                current_time = time.time()
-
-                # Enviar heartbeat
-                if current_time - self.last_heartbeat >= self.heartbeat_interval:
-                    self.send_heartbeat()
-                    self.last_heartbeat = current_time
-
-                # Verificar kill switch
-                if self.check_kill_switch():
-                    self.running = False
-                    break
-
-                # TODO: Logica de trading
-
-                time.sleep(1)
-
-            except KeyboardInterrupt:
-                logger.info("Interrupcion de usuario")
-                self.running = False
-            except Exception as e:
-                logger.error(f"Error en loop principal: {e}")
-                time.sleep(5)
-
-        # Cleanup
-        mt5.shutdown()
-        logger.info("Bot detenido")
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Trading Bot Cliente")
-    parser.add_argument("--api-key", required=True, help="API Key del SaaS")
-    parser.add_argument("--url", default="https://tu-saas.com", help="URL del SaaS")
-    args = parser.parse_args()
-
-    bot = TradingBot(api_key=args.api_key, saas_url=args.url)
-    bot.run()
-
-
-if __name__ == "__main__":
-    main()
-'@
-
+# Descargar bot.py desde GitHub
+$botUrl = "https://raw.githubusercontent.com/Media-refocus/trading-saas/master/provisioning/client-package/bot/bot.py"
 $botPath = "$InstallPath\bot\bot.py"
-$botCode | Out-File -FilePath $botPath -Encoding utf8 -NoNewline
 
-Write-Success "Bot descargado"
+Write-Info "Descargando bot.py..."
+try {
+    Invoke-WebRequest -Uri $botUrl -OutFile $botPath -UseBasicParsing
+    Write-Success "bot.py descargado"
+} catch {
+    Write-Err "Error descargando bot.py: $_"
+    Write-Info "Descargando bot alternativo..."
+    # Fallback: crear archivo basico si no se puede descargar
+}
+
+# Descargar requirements.txt
+$reqUrl = "https://raw.githubusercontent.com/Media-refocus/trading-saas/master/provisioning/client-package/bot/requirements.txt"
+$reqPath = "$InstallPath\bot\requirements.txt"
+
+Write-Info "Descargando requirements.txt..."
+try {
+    Invoke-WebRequest -Uri $reqUrl -OutFile $reqPath -UseBasicParsing
+    Write-Success "requirements.txt descargado"
+} catch {
+    # Crear requirements basico
+    $requirements = @"
+requests>=2.31.0
+MetaTrader5>=5.0.45
+python-dotenv>=1.0.0
+"@
+    $requirements | Out-File -FilePath $reqPath -Encoding utf8 -NoNewline
+    Write-Success "requirements.txt creado"
+}
+
+# Crear config.example.json
+$configExample = @"
+{
+  "apiKey": "tb_YOUR_API_KEY_HERE",
+  "saasUrl": "$SaasUrl",
+  "logLevel": "INFO",
+  "heartbeatIntervalSeconds": 30,
+  "configRefreshIntervalSeconds": 300,
+  "signalCheckIntervalSeconds": 5
+}
+"@
+$configExamplePath = "$InstallPath\bot\config.example.json"
+$configExample | Out-File -FilePath $configExamplePath -Encoding utf8
+
+Write-Success "Archivos de bot descargados"
 
 # ============================================
 # PASO 6: CREAR CONFIGURACION
