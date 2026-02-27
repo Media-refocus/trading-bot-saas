@@ -14,69 +14,67 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, X } from "lucide-react";
 
-// Plan data based on docs/PLANS.md
+// Plan data - NUEVO PRICING 2026
 const plans = [
   {
     id: "basic",
-    name: "Basico",
+    name: "Trader",
     price: 57,
-    description: "Para traders individuales",
-    popular: false,
+    description: "Bot completo + proteccion basica",
+    popular: true, // El plan de entrada es el más popular
     features: [
       { name: "1 cuenta MT5", included: true },
       { name: "Bot senales XAUUSD", included: true },
-      { name: "Dashboard basico", included: true },
+      { name: "Dashboard completo", included: true },
+      { name: "Backtester", included: true },
       { name: "Heartbeat monitoring", included: true },
-      { name: "Grid basico", included: true },
-      { name: "Metricas basicas", included: true },
-      { name: "Soporte email (48h)", included: true },
+      { name: "Telegram notificaciones", included: true },
+      { name: "Daily Loss Limit", included: true },
+      { name: "Kill Switch emergencia", included: true },
+      { name: "Soporte email", included: true },
       { name: "Circuit Breaker", included: false },
-      { name: "Telegram notificaciones", included: false },
-      { name: "Analytics profesionales", included: false },
-      { name: "Backtesting Engine", included: false },
-      { name: "API Publica", included: false },
+      { name: "News Filter", included: false },
+      { name: "Multi-cuenta", included: false },
     ],
   },
   {
     id: "pro",
     name: "Pro",
-    price: 147,
-    description: "Para traders serios que quieren proteccion profesional",
-    popular: true,
+    price: 97,
+    description: "Multi-cuenta + features avanzadas",
+    popular: false,
     features: [
       { name: "3 cuentas MT5", included: true },
-      { name: "Bot senales XAUUSD", included: true },
-      { name: "Dashboard completo", included: true },
+      { name: "Todo lo de Trader", included: true },
       { name: "Circuit Breaker", included: true },
-      { name: "Account Guardian", included: true },
-      { name: "Limites de perdida (D/S/M)", included: true },
-      { name: "Emergency Kill Switch", included: true },
-      { name: "Position Sizing Auto", included: true },
-      { name: "Telegram notificaciones", included: true },
-      { name: "Analytics profesionales", included: true },
+      { name: "News Filter", included: true },
+      { name: "TradingView Bridge", included: true },
+      { name: "Analytics Pro", included: true },
+      { name: "Equity Curve", included: true },
+      { name: "Heatmap horario", included: true },
       { name: "Smart Entry Filter", included: true },
-      { name: "Soporte Telegram (24h)", included: true },
+      { name: "Smart Trailing", included: true },
+      { name: "Webhooks personalizados", included: true },
+      { name: "Soporte prioritario", included: false },
     ],
   },
   {
     id: "enterprise",
-    name: "Enterprise",
-    price: 347,
-    description: "Para profesionales, gestores e instituciones",
+    name: "VIP",
+    price: 197,
+    description: "Cuentas ilimitadas + acceso exclusivo",
     popular: false,
     features: [
       { name: "Cuentas MT5 ilimitadas", included: true },
       { name: "Todo lo de Pro", included: true },
-      { name: "Backtesting Engine", included: true },
-      { name: "Monte Carlo Simulation", included: true },
-      { name: "Multi-Timeframe Confirmation", included: true },
-      { name: "Copy Trading Network", included: true },
-      { name: "API Publica REST + WebSocket", included: true },
-      { name: "Multi-Simbolo", included: true },
-      { name: "Paper Trading", included: true },
-      { name: "Soporte prioridad (4h)", included: true },
+      { name: "Canal VIP con Xisco", included: true },
+      { name: "Soporte prioritario", included: true },
+      { name: "Early access features", included: true },
       { name: "Calls mensuales", included: true },
       { name: "Onboarding asistido", included: true },
+      { name: "API avanzada", included: true },
+      { name: "Multi-simbolo", included: true },
+      { name: "Paper trading", included: true },
     ],
   },
 ];
@@ -188,31 +186,31 @@ export default function PricingPage() {
         {/* ROI Section */}
         <div className="mt-16 text-center">
           <h2 className="text-2xl font-bold text-white mb-6">
-            ROI del Plan Pro
+            Valor Real del Plan Trader
           </h2>
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
               <div className="text-3xl font-bold text-green-400 mb-2">
-                200-500 EUR
+                700-1,750 EUR
               </div>
               <p className="text-slate-400 text-sm">
-                Ahorrados por cada activacion del Circuit Breaker
+                Ahorrados al mes con Daily Loss Limit activo
               </p>
             </div>
             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
               <div className="text-3xl font-bold text-green-400 mb-2">
-                15-25%
+                Infinite
               </div>
               <p className="text-slate-400 text-sm">
-                Mejora de returns con Position Sizing optimo
+                Proteccion de cuenta con Kill Switch de emergencia
               </p>
             </div>
             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
               <div className="text-3xl font-bold text-green-400 mb-2">
-                5-10%
+                57 EUR/mes
               </div>
               <p className="text-slate-400 text-sm">
-                Mejora de win rate con Smart Entry Filter
+                Menos de 2 EUR/dia para proteccion profesional
               </p>
             </div>
           </div>
