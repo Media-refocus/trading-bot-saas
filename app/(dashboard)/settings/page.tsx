@@ -1,7 +1,10 @@
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Link from "next/link";
 
 export default function SettingsPage() {
   return (
@@ -29,7 +32,9 @@ export default function SettingsPage() {
                   Funcionalidades limitadas
                 </p>
               </div>
-              <Button>Mejorar Plan</Button>
+              <Link href="/pricing">
+                <Button>Mejorar Plan</Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
@@ -46,7 +51,9 @@ export default function SettingsPage() {
               <p className="text-muted-foreground mb-4">
                 No hay cuentas conectadas
               </p>
-              <Button>Añadir Cuenta</Button>
+              <Link href="/bot">
+                <Button>Añadir Cuenta</Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
