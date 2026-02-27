@@ -1,0 +1,6 @@
+2026-02-27 22:35:53,593 [INFO] TradingBot: ============================================================
+2026-02-27 22:35:53,593 [INFO] TradingBot: TRADING BOT v1.0.0
+2026-02-27 22:35:53,593 [INFO] TradingBot: ============================================================
+2026-02-27 22:35:54,166 [INFO] TradingBot: Configuracion cargada: XAUUSD, TP=20 pips
+2026-02-27 22:37:36,001 [ERROR] TradingBot: Error inicializando MT5: (-10003, "IPC initialize failed, Pipe server didn't answer in 60 sec")
+2026-02-27 22:37:36,001 [ERROR] TradingBot: No se pudo conectar MT5. Deteniendo.
