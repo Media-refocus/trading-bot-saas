@@ -22,39 +22,49 @@ Obtener la configuracion actual del bot.
 **Response 200:**
 ```json
 {
-  "tenantId": "clxxxxx",
+  "success": true,
+  "botId": "clxxxxx",
   "symbol": "XAUUSD",
   "magicNumber": 20250101,
-
-  "entryLot": 0.1,
-  "entryNumOrders": 1,
-
-  "gridStepPips": 10,
-  "gridLot": 0.1,
-  "gridMaxLevels": 4,
-  "gridNumOrders": 1,
-  "gridTolerancePips": 1,
-
-  "takeProfitPips": 20,
-  "stopLossPips": null,
-  "useStopLoss": false,
-  "useTrailingSL": true,
-  "trailingSLPercent": 50,
-
-  "restrictionType": null,
-  "maxLevels": 4,
-
-  "dailyLossLimitPercent": 3.0,
-
-  "active": true,
-  "configVersion": 5
+  "entry": {
+    "lot": 0.1,
+    "numOrders": 1
+  },
+  "grid": {
+    "stepPips": 10,
+    "lot": 0.1,
+    "maxLevels": 4,
+    "numOrders": 1,
+    "tolerancePips": 1
+  },
+  "restrictions": {
+    "type": null,
+    "maxLevels": 4
+  },
+  "accounts": [
+    {
+      "id": "acc_xxx",
+      "login": "123456",
+      "password": "password123",
+      "server": "ICMarketsSC-Demo",
+      "symbol": "XAUUSD",
+      "magic": 20250101
+    }
+  ],
+  "telegram": {
+    "apiId": "12345",
+    "apiHash": "xxxx",
+    "channels": [{"id": "123", "accessHash": "456"}]
+  },
+  "heartbeatIntervalSeconds": 30,
+  "configRefreshIntervalSeconds": 300
 }
 ```
 
 **Response 401:**
 ```json
 {
-  "error": "Invalid API key or inactive subscription"
+  "error": "Invalid API key"
 }
 ```
 
@@ -68,23 +78,37 @@ Enviar heartbeat con estado del bot.
 ```json
 {
   "timestamp": "2026-02-27T10:30:00Z",
-  "status": "ONLINE",
-  "mt5_connected": true,
-  "telegram_connected": true,
-  "open_positions": 2,
-  "balance": 10000.50,
-  "equity": 10150.25,
-  "margin": 500.00,
-  "config_version": 5
+  "mt5Connected": true,
+  "telegramConnected": true,
+  "openPositions": 2,
+  "pendingOrders": 0,
+  "accounts": [
+    {
+      "login": 123456,
+      "server": "ICMarketsSC-Demo",
+      "balance": 10000.50,
+      "equity": 10150.25,
+      "margin": 500.00,
+      "openPositions": 2
+    }
+  ]
 }
 ```
 
 **Response 200:**
 ```json
 {
-  "success": true
+  "success": true,
+  "serverTime": "2026-02-27T10:30:01Z",
+  "commands": []
 }
 ```
+
+**Comandos disponibles:**
+- `{ "type": "PAUSE", "reason": "..." }`
+- `{ "type": "RESUME" }`
+- `{ "type": "CLOSE_ALL", "reason": "KILL_SWITCH" }`
+- `{ "type": "UPDATE_CONFIG" }`
 
 ---
 
@@ -95,9 +119,14 @@ Obtener estado del bot (incluye kill switch).
 **Response 200:**
 ```json
 {
+  "success": true,
+  "status": "ONLINE",
   "kill_switch": false,
   "paused": false,
-  "message": null
+  "can_update_config": true,
+  "open_positions": 0,
+  "message": null,
+  "config_version": 1709035800000
 }
 ```
 
@@ -110,6 +139,7 @@ Obtener senales pendientes de procesar.
 **Response 200:**
 ```json
 {
+  "success": true,
   "signals": [
     {
       "id": "sig_xxxxx",
@@ -117,17 +147,19 @@ Obtener senales pendientes de procesar.
       "side": "BUY",
       "price": 2000.50,
       "symbol": "XAUUSD",
-      "restrictionType": null,
-      "maxLevels": 4,
+      "restriction_type": null,
+      "max_levels": 4,
+      "channel_name": "Trading Signals",
       "timestamp": "2026-02-27T10:25:00Z"
     }
-  ]
+  ],
+  "count": 1
 }
 ```
 
 ---
 
-### POST /api/bot/signals/:id/ack
+### POST /api/bot/signals/[id]/ack
 
 Confirmar procesamiento de una senal.
 
@@ -135,7 +167,8 @@ Confirmar procesamiento de una senal.
 ```json
 {
   "status": "EXECUTED",
-  "error": null
+  "error": null,
+  "mt5_ticket": 123456
 }
 ```
 
@@ -143,66 +176,75 @@ Confirmar procesamiento de una senal.
 - `EXECUTED` - Senal ejecutada correctamente
 - `FAILED` - Error al ejecutar
 - `REJECTED` - Rechazada (ej: daily loss limit)
-
-**Response 200:**
-```json
-{
-  "success": true
-}
-```
-
----
-
-### POST /api/bot/trades
-
-Reportar un trade ejecutado.
-
-**Request:**
-```json
-{
-  "signalId": "sig_xxxxx",
-  "mt5Ticket": 123456,
-  "side": "BUY",
-  "symbol": "XAUUSD",
-  "openPrice": 2000.50,
-  "lotSize": 0.1,
-  "level": 0,
-  "status": "OPEN"
-}
-```
+- `SKIPPED` - Ignorada por restriccion
 
 **Response 200:**
 ```json
 {
   "success": true,
-  "tradeId": "trade_xxxxx"
+  "signal_id": "sig_xxxxx",
+  "status": "EXECUTED",
+  "processed_at": "2026-02-27T10:25:05Z"
 }
 ```
 
 ---
 
-### PUT /api/bot/trades/:mt5Ticket
+### POST /api/bot/trade
 
-Actualizar estado de un trade (cierre).
+Reportar un trade (abrir, cerrar o actualizar).
 
-**Request:**
+**Abrir trade:**
 ```json
 {
-  "status": "CLOSED",
+  "action": "OPEN",
+  "signalId": "sig_xxxxx",
+  "botAccountId": "acc_xxx",
+  "mt5Ticket": 123456,
+  "side": "BUY",
+  "symbol": "XAUUSD",
+  "level": 0,
+  "openPrice": 2000.50,
+  "lotSize": 0.1,
+  "stopLoss": 0,
+  "takeProfit": 2002.50,
+  "openedAt": "2026-02-27T10:25:00Z"
+}
+```
+
+**Cerrar trade:**
+```json
+{
+  "action": "CLOSE",
+  "botAccountId": "acc_xxx",
+  "mt5Ticket": 123456,
   "closePrice": 2002.50,
   "closeReason": "TAKE_PROFIT",
   "profitPips": 20.0,
-  "profitMoney": 200.00
+  "profitMoney": 200.00,
+  "closedAt": "2026-02-27T11:00:00Z"
+}
+```
+
+**Actualizar posicion:**
+```json
+{
+  "action": "UPDATE",
+  "botAccountId": "acc_xxx",
+  "mt5Ticket": 123456,
+  "currentPrice": 2001.50,
+  "virtualSL": 2000.00,
+  "unrealizedPL": 100.00,
+  "unrealizedPips": 10.0
 }
 ```
 
 **Close reasons:**
 - `TAKE_PROFIT`
 - `STOP_LOSS`
-- `TRAILING_SL`
 - `MANUAL`
-- `KILL_SWITCH`
-- `SIGNAL_CLOSE`
+- `GRID_STEP`
+- `VIRTUAL_SL`
 
 ---
 
@@ -213,7 +255,10 @@ Verificar si es seguro actualizar la configuracion.
 **Response 200:**
 ```json
 {
+  "success": true,
   "can_update": true,
+  "open_positions": 0,
+  "live_positions": 0,
   "reason": null
 }
 ```
@@ -221,155 +266,50 @@ Verificar si es seguro actualizar la configuracion.
 **Response 200 (con posiciones):**
 ```json
 {
+  "success": true,
   "can_update": false,
-  "reason": "There are 2 open positions"
+  "open_positions": 2,
+  "live_positions": 2,
+  "reason": "There are 2 open trades"
 }
 ```
 
 ---
 
-## Implementacion en el SaaS
+## Flujo de Comandos
 
-### Crear router tRPC
+### Kill Switch
 
-```typescript
-// server/api/routers/bot.ts
+1. Dashboard cambia status a `KILL_REQUESTED`
+2. Bot recibe comando `CLOSE_ALL` en siguiente heartbeat
+3. Bot cierra todas las posiciones
+4. Status cambia a `PAUSED`
 
-import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { verifyApiKey } from "~/lib/bot-auth";
+### Reanudar Bot
 
-export const botRouter = createTRPCRouter({
-  config: publicProcedure
-    .meta({ openapi: { method: "GET", path: "/bot/config" } })
-    .input(z.void())
-    .output(z.any())
-    .query(async ({ ctx }) => {
-      const tenant = await verifyApiKey(ctx.req);
-      if (!tenant) throw new TRPCError({ code: "UNAUTHORIZED" });
-
-      const config = await ctx.db.botConfig.findUnique({
-        where: { tenantId: tenant.id }
-      });
-
-      return {
-        tenantId: tenant.id,
-        symbol: config?.symbol ?? "XAUUSD",
-        // ... resto de campos
-      };
-    }),
-
-  heartbeat: publicProcedure
-    .meta({ openapi: { method: "POST", path: "/bot/heartbeat" } })
-    .input(z.object({
-      timestamp: z.string(),
-      status: z.enum(["ONLINE", "OFFLINE", "PAUSED", "ERROR"]),
-      mt5_connected: z.boolean(),
-      telegram_connected: z.boolean(),
-      open_positions: z.number(),
-      balance: z.number(),
-      equity: z.number(),
-      margin: z.number(),
-      config_version: z.number(),
-    }))
-    .output(z.object({ success: z.boolean() }))
-    .mutation(async ({ ctx, input }) => {
-      const tenant = await verifyApiKey(ctx.req);
-      if (!tenant) throw new TRPCError({ code: "UNAUTHORIZED" });
-
-      // Guardar heartbeat
-      await ctx.db.botHeartbeat.create({
-        data: {
-          botConfigId: tenant.botConfig?.id,
-          timestamp: new Date(input.timestamp),
-          mt5Connected: input.mt5_connected,
-          telegramConnected: input.telegram_connected,
-          openPositions: input.open_positions,
-          // ...
-        }
-      });
-
-      // Actualizar estado del bot
-      await ctx.db.botConfig.update({
-        where: { tenantId: tenant.id },
-        data: { status: input.status }
-      });
-
-      return { success: true };
-    }),
-
-  // ... otros endpoints
-});
-```
-
-### Autenticacion API Key
-
-```typescript
-// lib/bot-auth.ts
-
-import { NextApiRequest } from "next";
-import { prisma } from "~/server/db";
-import { verify } from "bcrypt";
-
-export async function verifyApiKey(req: NextApiRequest) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) {
-    return null;
-  }
-
-  const apiKey = authHeader.slice(7);
-  if (!apiKey.startsWith("tb_")) {
-    return null;
-  }
-
-  // Buscar tenant por API key hash
-  const tenants = await prisma.tenant.findMany({
-    include: { botConfigs: true }
-  });
-
-  for (const tenant of tenants) {
-    const botConfig = tenant.botConfigs[0];
-    if (botConfig && await verify(apiKey, botConfig.apiKeyHash)) {
-      return tenant;
-    }
-  }
-
-  return null;
-}
-```
+1. Dashboard cambia status de `PAUSED` a `RESUMING`
+2. Bot recibe comando `RESUME` en siguiente heartbeat
+3. Status cambia a `ONLINE`
 
 ---
 
-## Generar API Key
+## Rate Limiting
 
-```typescript
-// app/(dashboard)/settings/page.tsx
-
-async function generateApiKey() {
-  // Generar API key aleatoria
-  const apiKey = `tb_${randomBytes(32).toString('hex')}`;
-
-  // Hashear para guardar
-  const apiKeyHash = await hash(apiKey, 10);
-
-  // Guardar en DB
-  await api.botConfig.update.mutate({ apiKeyHash });
-
-  // Mostrar al usuario UNA vez
-  setGeneratedKey(apiKey);
-}
-```
-
-**IMPORTANTE:** La API key solo se muestra una vez al generarla. El usuario debe guardarla.
+- Max 60 requests/minuto por IP
+- Headers de respuesta:
+  - `X-RateLimit-Limit`
+  - `X-RateLimit-Remaining`
+  - `X-RateLimit-Reset`
 
 ---
 
 ## Seguridad
 
 1. **API Keys hasheadas** - Nunca guardar en texto plano
-2. **Rate limiting** - Max 60 requests/minuto por API key
-3. **Kill switch** - El SaaS puede matar el bot remotamente
+2. **Rate limiting** - Proteccion contra abuso
+3. **Kill switch** - Control remoto de emergencia
 4. **Logs auditables** - Registrar todos los accesos
+5. **Cache de auth** - TTL 60 segundos para reducir carga DB
 
 ---
 

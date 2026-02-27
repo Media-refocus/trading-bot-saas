@@ -220,7 +220,7 @@ class SaasClient:
         """Reportar trade al SaaS"""
         try:
             response = self.session.post(
-                f"{self.base_url}/api/bot/trades",
+                f"{self.base_url}/api/bot/trade",
                 json=trade_data,
                 timeout=10
             )
