@@ -14,14 +14,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, X } from "lucide-react";
 
-// Plan data - NUEVO PRICING 2026
+// Plan data - NUEVO PRICING 2026 (merged with Stripe integration features)
 const plans = [
   {
     id: "basic",
     name: "Trader",
     price: 57,
     description: "Bot completo + proteccion basica",
-    popular: true, // El plan de entrada es el más popular
+    popular: true,
     features: [
       { name: "1 cuenta MT5", included: true },
       { name: "Bot senales XAUUSD", included: true },
@@ -40,13 +40,14 @@ const plans = [
   {
     id: "pro",
     name: "Pro",
-    price: 97,
-    description: "Multi-cuenta + features avanzadas",
+    price: 147,
+    description: "Multi-cuenta + proteccion profesional completa",
     popular: false,
     features: [
       { name: "3 cuentas MT5", included: true },
       { name: "Todo lo de Trader", included: true },
       { name: "Circuit Breaker", included: true },
+      { name: "Account Guardian", included: true },
       { name: "News Filter", included: true },
       { name: "TradingView Bridge", included: true },
       { name: "Analytics Pro", included: true },
@@ -55,26 +56,27 @@ const plans = [
       { name: "Smart Entry Filter", included: true },
       { name: "Smart Trailing", included: true },
       { name: "Webhooks personalizados", included: true },
-      { name: "Soporte prioritario", included: false },
     ],
   },
   {
     id: "enterprise",
     name: "VIP",
-    price: 197,
+    price: 347,
     description: "Cuentas ilimitadas + acceso exclusivo",
     popular: false,
     features: [
       { name: "Cuentas MT5 ilimitadas", included: true },
       { name: "Todo lo de Pro", included: true },
+      { name: "Backtesting Engine avanzado", included: true },
+      { name: "Monte Carlo Simulation", included: true },
+      { name: "Multi-Timeframe Confirmation", included: true },
+      { name: "Copy Trading Network", included: true },
+      { name: "API Publica REST + WebSocket", included: true },
+      { name: "Multi-Simbolo", included: true },
+      { name: "Paper Trading", included: true },
       { name: "Canal VIP con Xisco", included: true },
-      { name: "Soporte prioritario", included: true },
-      { name: "Early access features", included: true },
-      { name: "Calls mensuales", included: true },
-      { name: "Onboarding asistido", included: true },
-      { name: "API avanzada", included: true },
-      { name: "Multi-simbolo", included: true },
-      { name: "Paper trading", included: true },
+      { name: "Soporte prioritario (4h)", included: true },
+      { name: "Calls mensuales + Onboarding", included: true },
     ],
   },
 ];
