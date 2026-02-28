@@ -202,7 +202,7 @@ function LevelsStatus({
   const currentTimeMs = currentTick ? new Date(currentTick.timestamp).getTime() : Date.now();
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
       {levels.map((level) => {
         const entryTimeMs = levels[0]?.openTime ? new Date(levels[0].openTime).getTime() : 0;
         const openTimeMs = level.openTime
@@ -233,7 +233,7 @@ function LevelsStatus({
         return (
           <div
             key={level.level}
-            className={`p-2 rounded text-xs border ${
+            className={`p-2 rounded text-[11px] sm:text-xs border ${
               isPending
                 ? "border-gray-700 bg-gray-800/50 opacity-50"
                 : isClosed
@@ -247,7 +247,7 @@ function LevelsStatus({
                 {level.level === 0 ? "ENTRY" : `L${level.level}`}
               </span>
               <span
-                className={`px-1.5 py-0.5 rounded text-[10px] ${
+                className={`px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] ${
                   isPending
                     ? "bg-gray-700 text-gray-400"
                     : isClosed
@@ -255,12 +255,12 @@ function LevelsStatus({
                     : "bg-blue-900/50 text-blue-400 animate-pulse"
                 }`}
               >
-                {isPending ? "PENDIENTE" : isClosed ? "CERRADO" : "ACTIVO"}
+                {isPending ? "PEND" : isClosed ? "OK" : "ACT"}
               </span>
             </div>
             <div className="font-mono text-gray-300">{level.openPrice.toFixed(2)}</div>
             {isClosed && (
-              <div className="text-green-400 font-mono mt-1">+{pipsGained.toFixed(1)} pips</div>
+              <div className="text-green-400 font-mono mt-1 text-[10px] sm:text-xs">+{pipsGained.toFixed(1)} pips</div>
             )}
           </div>
         );
@@ -627,25 +627,25 @@ export default function SimpleCandleChart({
 
   return (
     <div className="space-y-4">
-      {/* Header con info del trade */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-3 bg-slate-800 rounded-lg">
-        <div className="flex items-center gap-4">
+      {/* Header con info del trade - mobile responsive */}
+      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4 p-3 bg-slate-800 rounded-lg">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
           <span
-            className={`px-3 py-1 rounded font-bold text-sm ${
+            className={`px-3 py-1.5 sm:py-1 rounded font-bold text-[13px] sm:text-sm ${
               isBuy ? "bg-green-600 text-white" : "bg-red-600 text-white"
             }`}
           >
             {trade.signalSide}
           </span>
-          <div className="text-sm">
+          <div className="text-[13px] sm:text-sm">
             <span className="text-gray-400">Entry: </span>
             <span className="font-mono text-white">{trade.entryPrice.toFixed(2)}</span>
           </div>
-          <div className="text-sm">
+          <div className="text-[13px] sm:text-sm">
             <span className="text-gray-400">Exit: </span>
             <span className="font-mono text-white">{trade.exitPrice.toFixed(2)}</span>
           </div>
-          <div className="text-sm">
+          <div className="text-[13px] sm:text-sm">
             <span className="text-gray-400">P/L: </span>
             <span
               className={`font-bold ${
@@ -658,7 +658,7 @@ export default function SimpleCandleChart({
           </div>
         </div>
         <div
-          className={`text-xs px-2 py-1 rounded ${
+          className={`text-[11px] sm:text-xs px-2 py-1 rounded ${
             trade.exitReason === "TAKE_PROFIT"
               ? "bg-green-900/50 text-green-400"
               : trade.exitReason === "TRAILING_SL"
@@ -674,16 +674,16 @@ export default function SimpleCandleChart({
         </div>
       </div>
 
-      {/* Controles */}
-      <div className="flex flex-wrap items-center gap-3 p-3 bg-slate-800 rounded-lg">
-        {/* Timeframe buttons */}
-        <div className="flex items-center gap-1">
-          <span className="text-xs text-gray-400 mr-2">TF:</span>
+      {/* Controles - Mobile responsive with touch-friendly targets */}
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 p-3 bg-slate-800 rounded-lg">
+        {/* Timeframe buttons - touch-friendly */}
+        <div className="flex items-center gap-1 sm:gap-2">
+          <span className="text-xs text-gray-400 hidden sm:inline">TF:</span>
           {(["1", "5", "15"] as Timeframe[]).map((tf) => (
             <button
               key={tf}
               onClick={() => handleTimeframeChange(tf)}
-              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+              className={`px-3 py-2.5 sm:py-1.5 rounded text-[13px] sm:text-sm font-medium transition-colors min-h-[44px] sm:min-h-0 ${
                 timeframe === tf
                   ? "bg-blue-600 text-white"
                   : "bg-slate-700 text-gray-300 hover:bg-slate-600"
@@ -694,13 +694,13 @@ export default function SimpleCandleChart({
           ))}
         </div>
 
-        {/* Speed selector */}
+        {/* Speed selector - touch-friendly */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">Speed:</span>
+          <span className="text-xs text-gray-400 hidden sm:inline">Speed:</span>
           <select
             value={speed}
             onChange={(e) => setSpeed(Number(e.target.value))}
-            className="px-2 py-1 bg-slate-700 rounded text-sm border-0 text-white"
+            className="px-3 py-2.5 sm:py-1.5 bg-slate-700 rounded text-[13px] sm:text-sm border-0 text-white min-h-[44px] sm:min-h-0"
           >
             {speedOptions.map((s) => (
               <option key={s} value={s}>
@@ -710,10 +710,10 @@ export default function SimpleCandleChart({
           </select>
         </div>
 
-        {/* Play/Pause */}
+        {/* Play/Pause - touch-friendly */}
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className={`px-4 py-1.5 rounded font-medium text-white flex items-center gap-2 ${
+          className={`px-4 py-2.5 sm:py-1.5 rounded font-medium text-white flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 ${
             isPlaying ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"
           }`}
         >
@@ -722,7 +722,8 @@ export default function SimpleCandleChart({
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
-              Pausar
+              <span className="hidden sm:inline">Pausar</span>
+              <span className="sm:hidden">||</span>
             </>
           ) : (
             <>
@@ -734,20 +735,20 @@ export default function SimpleCandleChart({
           )}
         </button>
 
-        {/* Reset */}
+        {/* Reset - touch-friendly */}
         <button
           onClick={handleReset}
-          className="px-4 py-1.5 bg-slate-600 hover:bg-slate-500 rounded font-medium text-white flex items-center gap-2"
+          className="px-4 py-2.5 sm:py-1.5 bg-slate-600 hover:bg-slate-500 rounded font-medium text-white flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Reset
+          <span className="hidden sm:inline">Reset</span>
         </button>
 
         {/* Current price */}
         {currentTick && (
-          <div className="ml-auto text-sm">
+          <div className="w-full sm:w-auto sm:ml-auto text-[13px] sm:text-sm text-center sm:text-left">
             <span className="text-gray-400">Precio: </span>
             <span className="font-mono text-yellow-400">
               {getMidPrice(currentTick).toFixed(2)}
@@ -758,31 +759,29 @@ export default function SimpleCandleChart({
 
       {/* Progress bar */}
       <div className="space-y-1">
-        <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+        <div className="h-1.5 sm:h-2 bg-slate-700 rounded-full overflow-hidden">
           <div
             className="h-full bg-blue-500 transition-all duration-100"
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="flex justify-between text-xs text-gray-500">
+        <div className="flex justify-between text-[11px] sm:text-xs text-gray-500">
           <span>{allTicks.length.toLocaleString()} ticks</span>
           <span>{currentTickIndex.toLocaleString()} procesados</span>
         </div>
       </div>
 
-      {/* Chart container */}
+      {/* Chart container - responsive height via CSS */}
       <div
         ref={chartContainerRef}
-        className="w-full rounded-lg overflow-hidden"
+        className="w-full rounded-lg overflow-hidden h-[350px] sm:h-[500px]"
         style={{
           backgroundColor: colors.background,
-          height: typeof window !== "undefined" && window.innerWidth < 640 ? "350px" : "500px",
-          minHeight: "350px",
         }}
       />
 
-      {/* Price levels legend */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-slate-800 rounded-lg text-sm">
+      {/* Price levels legend - 2 cols mobile, 4 cols desktop */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 p-3 bg-slate-800 rounded-lg text-[13px] sm:text-sm">
         <div className="flex items-center gap-2">
           <div className="w-4 h-0.5" style={{ backgroundColor: colors.entryLine }} />
           <span className="text-gray-400">Entry:</span>

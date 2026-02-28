@@ -302,17 +302,17 @@ export default function BacktesterPage() {
 
   return (
     <>
-    <div className="space-y-4 max-w-[1600px] mx-auto font-sans pb-8">
-      {/* Header mejorado */}
-      <div className="flex items-center justify-between pb-3 border-b border-border/50">
-        <div className="flex items-center gap-4">
+    <div className="space-y-4 max-w-[1600px] mx-auto font-sans pb-8 overflow-x-hidden">
+      {/* Header mejorado - mobile responsive */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-border/50 gap-3">
+        <div className="flex items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
-              <BarChart3 className="w-6 h-6 text-primary" />
+              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Backtester</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Backtester</h1>
+              <p className="text-[13px] sm:text-sm text-muted-foreground mt-0.5">
                 Grid con promedios y trailing SL
               </p>
             </div>
@@ -323,40 +323,40 @@ export default function BacktesterPage() {
             <span className="text-xs font-mono font-medium text-foreground">{configSummary}</span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {signalsInfo.data && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg text-xs">
+            <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-muted/50 rounded-lg text-[13px] sm:text-xs">
               <Signal className="w-3.5 h-3.5 text-green-500" />
               <span className="font-medium">{signalsInfo.data.total}</span>
-              <span className="text-muted-foreground">señales</span>
-              <span className="text-muted-foreground">•</span>
+              <span className="text-muted-foreground hidden sm:inline">señales</span>
+              <span className="text-muted-foreground hidden sm:inline">•</span>
               <span className="text-success font-medium">{signalsInfo.data.bySide.buy}B</span>
               <span className="text-muted-foreground">/</span>
               <span className="text-destructive font-medium">{signalsInfo.data.bySide.sell}S</span>
             </div>
           )}
           {cacheStatus.data && (
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs ${
+            <div className={`flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-[13px] sm:text-xs ${
               cacheStatus.data.isLoaded ? "bg-success/10 text-success" : "bg-amber-500/10 text-amber-600"
             }`}>
               <Database className="w-3.5 h-3.5" />
               <span className="font-medium">{(cacheStatus.data.totalTicks / 1000000).toFixed(1)}M</span>
-              <span className="opacity-70">ticks</span>
+              <span className="opacity-70 hidden sm:inline">ticks</span>
             </div>
           )}
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleDark}
-            className="ml-2 min-h-[44px] min-w-[44px]"
+            className="ml-auto sm:ml-2 min-h-[44px] min-w-[44px]"
           >
             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </Button>
         </div>
       </div>
 
-      {/* Main grid: Config + Results */}
-      <div className="grid lg:grid-cols-3 gap-4">
+      {/* Main grid: Config + Results - stack on mobile */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Panel de configuración mejorado */}
         <Card className="lg:col-span-1 border-border/50 shadow-sm">
           <CardHeader className="pb-2 pt-3 bg-gradient-to-r from-card to-muted/20">
@@ -747,8 +747,8 @@ export default function BacktesterPage() {
           <CardContent className="pt-3">
             {results ? (
               <div className="space-y-4 animate-fade-in">
-                {/* Métricas principales con diseño mejorado - 2 filas */}
-                <div className="grid grid-cols-4 gap-2">
+                {/* Métricas principales con diseño mejorado - 2 cols mobile, 4 cols desktop */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <MetricBox
                     label="Profit Total"
                     value={`${results.totalProfit >= 0 ? "+" : ""}${results.totalProfit?.toFixed(2)}€`}
@@ -781,8 +781,8 @@ export default function BacktesterPage() {
                   />
                 </div>
 
-                {/* Segunda fila de métricas */}
-                <div className="grid grid-cols-5 gap-2">
+                {/* Segunda fila de métricas - 3 cols mobile, 5 cols desktop */}
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                   <MetricBox
                     label="Total Pips"
                     value={`${results.totalProfitPips >= 0 ? "+" : ""}${results.totalProfitPips?.toFixed(1)}`}
@@ -810,9 +810,9 @@ export default function BacktesterPage() {
                   />
                 </div>
 
-                {/* Segmentación por sesión mejorada */}
+                {/* Segmentación por sesión mejorada - 1 col mobile, 3 cols desktop */}
                 {results.segmentation && (
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {results.segmentation.bySession?.map((s: any) => (
                       <div
                         key={s.segment}
@@ -823,8 +823,8 @@ export default function BacktesterPage() {
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">{s.segment}</span>
-                          <span className={`text-xs px-1.5 py-0.5 rounded ${
+                          <span className="text-[13px] sm:text-xs text-muted-foreground">{s.segment}</span>
+                          <span className={`text-[11px] sm:text-xs px-1.5 py-0.5 rounded ${
                             s.winRate >= 50 ? "bg-green-500/20 text-green-600" : "bg-red-500/20 text-red-600"
                           }`}>
                             {s.winRate.toFixed(0)}% WR
@@ -835,7 +835,7 @@ export default function BacktesterPage() {
                         }`}>
                           {s.totalProfit >= 0 ? "+" : ""}{s.totalProfit.toFixed(0)}€
                         </div>
-                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                        <div className="text-[11px] sm:text-[10px] text-muted-foreground mt-0.5">
                           {s.trades} trades • {s.avgProfit?.toFixed(1) || "0"}€/trade
                         </div>
                       </div>
@@ -843,15 +843,15 @@ export default function BacktesterPage() {
                   </div>
                 )}
 
-                {/* Tabla de trades mejorada */}
+                {/* Tabla de trades mejorada - horizontal scroll on mobile */}
                 {results.tradeDetails && results.tradeDetails.length > 0 && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      <h4 className="text-[13px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                         Historial de Trades
                       </h4>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded">
+                        <span className="text-[10px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded hidden sm:inline">
                           Click para ver gráfico
                         </span>
                         <span className="text-[10px] font-mono text-muted-foreground">
@@ -859,8 +859,8 @@ export default function BacktesterPage() {
                         </span>
                       </div>
                     </div>
-                    <div className="max-h-64 overflow-y-auto border rounded-lg overflow-hidden">
-                      <table className="w-full text-xs">
+                    <div className="max-h-64 overflow-y-auto overflow-x-auto border rounded-lg">
+                      <table className="w-full text-[13px] sm:text-xs min-w-[600px]">
                         <thead className="sticky top-0 bg-gradient-to-r from-muted to-muted/80 z-10">
                           <tr>
                             <th className="text-left p-2 font-medium">#</th>
@@ -895,7 +895,7 @@ export default function BacktesterPage() {
                                 </div>
                               </td>
                               <td className="p-2">
-                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] sm:text-[10px] font-bold ${
                                   trade.signalSide === "BUY"
                                     ? "bg-green-500/20 text-green-600"
                                     : "bg-red-500/20 text-red-600"
@@ -943,50 +943,52 @@ export default function BacktesterPage() {
                   </div>
                 )}
 
-                {/* Gráfico de velas del trade seleccionado */}
+                {/* Gráfico de velas del trade seleccionado - scrollable on mobile */}
                 {selectedTradeIndex !== null && results.tradeDetails[selectedTradeIndex] && (
-                  <div className="border rounded-lg overflow-hidden animate-slide-up shadow-lg">
-                    <div className="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-primary/10 to-accent/10 border-b">
-                      <div className="flex items-center gap-3">
-                        <BarChart3 className="w-5 h-5 text-primary" />
+                  <div className="border rounded-lg overflow-hidden animate-slide-up shadow-lg max-h-[80vh] overflow-y-auto">
+                    <div className="flex items-center justify-between px-3 sm:px-4 py-2 bg-gradient-to-r from-primary/10 to-accent/10 border-b sticky top-0 z-10">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                         <div>
-                          <h4 className="text-sm font-semibold">
+                          <h4 className="text-[13px] sm:text-sm font-semibold">
                             Trade #{selectedTradeIndex + 1}
                           </h4>
-                          <span className={`text-xs font-medium flex items-center gap-1 ${
-                            results.tradeDetails[selectedTradeIndex].signalSide === "BUY"
-                              ? "text-success"
-                              : "text-destructive"
-                          }`}>
-                            {results.tradeDetails[selectedTradeIndex].signalSide === "BUY"
-                              ? <><ChevronUp className="w-3.5 h-3.5" /> LONG</>
-                              : <><ChevronDown className="w-3.5 h-3.5" /> SHORT</>
-                            }
-                          </span>
-                          <span className={`ml-2 text-xs font-bold font-mono ${
-                            results.tradeDetails[selectedTradeIndex].totalProfit >= 0
-                              ? "text-success"
-                              : "text-destructive"
-                          }`}>
-                            {results.tradeDetails[selectedTradeIndex].totalProfit >= 0 ? "+" : ""}
-                            {results.tradeDetails[selectedTradeIndex].totalProfit?.toFixed(2)}€
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[11px] sm:text-xs font-medium flex items-center gap-1 ${
+                              results.tradeDetails[selectedTradeIndex].signalSide === "BUY"
+                                ? "text-success"
+                                : "text-destructive"
+                            }`}>
+                              {results.tradeDetails[selectedTradeIndex].signalSide === "BUY"
+                                ? <><ChevronUp className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> LONG</>
+                                : <><ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> SHORT</>
+                              }
+                            </span>
+                            <span className={`text-[11px] sm:text-xs font-bold font-mono ${
+                              results.tradeDetails[selectedTradeIndex].totalProfit >= 0
+                                ? "text-success"
+                                : "text-destructive"
+                            }`}>
+                              {results.tradeDetails[selectedTradeIndex].totalProfit >= 0 ? "+" : ""}
+                              {results.tradeDetails[selectedTradeIndex].totalProfit?.toFixed(2)}€
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <Label className="text-xs text-muted-foreground">Tema:</Label>
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex items-center gap-1 sm:gap-2">
+                          <Label className="text-[11px] sm:text-xs text-muted-foreground hidden sm:inline">Tema:</Label>
                           <select
                             value={chartTheme}
                             onChange={(e) => { setChartTheme(e.target.value); savePreferredTheme(e.target.value); }}
-                            className="px-2 py-1 text-xs border rounded-lg bg-background hover:bg-muted transition-colors"
+                            className="px-2 py-1.5 sm:py-1 text-[11px] sm:text-xs border rounded-lg bg-background hover:bg-muted transition-colors min-h-[44px] sm:min-h-0"
                           >
                             {CHART_THEMES.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                           </select>
                         </div>
                         <button
                           onClick={() => setSelectedTradeIndex(null)}
-                          className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                          className="p-2 sm:p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center"
                           title="Cerrar gráfico"
                         >
                           ✕
@@ -1001,30 +1003,30 @@ export default function BacktesterPage() {
                   </div>
                 )}
 
-                {/* Estadisticas adicionales de trades */}
+                {/* Estadisticas adicionales de trades - 2 cols mobile, 4 cols desktop */}
                 {results.tradeDetails && results.tradeDetails.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2 p-2 bg-muted/20 rounded-lg border border-border/30">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2 sm:p-2 bg-muted/20 rounded-lg border border-border/30">
                     <div className="text-center">
-                      <div className="text-[10px] text-muted-foreground uppercase">Mejor Trade</div>
-                      <div className="text-sm font-bold text-green-500 font-mono">
+                      <div className="text-[10px] sm:text-[10px] text-muted-foreground uppercase">Mejor Trade</div>
+                      <div className="text-[13px] sm:text-sm font-bold text-green-500 font-mono">
                         +{Math.max(...results.tradeDetails.map((t: any) => t.totalProfit || 0)).toFixed(2)}€
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-[10px] text-muted-foreground uppercase">Peor Trade</div>
-                      <div className="text-sm font-bold text-red-500 font-mono">
+                      <div className="text-[10px] sm:text-[10px] text-muted-foreground uppercase">Peor Trade</div>
+                      <div className="text-[13px] sm:text-sm font-bold text-red-500 font-mono">
                         {Math.min(...results.tradeDetails.map((t: any) => t.totalProfit || 0)).toFixed(2)}€
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-[10px] text-muted-foreground uppercase">Racha Max W</div>
-                      <div className="text-sm font-bold text-green-500 font-mono">
+                      <div className="text-[10px] sm:text-[10px] text-muted-foreground uppercase">Racha Max W</div>
+                      <div className="text-[13px] sm:text-sm font-bold text-green-500 font-mono">
                         {results.maxConsecutiveWins || 0}
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-[10px] text-muted-foreground uppercase">Racha Max L</div>
-                      <div className="text-sm font-bold text-red-500 font-mono">
+                      <div className="text-[10px] sm:text-[10px] text-muted-foreground uppercase">Racha Max L</div>
+                      <div className="text-[13px] sm:text-sm font-bold text-red-500 font-mono">
                         {results.maxConsecutiveLosses || 0}
                       </div>
                     </div>
@@ -1032,38 +1034,38 @@ export default function BacktesterPage() {
                 )}
 
                 {/* Guardar estrategia */}
-                <div className="p-4 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg border border-border/50 space-y-3">
+                <div className="p-3 sm:p-4 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg border border-border/50 space-y-3">
                   <div className="flex items-center gap-2">
                     <Save className="w-4 h-4 text-primary" />
-                    <h4 className="text-sm font-semibold">Guardar como Estrategia</h4>
+                    <h4 className="text-[13px] sm:text-sm font-semibold">Guardar como Estrategia</h4>
                   </div>
                   <div className="grid gap-2">
                     <Input
                       placeholder="Nombre de la estrategia"
                       value={strategyName}
                       onChange={(e) => setStrategyName(e.target.value)}
-                      className="h-9"
+                      className="h-11 sm:h-9 text-[13px] sm:text-sm"
                     />
                     <Input
                       placeholder="Descripcion (opcional)"
                       value={strategyDescription}
                       onChange={(e) => setStrategyDescription(e.target.value)}
-                      className="h-9"
+                      className="h-11 sm:h-9 text-[13px] sm:text-sm"
                     />
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <Button
                       onClick={handleSaveStrategy}
                       disabled={!strategyName.trim() || saveAsStrategy.isPending}
-                      className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                      className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 min-h-[44px] sm:min-h-0"
                     >
                       {saveAsStrategy.isPending ? (
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center justify-center gap-2">
                           <RefreshCw className="w-3 h-3 animate-spin" />
                           Guardando...
                         </span>
                       ) : (
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center justify-center gap-2">
                           <Save className="w-3.5 h-3.5" />
                           Guardar Estrategia
                         </span>
@@ -1073,7 +1075,7 @@ export default function BacktesterPage() {
                       variant="outline"
                       size="sm"
                       onClick={saveCurrentResult}
-                      className="hover:bg-primary/10 hover:text-primary hover:border-primary/50"
+                      className="hover:bg-primary/10 hover:text-primary hover:border-primary/50 min-h-[44px] sm:min-h-0"
                     >
                       <Scale className="w-3.5 h-3.5 mr-1" />
                       Comparar
@@ -1099,7 +1101,7 @@ export default function BacktesterPage() {
                         setPublishName(strategyName || `Estrategia ${config.strategyName}`);
                         setPublishDialogOpen(true);
                       }}
-                      className="w-full border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-600"
+                      className="w-full border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-600 min-h-[44px] sm:min-h-0"
                     >
                       <Store className="w-3.5 h-3.5 mr-2" />
                       Publicar al Marketplace
@@ -1284,29 +1286,29 @@ export default function BacktesterPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-3">
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {savedResults.map((saved, index) => (
                 <div
                   key={index}
                   onClick={() => toggleCompare(index)}
-                  className={`p-3 rounded-lg cursor-pointer transition-all border-2 ${
+                  className={`p-3 rounded-lg cursor-pointer transition-all border-2 min-h-[44px] sm:min-h-0 ${
                     compareIndexes.includes(index)
                       ? "border-primary bg-primary/5 shadow-md"
                       : "border-transparent bg-muted/30 hover:bg-muted/50 hover:border-border"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <div className="text-xs font-medium truncate flex-1">{saved.name}</div>
+                    <div className="text-[13px] sm:text-xs font-medium truncate flex-1">{saved.name}</div>
                     {compareIndexes.includes(index) && (
-                      <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center ml-2">
+                      <span className="w-5 h-5 sm:w-4 sm:h-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center ml-2">
                         ✓
                       </span>
                     )}
                   </div>
-                  <div className={`text-2xl font-bold ${saved.results.totalProfit >= 0 ? "text-green-500" : "text-red-500"}`}>
+                  <div className={`text-2xl sm:text-2xl font-bold ${saved.results.totalProfit >= 0 ? "text-green-500" : "text-red-500"}`}>
                     {saved.results.totalProfit >= 0 ? "+" : ""}{saved.results.totalProfit?.toFixed(0)}€
                   </div>
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1">
+                  <div className="flex items-center justify-between text-[11px] sm:text-[10px] text-muted-foreground mt-1">
                     <span>{saved.results.winRate?.toFixed(0)}% WR</span>
                     <span>{saved.results.totalTrades} trades</span>
                   </div>
@@ -1478,7 +1480,7 @@ function MetricBox({
   subtitle?: string;
 }) {
   return (
-    <div className={`p-2.5 rounded-lg text-center transition-all hover:scale-[1.02] cursor-default ${
+    <div className={`p-2 sm:p-2.5 rounded-lg text-center transition-all hover:scale-[1.02] cursor-default ${
       highlight
         ? positive
           ? "bg-gradient-to-br from-success/20 to-success/5 border border-success/30"
@@ -1489,15 +1491,15 @@ function MetricBox({
     }`}>
       <div className="flex items-center justify-center gap-1 mb-0.5">
         {icon && <span className="text-muted-foreground">{icon}</span>}
-        <span className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</span>
+        <span className="text-[10px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">{label}</span>
       </div>
-      <div className={`text-base font-bold font-mono transition-all ${
+      <div className={`text-[15px] sm:text-base font-bold font-mono transition-all ${
         positive === true ? "text-success" : positive === false ? "text-destructive" : ""
       }`}>
         {value}
       </div>
       {subtitle && (
-        <div className="text-[9px] text-muted-foreground mt-0.5 font-mono">{subtitle}</div>
+        <div className="text-[9px] sm:text-[9px] text-muted-foreground mt-0.5 font-mono">{subtitle}</div>
       )}
     </div>
   );
