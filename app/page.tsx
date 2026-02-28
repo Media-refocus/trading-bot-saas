@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import {
   Shield,
@@ -11,6 +14,8 @@ import {
   Bot,
   Gauge,
   AlertTriangle,
+  Menu,
+  X,
 } from 'lucide-react';
 
 const features = [
@@ -121,6 +126,8 @@ const faqs = [
 ];
 
 export default function HomePage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Navbar */}
@@ -130,7 +137,9 @@ export default function HomePage() {
             <Bot className="h-6 w-6 text-blue-500" />
             Trading Bot
           </Link>
-          <nav className="flex items-center gap-6">
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-6">
             <Link
               href="/pricing"
               className="text-slate-300 hover:text-white transition-colors"
@@ -150,7 +159,58 @@ export default function HomePage() {
               Prueba Gratis
             </Link>
           </nav>
+
+          {/* Mobile CTA + Hamburger */}
+          <div className="flex md:hidden items-center gap-2">
+            <Link
+              href="/register"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium"
+            >
+              Prueba Gratis
+            </Link>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2.5 rounded-md hover:bg-slate-700 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6 text-white" />
+              ) : (
+                <Menu className="h-6 w-6 text-white" />
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Menu Backdrop */}
+        {mobileMenuOpen && (
+          <div
+            className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-slate-700/50 bg-slate-900/95 animate-in slide-in-from-top-2 duration-200 relative z-50">
+            <div className="container mx-auto px-4 py-2 space-y-0.5">
+              <Link
+                href="/pricing"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition min-h-[48px]"
+              >
+                Precios
+              </Link>
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition min-h-[48px]"
+              >
+                Iniciar Sesion
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Hero */}
@@ -225,7 +285,7 @@ export default function HomePage() {
                 <h3 className="text-lg font-semibold text-white mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-slate-400 text-sm">{feature.description}</p>
+                <p className="text-slate-400 text-[13px] leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -274,7 +334,7 @@ export default function HomePage() {
                 <h3 className="text-lg font-semibold text-white mb-2">
                   {item.title}
                 </h3>
-                <p className="text-slate-400 text-sm">{item.description}</p>
+                <p className="text-slate-400 text-[13px] leading-relaxed">{item.description}</p>
               </div>
             ))}
           </div>
@@ -368,10 +428,10 @@ export default function HomePage() {
               <Bot className="h-5 w-5 text-blue-500" />
               <span className="text-white font-semibold">Trading Bot</span>
             </div>
-            <p className="text-slate-500 text-sm">
+            <p className="text-slate-500 text-[12px]">
               © {new Date().getFullYear()} Trading Bot SaaS. Todos los derechos reservados.
             </p>
-            <div className="flex items-center gap-4 text-slate-400 text-sm">
+            <div className="flex items-center gap-4 text-slate-400 text-[12px]">
               <span>Soporte: soporte@tradingbot.com</span>
             </div>
           </div>

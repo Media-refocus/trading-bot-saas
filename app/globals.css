@@ -74,4 +74,28 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Mobile-first global rules */
+  @media (max-width: 768px) {
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* Ensure minimum readable font sizes */
+    p, li, span, label {
+      font-size: clamp(12px, 3.5vw, inherit);
+    }
+
+    /* Ensure touch targets are at least 44x44px */
+    button, a, input, select, textarea {
+      min-height: 44px;
+    }
+
+    /* Page padding */
+    main {
+      padding-left: 16px;
+      padding-right: 16px;
+      padding-bottom: 32px;
+    }
+  }
 }

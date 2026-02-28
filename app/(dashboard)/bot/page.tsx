@@ -159,7 +159,7 @@ function ApiKeySection({ onRegenerate }: { onRegenerate: () => Promise<{ apiKey?
             <div className="flex flex-col sm:flex-row gap-2">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" disabled={isRegenerating} size="sm" className="w-full sm:w-auto min-h-[44px]">
+                  <Button disabled={isRegenerating} size="sm" className="w-full sm:w-auto min-h-[44px]">
                     <RefreshCw className={`h-4 w-4 mr-2 ${isRegenerating ? 'animate-spin' : ''}`} />
                     Regenerar clave
                   </Button>

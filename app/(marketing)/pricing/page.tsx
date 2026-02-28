@@ -147,7 +147,7 @@ export default function PricingPage() {
                       {feature.included ? (
                         <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
                       ) : (
-                        <X className="h-4 w-4 text-slate-600 flex-shrink-0" />
+                        <X className="h-4 w-4 text-slate-500 flex-shrink-0" />
                       )}
                       <span className="text-[13px]">{feature.name}</span>
                     </li>
