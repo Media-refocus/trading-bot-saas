@@ -199,12 +199,13 @@
 **Prioridad**: ALTA
 **Dependencias**: Ninguna
 **Tiempo estimado**: 2-3 días
+**Estado**: COMPLETADO
 
 **Tareas**:
-- [ ] Implementar Clerk o Auth.js
-- [ ] Middleware de rutas protegidas
-- [ ] Gestión de roles (admin, user)
-- [ ] Página de perfil y configuración
+- [x] Implementar Auth.js v5 con Google OAuth provider
+- [x] Middleware de rutas protegidas
+- [x] Gestión de roles (admin, user) en Prisma schema y session
+- [x] Página de perfil y configuración
 
 ### 2.2 Base de Datos Producción (PostgreSQL)
 **Prioridad**: ALTA
