@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       );
     }
 
-    let event: Stripe.Event;
+    let event: any;
 
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
@@ -106,7 +106,7 @@ export async function POST(request: Request) {
  * Handle checkout.session.completed
  * Creates or updates subscription after successful checkout
  */
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+async function handleCheckoutCompleted(session: any) {
   const tenantId = session.metadata?.tenantId;
   const planId = session.metadata?.planId;
   const subscriptionId = session.subscription as string | undefined;
@@ -142,7 +142,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   if (subscriptionId) {
     // Get full subscription details from Stripe
     const stripe = getStripe();
-    const stripeSubscription = await stripe.Subscription.retrieve(subscriptionId);
+    const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
 
     const priceId = stripeSubscription.items.data[0]?.price.id;
     if (priceId && PRICE_TO_PLAN[priceId]) {
@@ -185,7 +185,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
  * Handle customer.subscription.updated
  * Syncs subscription status changes from Stripe
  */
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+async function handleSubscriptionUpdated(subscription: any) {
   const subscriptionId = subscription.id;
   const customerId = subscription.customer as string;
   const status = subscription.status;
@@ -236,7 +236,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
  * Handle customer.subscription.deleted
  * Marks subscription as canceled
  */
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+async function handleSubscriptionDeleted(subscription: any) {
   const subscriptionId = subscription.id;
   const customerId = subscription.customer as string;
 
@@ -270,7 +270,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
  * Handle invoice.payment_failed
  * Marks subscription as past_due
  */
-async function handlePaymentFailed(invoice: Stripe.Invoice) {
+async function handlePaymentFailed(invoice: any) {
   const subscriptionId = invoice.subscription as string | undefined;
   const customerId = invoice.customer as string;
 

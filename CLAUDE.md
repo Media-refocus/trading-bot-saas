@@ -115,3 +115,10 @@ docs/                 — Analysis, historical data, guides
 - **Simplicity First**: Cada cambio lo más simple posible. Impacto mínimo
 - **No Laziness**: Busca root causes. No fixes temporales. Estándares de senior dev
 - **Minimal Impact**: Solo toca lo necesario. Evita introducir bugs
+
+## Commit Rules
+- **NUNCA hacer commit parcial sin terminar la tarea.** Si quedan errores, investiga la causa raíz antes de commit.
+- Si el problema es más grande de lo esperado → PARA y pregunta antes de seguir.
+- Ejemplo: Si arreglas author→authorId pero hay 179 errores de schema → NO commits parciales. Arregla el schema primero.
+
+**Por qué:** Commits parciales dejan el repo en estado roto. Guillermo espera que CC complete tareas, no que las deje a medias.

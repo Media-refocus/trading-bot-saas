@@ -33,7 +33,7 @@ export const createContext = async ({ headers }: CreateContextOptions) => {
         name: true,
         image: true,
         tenantId: true,
-        tenant: {
+        Tenant: {
           select: {
             id: true,
             name: true,

@@ -49,7 +49,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
-          include: { tenant: true },
+          include: { Tenant: true },
         });
 
         if (!user || !user.password) {
@@ -82,7 +82,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (account?.provider === "google" && user.email) {
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email },
-          include: { tenant: true },
+          include: { Tenant: true },
         });
 
         if (existingUser) {

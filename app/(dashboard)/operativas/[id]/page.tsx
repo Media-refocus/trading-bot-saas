@@ -313,10 +313,10 @@ export default function OperativaDetailPage() {
                     <div key={c.id} className="p-3 bg-muted/30 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
-                          {c.authorId?.[0] || "?"}
+                          {c.User?.name?.[0] || "?"}
                         </div>
                         <div>
-                          <span className="font-medium">{c.author?.name || "Anonimo"}</span>
+                          <span className="font-medium">{c.User?.name || "Anonimo"}</span>
                           <span className="text-xs text-muted-foreground ml-2">
                             {formatRelativeTime(c.createdAt)}
                           </span>

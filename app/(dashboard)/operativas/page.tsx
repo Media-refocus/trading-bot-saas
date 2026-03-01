@@ -570,9 +570,9 @@ export default function OperativasPage() {
                         commentsData?.comments.map((comment) => (
                           <div key={comment.id} className="flex gap-3">
                             <Avatar className="h-8 w-8 shrink-0">
-                              <AvatarImage src={comment.author.image ?? undefined} />
+                              <AvatarImage src={comment.User?.image ?? undefined} />
                               <AvatarFallback>
-                                {comment.author.name?.charAt(0).toUpperCase() ?? "?"}
+                                {comment.User?.name?.charAt(0).toUpperCase() ?? "?"}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">

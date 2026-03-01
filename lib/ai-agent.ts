@@ -45,7 +45,7 @@ interface TradingContext {
     profitPips: number | null;
     closeReason: string | null;
   }>;
-  botConfig: {
+  BotConfig: {
     symbol: string;
     entryLot: number;
     gridStepPips: number;
@@ -85,16 +85,16 @@ export async function canUseAIAgent(tenantId: string): Promise<boolean> {
  * Obtener contexto completo del usuario para el AI Agent
  */
 export async function getTradingContext(tenantId: string): Promise<TradingContext | null> {
-  const tenant = await prisma.tenant.findUnique({
+  const tenant: any = await prisma.tenant.findUnique({
     where: { id: tenantId },
     include: {
-      subscriptions: {
+      Subscription: {
         where: { status: "ACTIVE" },
         take: 1,
       },
-      botConfigs: {
+      BotConfig: {
         include: {
-          heartbeats: {
+          BotHeartbeat: {
             orderBy: { timestamp: "desc" },
             take: 1,
           },
@@ -161,7 +161,7 @@ export async function getTradingContext(tenantId: string): Promise<TradingContex
   // Obtener balance de cuentas
   const accounts = await prisma.botAccount.findMany({
     where: {
-      botConfig: { tenantId },
+      BotConfig: { tenantId },
       isActive: true,
     },
   });
@@ -184,9 +184,9 @@ export async function getTradingContext(tenantId: string): Promise<TradingContex
   return {
     tenantId: tenant.id,
     tenantName: tenant.name,
-    plan: tenant.subscriptions[0]?.plan ?? tenant.plan,
-    botStatus: tenant.botConfigs?.[0]?.status ?? "OFFLINE",
-    openPositions: tenant.botConfigs?.[0]?.heartbeats[0]?.openPositions ?? 0,
+    plan: tenant.Subscription[0]?.plan ?? tenant.plan,
+    botStatus: tenant.BotConfig?.[0]?.status ?? "OFFLINE",
+    openPositions: tenant.BotConfig?.[0]?.heartbeats[0]?.openPositions ?? 0,
     balance,
     equity,
     dailyPnL,
@@ -206,13 +206,13 @@ export async function getTradingContext(tenantId: string): Promise<TradingContex
       profitPips: t.profitPips,
       closeReason: t.closeReason,
     })),
-    botConfig: tenant.botConfigs?.[0]
+    BotConfig: tenant.BotConfig?.[0]
       ? {
-          symbol: tenant.botConfigs[0].symbol,
-          entryLot: tenant.botConfigs[0].entryLot,
-          gridStepPips: tenant.botConfigs[0].gridStepPips,
-          gridMaxLevels: tenant.botConfigs[0].gridMaxLevels,
-          dailyLossLimitPercent: tenant.botConfigs[0].dailyLossLimitPercent,
+          symbol: tenant.BotConfig[0].symbol,
+          entryLot: tenant.BotConfig[0].entryLot,
+          gridStepPips: tenant.BotConfig[0].gridStepPips,
+          gridMaxLevels: tenant.BotConfig[0].gridMaxLevels,
+          dailyLossLimitPercent: tenant.BotConfig[0].dailyLossLimitPercent,
         }
       : null,
   };
@@ -245,12 +245,12 @@ function buildSystemPrompt(context: TradingContext): string {
 
 ### Configuración del Bot
 ${
-  context.botConfig
-    ? `- Símbolo: ${context.botConfig.symbol}
-- Lote entrada: ${context.botConfig.entryLot}
-- Grid Step: ${context.botConfig.gridStepPips} pips
-- Niveles máximos: ${context.botConfig.gridMaxLevels}
-- Daily Loss Limit: ${context.botConfig.dailyLossLimitPercent ?? "No configurado"}%`
+  context.BotConfig
+    ? `- Símbolo: ${context.BotConfig.symbol}
+- Lote entrada: ${context.BotConfig.entryLot}
+- Grid Step: ${context.BotConfig.gridStepPips} pips
+- Niveles máximos: ${context.BotConfig.gridMaxLevels}
+- Daily Loss Limit: ${context.BotConfig.dailyLossLimitPercent ?? "No configurado"}%`
     : "Bot no configurado"
 }
 
@@ -293,7 +293,7 @@ Usuario: "Cómo voy esta semana?"
 Respuesta: "📊 Esta semana vas +${context.weeklyPnL.toFixed(2)} EUR con ${context.totalTrades} operaciones. Tu win rate del ${context.winRate.toFixed(1)}% está ${context.winRate > 50 ? "bien" : "por debajo del 50%, quizás convenga revisar la estrategia"}. Recuerda mantener el Daily Loss Limit activo."
 
 Usuario: "Qué lote me recomiendas?"
-Respuesta: "Con tu balance de ${context.balance.toFixed(2)} EUR, te recomendaría no superar el 1-2% de riesgo por operación. Con tu configuración actual de ${context.botConfig?.gridMaxLevels ?? 4} niveles, un lote de 0.01-0.02 sería conservador. ¿Quieres que lo ajuste?"`;
+Respuesta: "Con tu balance de ${context.balance.toFixed(2)} EUR, te recomendaría no superar el 1-2% de riesgo por operación. Con tu configuración actual de ${context.BotConfig?.gridMaxLevels ?? 4} niveles, un lote de 0.01-0.02 sería conservador. ¿Quieres que lo ajuste?"`;
 }
 
 /**
@@ -474,7 +474,7 @@ Con tu balance de ${context.balance.toFixed(2)} EUR, te recomiendo:
 
 - **Conservador:** 0.01 - 0.02 (riesgo ~1% por operación)
 - **Moderado:** ${recommendedLot.toFixed(2)} (riesgo ~2%)
-- **Actual:** ${context.botConfig?.entryLot ?? "No configurado"}
+- **Actual:** ${context.BotConfig?.entryLot ?? "No configurado"}
 
 Para cambiar tu lote, escribe: "cambia el lote a 0.02"`;
   }

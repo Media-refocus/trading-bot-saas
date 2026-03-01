@@ -1,4 +1,3 @@
-import { nanoid } from "nanoid";
 /**
  * POST /api/bot/signal
  *
@@ -72,7 +71,6 @@ export async function POST(request: NextRequest) {
     // Aún registramos la señal pero con status SKIPPED
     const signal = await prisma.signal.create({
       data: {
-        id: nanoid(),
         tenantId: botConfig.tenantId,
         botConfigId: botConfig.id,
         side: body.side,
@@ -116,8 +114,7 @@ export async function POST(request: NextRequest) {
   // Crear señal en DB
   const signal = await prisma.signal.create({
       data: {
-        id: nanoid(),
-      tenantId: botConfig.tenantId,
+        tenantId: botConfig.tenantId,
       botConfigId: botConfig.id,
       side: body.side,
       symbol: body.symbol,

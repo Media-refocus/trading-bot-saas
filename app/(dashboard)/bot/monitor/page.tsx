@@ -423,7 +423,7 @@ export default function BotMonitorPage() {
               </div>
               <div className="flex items-center gap-1 text-muted-foreground md:hidden">
                 <Zap className="h-4 w-4 text-amber-500" />
-                <span className="font-bold">{status?.positions.length || 0}</span>
+                <span className="font-bold">{status?.BotPosition.length || 0}</span>
                 <span className="text-sm">pos</span>
               </div>
             </div>
@@ -440,7 +440,7 @@ export default function BotMonitorPage() {
             <div className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-amber-500" />
               <span className="text-xl md:text-2xl font-bold">
-                {status?.positions.length || 0}
+                {status?.BotPosition.length || 0}
               </span>
             </div>
             <p className="text-[13px] text-muted-foreground mt-1">Posiciones</p>
@@ -532,14 +532,14 @@ export default function BotMonitorPage() {
                   <Skeleton key={i} className="h-16 w-full" />
                 ))}
               </div>
-            ) : !status?.positions || status.positions.length === 0 ? (
+            ) : !status?.BotPosition || status.BotPosition.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p>No hay posiciones abiertas</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {status.positions.map((position: Position) => (
+                {status.BotPosition.map((position: Position) => (
                   <PositionCard key={position.id} position={position} />
                 ))}
               </div>

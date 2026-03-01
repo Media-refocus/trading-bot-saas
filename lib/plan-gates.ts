@@ -238,8 +238,8 @@ const PLAN_FEATURES: Record<PlanType | "TRIAL", PlanFeatures> = {
  * @param plan - Plan type (BASIC, PRO, ENTERPRISE, or TRIAL)
  * @returns Feature flags for the plan
  */
-export function getPlanFeatures(plan: PlanType | "TRIAL"): PlanFeatures {
-  return PLAN_FEATURES[plan] ?? PLAN_FEATURES.BASIC;
+export function getPlanFeatures(plan: string | "TRIAL"): PlanFeatures {
+  return PLAN_FEATURES[plan as PlanType] ?? PLAN_FEATURES.BASIC;
 }
 
 /**
@@ -250,7 +250,7 @@ export function getPlanFeatures(plan: PlanType | "TRIAL"): PlanFeatures {
  * @returns true if feature is available
  */
 export function hasFeature(
-  plan: PlanType | "TRIAL",
+  plan: string | "TRIAL",
   feature: keyof PlanFeatures
 ): boolean {
   const features = getPlanFeatures(plan);
@@ -274,9 +274,9 @@ export function hasFeature(
  */
 export function getEffectivePlan(
   status: SubscriptionStatus,
-  plan: PlanType,
+  plan: string,
   trialEnd?: Date | null
-): PlanType | "TRIAL" {
+): string | "TRIAL" {
   const now = new Date();
 
   switch (status) {
@@ -310,7 +310,7 @@ export function getEffectivePlan(
  */
 export interface SubscriptionInfo {
   status: SubscriptionStatus;
-  plan: PlanType;
+  plan: string;
   trialEnd?: Date | null;
 }
 
@@ -355,6 +355,7 @@ export const PLAN_NAMES: Record<PlanType | "TRIAL", string> = {
  * Plan prices for display (EUR/month)
  */
 export const PLAN_PRICES: Record<PlanType, number> = {
+  TRIAL: 0,
   BASIC: 57,
   PRO: 147,
   ENTERPRISE: 347,

@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 /**
  * Router para gestionar estrategias guardadas
  *

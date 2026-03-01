@@ -7,6 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PlanType {
+  TRIAL
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
 enum SubscriptionStatus {
   TRIAL
   ACTIVE
@@ -53,7 +60,7 @@ model Backtest {
   ticksProcessed  Int              @default(0)
   totalTicks      Int              @default(0)
   createdAt       DateTime         @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime         @updatedAt
   Tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   SimulatedTrade  SimulatedTrade[]
 }
@@ -73,7 +80,7 @@ model BotAccount {
   lastEquity  Float?
   lastMargin  Float?
   createdAt   DateTime      @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime      @updatedAt
   BotConfig   BotConfig     @relation(fields: [botConfigId], references: [id], onDelete: Cascade)
   BotPosition BotPosition[]
   Trade       Trade[]
@@ -109,7 +116,7 @@ model BotConfig {
   dailyLossCurrent      Float          @default(0)
   dailyLossResetAt      DateTime?
   createdAt             DateTime       @default(now())
-  updatedAt             DateTime
+  updatedAt             DateTime       @updatedAt
   BotAccount            BotAccount[]
   Tenant                Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   BotHeartbeat          BotHeartbeat[]
@@ -157,7 +164,7 @@ model BotPosition {
   openedAt       DateTime
   lastSyncAt     DateTime   @default(now())
   createdAt      DateTime   @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime   @updatedAt
   BotAccount     BotAccount @relation(fields: [botAccountId], references: [id], onDelete: Cascade)
 
   @@unique([botAccountId, mt5Ticket])
@@ -198,7 +205,7 @@ model Position {
   profitMoney      Float?
   level            Int             @default(0)
   createdAt        DateTime        @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime        @updatedAt
   TradingAccount   TradingAccount? @relation(fields: [tradingAccountId], references: [id])
   Signal           Signal?         @relation(fields: [signalId], references: [id])
   Tenant           Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -235,7 +242,7 @@ model PublishedStrategy {
   isPublic                Boolean             @default(true)
   publishedAt             DateTime            @default(now())
   createdAt               DateTime            @default(now())
-  updatedAt               DateTime
+  updatedAt               DateTime            @updatedAt
   PublishedStrategy       PublishedStrategy?  @relation("PublishedStrategyToPublishedStrategy", fields: [parentStrategyId], references: [id])
   other_PublishedStrategy PublishedStrategy[] @relation("PublishedStrategyToPublishedStrategy")
   User                    User                @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -327,7 +334,7 @@ model Strategy {
   isFavorite        Boolean   @default(false)
   isActive          Boolean   @default(true)
   createdAt         DateTime  @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime  @updatedAt
   Tenant            Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
@@ -339,7 +346,7 @@ model StrategyComment {
   publishedStrategyId String
   content             String
   createdAt           DateTime          @default(now())
-  updatedAt           DateTime
+  updatedAt           DateTime          @updatedAt
   PublishedStrategy   PublishedStrategy @relation(fields: [publishedStrategyId], references: [id], onDelete: Cascade)
   User                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -369,7 +376,7 @@ model Subscription {
   currentPeriodStart DateTime?
   currentPeriodEnd   DateTime?
   createdAt          DateTime           @default(now())
-  updatedAt          DateTime
+  updatedAt          DateTime           @updatedAt
   Tenant             Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
 
@@ -380,7 +387,7 @@ model Tenant {
   stripeCustomerId  String?             @unique
   plan              String              @default("TRIAL")
   createdAt         DateTime            @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime            @updatedAt
   telegramChatId    String?             @unique
   Backtest          Backtest[]
   BotConfig         BotConfig?
@@ -433,7 +440,7 @@ model Trade {
   status       String      @default("OPEN")
   errorMessage String?
   createdAt    DateTime    @default(now())
-  updatedAt    DateTime
+  updatedAt    DateTime    @updatedAt
   Signal       Signal?     @relation(fields: [signalId], references: [id])
   BotAccount   BotAccount? @relation(fields: [botAccountId], references: [id])
   BotConfig    BotConfig?  @relation(fields: [botConfigId], references: [id])
@@ -456,7 +463,7 @@ model TradingAccount {
   encryptedApiSecret String?
   isActive           Boolean    @default(true)
   createdAt          DateTime   @default(now())
-  updatedAt          DateTime
+  updatedAt          DateTime   @updatedAt
   Position           Position[]
   User               User?      @relation(fields: [userId], references: [id])
   Tenant             Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -472,7 +479,7 @@ model User {
   password          String?
   role              String              @default("USER")
   createdAt         DateTime            @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime            @updatedAt
   Account           Account[]
   Notification      Notification[]
   PublishedStrategy PublishedStrategy[]

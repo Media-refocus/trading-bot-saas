@@ -17,7 +17,7 @@ export const authRouter = router({
         image: true,
         role: true,
         createdAt: true,
-        tenant: {
+        Tenant: {
           select: {
             id: true,
             name: true,
@@ -26,9 +26,9 @@ export const authRouter = router({
             createdAt: true,
             _count: {
               select: {
-                tradingAccounts: true,
-                signals: true,
-                trades: true,
+                TradingAccount: true,
+                Signal: true,
+                Trade: true,
               },
             },
           },

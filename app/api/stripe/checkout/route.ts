@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
       include: {
-        subscriptions: {
+        Subscription: {
           orderBy: { createdAt: "desc" },
           take: 1,
         },

@@ -1,3 +1,4 @@
+import { PlanType } from '@prisma/client';
 import { z } from "zod";
 import { procedure, router, protectedProcedure } from "../init";
 import { prisma } from "@/lib/prisma";
@@ -63,7 +64,7 @@ export const tenantRouter = router({
     return {
       status: subscription.status,
       plan: subscription.plan,
-      planName: PLAN_NAMES[effectivePlan] || effectivePlan,
+      planName: PLAN_NAMES[effectivePlan as PlanType] || effectivePlan,
       effectivePlan,
       trialEnd: subscription.trialEnd,
       trialDaysRemaining,

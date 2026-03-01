@@ -71,7 +71,7 @@ export const marketplaceRouter = router({
       }
 
       if (authorId) {
-        where.authorId = authorId;
+        where.UserId = authorId;
       }
 
       if (minWinRate !== undefined) {
@@ -110,7 +110,7 @@ export const marketplaceRouter = router({
         take: limit + 1, // +1 para detectar si hay mas
         cursor: cursor ? { id: cursor } : undefined,
         include: {
-          author: {
+          User: {
             select: { id: true, name: true, email: true },
           },
         },
@@ -141,7 +141,7 @@ export const marketplaceRouter = router({
           isPublic: true,
         },
         include: {
-          author: {
+          User: {
             select: { id: true, name: true, email: true },
           },
         },
@@ -423,7 +423,7 @@ export const marketplaceRouter = router({
           content: input.content,
         },
         include: {
-          user: {
+          User: {
             select: { id: true, name: true, email: true, image: true },
           },
         },
@@ -434,7 +434,7 @@ export const marketplaceRouter = router({
         content: comment.content,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
-        author: comment.user,
+        User: comment.User,
       };
     }),
 
@@ -457,7 +457,7 @@ export const marketplaceRouter = router({
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
         include: {
-          user: {
+          User: {
             select: { id: true, name: true, email: true, image: true },
           },
         },
@@ -476,7 +476,7 @@ export const marketplaceRouter = router({
           content: c.content,
           createdAt: c.createdAt,
           updatedAt: c.updatedAt,
-          author: c.user,
+          User: c.User,
         })),
         nextCursor,
       };
@@ -532,7 +532,7 @@ export const marketplaceRouter = router({
           orderBy: { likesCount: "desc" },
           take: input.limit,
           include: {
-            author: { select: { id: true, name: true } },
+            User: { select: { id: true, name: true } },
           },
         });
         return popular;
@@ -548,7 +548,7 @@ export const marketplaceRouter = router({
         orderBy: { likesCount: "desc" },
         take: 20, // Traer mas de las necesarias para filtrar
         include: {
-          author: { select: { id: true, name: true } },
+          User: { select: { id: true, name: true } },
         },
       });
 
@@ -623,7 +623,7 @@ export const marketplaceRouter = router({
         ],
         take: limit,
         include: {
-          author: {
+          User: {
             select: { name: true },
           },
         },

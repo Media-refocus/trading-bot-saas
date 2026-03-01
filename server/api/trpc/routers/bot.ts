@@ -74,7 +74,7 @@ export const botRouter = router({
         BotAccount: {
           orderBy: { createdAt: "asc" },
         },
-        heartbeats: {
+        BotHeartbeat: {
           take: 1,
           orderBy: { timestamp: "desc" },
         },
@@ -325,7 +325,7 @@ export const botRouter = router({
       const account = await prisma.botAccount.findFirst({
         where: {
           id,
-          botConfig: { tenantId },
+          BotConfig: { tenantId },
         },
       });
 
@@ -362,7 +362,7 @@ export const botRouter = router({
       const account = await prisma.botAccount.findFirst({
         where: {
           id: input.id,
-          botConfig: { tenantId },
+          BotConfig: { tenantId },
         },
       });
 
@@ -419,13 +419,13 @@ export const botRouter = router({
     const botConfig = await prisma.botConfig.findUnique({
       where: { tenantId },
       include: {
-        heartbeats: {
+        BotHeartbeat: {
           take: 1,
           orderBy: { timestamp: "desc" },
         },
         BotAccount: {
           include: {
-            positions: true,
+            BotPosition: true,
           },
         },
       },
@@ -454,8 +454,8 @@ export const botRouter = router({
             uptimeSeconds: lastHeartbeat.uptimeSeconds,
           }
         : null,
-      positions: botConfig.BotAccount.flatMap((acc) =>
-        acc.positions.map((pos) => ({
+      BotPosition: botConfig.BotAccount.flatMap((acc) =>
+        acc.BotPosition.map((pos: any) => ({
           id: pos.id,
           mt5Ticket: pos.mt5Ticket,
           symbol: pos.symbol,

@@ -1,4 +1,3 @@
-import { nanoid } from "nanoid";
 /**
  * POST /api/bot/signals/[id]/ack
  *
@@ -77,7 +76,6 @@ export async function POST(
   if (body.status === "EXECUTED" && body.mt5_ticket) {
     await prisma.trade.create({
       data: {
-        id: nanoid(),
         tenantId: botConfig.tenantId,
         botConfigId: botConfig.id,
         signalId: signalId,
