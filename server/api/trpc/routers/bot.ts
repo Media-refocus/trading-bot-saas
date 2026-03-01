@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 /**
  * Router tRPC para gestión de bots desde el dashboard
  *
@@ -70,7 +71,7 @@ export const botRouter = router({
     const botConfig = await prisma.botConfig.findUnique({
       where: { tenantId },
       include: {
-        botAccounts: {
+        BotAccount: {
           orderBy: { createdAt: "asc" },
         },
         heartbeats: {
@@ -113,7 +114,7 @@ export const botRouter = router({
       dailyLossResetAt: botConfig.dailyLossResetAt,
       hasTelegramConfig: !!(botConfig.telegramApiIdEnc && botConfig.telegramApiHashEnc),
       telegramChannels: botConfig.telegramChannels,
-      accounts: botConfig.botAccounts.map((acc) => ({
+      accounts: botConfig.BotAccount.map((acc) => ({
         id: acc.id,
         server: "***", // No mostrar server real
         symbol: acc.symbol,
@@ -123,12 +124,12 @@ export const botRouter = router({
         lastBalance: acc.lastBalance,
         lastEquity: acc.lastEquity,
       })),
-      lastHeartbeat: botConfig.heartbeats[0]
+      lastHeartbeat: botConfig.BotHeartbeat[0]
         ? {
-            timestamp: botConfig.heartbeats[0].timestamp,
-            mt5Connected: botConfig.heartbeats[0].mt5Connected,
-            telegramConnected: botConfig.heartbeats[0].telegramConnected,
-            openPositions: botConfig.heartbeats[0].openPositions,
+            timestamp: botConfig.BotHeartbeat[0].timestamp,
+            mt5Connected: botConfig.BotHeartbeat[0].mt5Connected,
+            telegramConnected: botConfig.BotHeartbeat[0].telegramConnected,
+            openPositions: botConfig.BotHeartbeat[0].openPositions,
           }
         : null,
       createdAt: botConfig.createdAt,
@@ -383,7 +384,7 @@ export const botRouter = router({
     const botConfig = await prisma.botConfig.findUnique({
       where: { tenantId },
       include: {
-        botAccounts: {
+        BotAccount: {
           orderBy: { createdAt: "asc" },
         },
       },
@@ -393,7 +394,7 @@ export const botRouter = router({
       return [];
     }
 
-    return botConfig.botAccounts.map((acc) => ({
+    return botConfig.BotAccount.map((acc) => ({
       id: acc.id,
       server: "***", // No mostrar server real
       symbol: acc.symbol,
@@ -422,7 +423,7 @@ export const botRouter = router({
           take: 1,
           orderBy: { timestamp: "desc" },
         },
-        botAccounts: {
+        BotAccount: {
           include: {
             positions: true,
           },
@@ -434,7 +435,7 @@ export const botRouter = router({
       return null;
     }
 
-    const lastHeartbeat = botConfig.heartbeats[0];
+    const lastHeartbeat = botConfig.BotHeartbeat[0];
     const isOnline =
       lastHeartbeat &&
       Date.now() - lastHeartbeat.timestamp.getTime() < 60000; // 1 minuto
@@ -453,7 +454,7 @@ export const botRouter = router({
             uptimeSeconds: lastHeartbeat.uptimeSeconds,
           }
         : null,
-      positions: botConfig.botAccounts.flatMap((acc) =>
+      positions: botConfig.BotAccount.flatMap((acc) =>
         acc.positions.map((pos) => ({
           id: pos.id,
           mt5Ticket: pos.mt5Ticket,

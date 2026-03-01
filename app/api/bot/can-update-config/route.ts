@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   // Contar posiciones en vivo en BotPosition
   const livePositions = await prisma.botPosition.count({
     where: {
-      botAccount: {
+      BotAccount: {
         botConfigId: botConfig.id,
       },
     },

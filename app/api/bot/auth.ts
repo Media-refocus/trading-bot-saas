@@ -175,7 +175,7 @@ export async function getFullBotConfig(botConfigId: string) {
   return prisma.botConfig.findUnique({
     where: { id: botConfigId },
     include: {
-      botAccounts: {
+      BotAccount: {
         where: { isActive: true },
       },
     },

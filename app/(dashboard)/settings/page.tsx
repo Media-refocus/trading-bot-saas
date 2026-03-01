@@ -89,7 +89,7 @@ export default function SettingsPage() {
                    "" || "Plan Gratuito"}
                 </h3>
                 <p className="text-[13px] md:text-sm text-muted-foreground">
-                  {userId || "Tu organización"}
+                  {user?.id || "" || "Tu organización"}
                 </p>
               </div>
               <Link href="/pricing" className="w-full sm:w-auto">

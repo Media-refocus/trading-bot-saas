@@ -7,8 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAUSED
+  CANCELED
+  EXPIRED
+}
+
 model Account {
-  id                String  @id
+  id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
@@ -26,7 +34,7 @@ model Account {
 }
 
 model Backtest {
-  id              String           @id
+  id              String           @id @default(cuid())
   tenantId        String
   name            String?
   strategyName    String
@@ -50,7 +58,7 @@ model Backtest {
 }
 
 model BotAccount {
-  id          String        @id
+  id          String        @id @default(cuid())
   botConfigId String
   loginEnc    String
   passwordEnc String
@@ -73,7 +81,7 @@ model BotAccount {
 }
 
 model BotConfig {
-  id                    String         @id
+  id                    String         @id @default(cuid())
   tenantId              String         @unique
   apiKeyHash            String
   status                String         @default("OFFLINE")
@@ -112,7 +120,7 @@ model BotConfig {
 }
 
 model BotHeartbeat {
-  id                String    @id
+  id                String    @id @default(cuid())
   botConfigId       String
   timestamp         DateTime  @default(now())
   version           String?
@@ -130,7 +138,7 @@ model BotHeartbeat {
 }
 
 model BotPosition {
-  id             String     @id
+  id             String     @id @default(cuid())
   botAccountId   String
   tradeId        String?    @unique
   mt5Ticket      Int
@@ -156,7 +164,7 @@ model BotPosition {
 }
 
 model Notification {
-  id        String   @id
+  id        String   @id @default(cuid())
   userId    String
   type      String
   title     String
@@ -171,7 +179,7 @@ model Notification {
 }
 
 model Position {
-  id               String          @id
+  id               String          @id @default(cuid())
   tenantId         String
   signalId         String?
   tradingAccountId String?
@@ -196,7 +204,7 @@ model Position {
 }
 
 model PublishedStrategy {
-  id                      String              @id
+  id                      String              @id @default(cuid())
   tenantId                String
   authorId                String
   parentStrategyId        String?
@@ -241,7 +249,7 @@ model PublishedStrategy {
 }
 
 model Session {
-  id           String   @id
+  id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
   expires      DateTime
@@ -249,7 +257,7 @@ model Session {
 }
 
 model Signal {
-  id              String     @id
+  id              String     @id @default(cuid())
   tenantId        String
   botConfigId     String?
   side            String
@@ -277,7 +285,7 @@ model Signal {
 }
 
 model SimulatedTrade {
-  id          String   @id
+  id          String   @id @default(cuid())
   tenantId    String
   backtestId  String
   signalIndex Int
@@ -295,7 +303,7 @@ model SimulatedTrade {
 }
 
 model Strategy {
-  id                String    @id
+  id                String    @id @default(cuid())
   tenantId          String
   name              String
   description       String?
@@ -325,7 +333,7 @@ model Strategy {
 }
 
 model StrategyComment {
-  id                  String            @id
+  id                  String            @id @default(cuid())
   userId              String
   publishedStrategyId String
   content             String
@@ -338,7 +346,7 @@ model StrategyComment {
 }
 
 model StrategyLike {
-  id                  String            @id
+  id                  String            @id @default(cuid())
   userId              String
   publishedStrategyId String
   createdAt           DateTime          @default(now())
@@ -350,22 +358,22 @@ model StrategyLike {
 }
 
 model Subscription {
-  id                 String    @id
+  id                 String             @id @default(cuid())
   tenantId           String
   plan               String
   stripePriceId      String?
-  stripeSubId        String?   @unique
-  status             String    @default("TRIAL")
+  stripeSubId        String?            @unique
+  status             SubscriptionStatus @default(TRIAL)
   trialEnd           DateTime?
   currentPeriodStart DateTime?
   currentPeriodEnd   DateTime?
-  createdAt          DateTime  @default(now())
+  createdAt          DateTime           @default(now())
   updatedAt          DateTime
-  Tenant             Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  Tenant             Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
 
 model Tenant {
-  id                String              @id
+  id                String              @id @default(cuid())
   name              String
   email             String              @unique
   stripeCustomerId  String?             @unique
@@ -399,7 +407,7 @@ model TickData {
 }
 
 model Trade {
-  id           String      @id
+  id           String      @id @default(cuid())
   tenantId     String
   botConfigId  String?
   botAccountId String?
@@ -436,7 +444,7 @@ model Trade {
 }
 
 model TradingAccount {
-  id                 String     @id
+  id                 String     @id @default(cuid())
   tenantId           String
   userId             String?
   broker             String
@@ -454,7 +462,7 @@ model TradingAccount {
 }
 
 model User {
-  id                String              @id
+  id                String              @id @default(cuid())
   tenantId          String
   email             String              @unique
   name              String?

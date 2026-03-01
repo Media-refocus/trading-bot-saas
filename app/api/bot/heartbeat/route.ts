@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 /**
  * POST /api/bot/heartbeat
  *
@@ -64,7 +65,8 @@ export async function POST(request: NextRequest) {
 
   // Guardar heartbeat en DB
   await prisma.botHeartbeat.create({
-    data: {
+      data: {
+        id: nanoid(),
       botConfigId: botConfig.id,
       timestamp: body.timestamp ? new Date(body.timestamp) : new Date(),
       version: botVersion,

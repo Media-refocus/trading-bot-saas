@@ -120,7 +120,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   console.log(`Checkout completed for tenant ${tenantId}, plan: ${planId}`);
 
   // Determine plan from metadata or price
-  let plan: PlanType = "PRO"; // default
+  let plan: string = "PRO"; // default
   if (planId) {
     const planMap: Record<string, PlanType> = {
       basic: "BASIC",
@@ -205,7 +205,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const mappedStatus = STRIPE_STATUS_MAP[status] ?? "ACTIVE";
 
   // Determine plan from price
-  let plan: PlanType = "PRO";
+  let plan: string = "PRO";
   if (priceId && PRICE_TO_PLAN[priceId]) {
     plan = PRICE_TO_PLAN[priceId];
   }

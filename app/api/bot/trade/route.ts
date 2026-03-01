@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 /**
  * POST /api/bot/trade
  *
@@ -131,7 +132,8 @@ async function handleTradeOpen(body: TradeOpenRequest, botConfig: { id: string; 
 
   // Crear trade
   const trade = await prisma.trade.create({
-    data: {
+      data: {
+        id: nanoid(),
       tenantId: botConfig.tenantId,
       botConfigId: botConfig.id,
       botAccountId: body.botAccountId,
