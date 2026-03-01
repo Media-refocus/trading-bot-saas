@@ -529,21 +529,28 @@ export class BacktestEngine {
 
   /**
    * Gestiona los niveles del grid (abrir promedios)
+   *
+   * IMPORTANTE: Los niveles se abren a DISTANCIAS FIJAS del precio de entrada.
+   * Para XAUUSD: 1 pip = 0.10 en precio
+   * Si pipsDistance=10, los niveles están a 1.0 de distancia en precio
+   *
+   * Ejemplo SELL con entry=4037.41, pipsDistance=10:
+   * - L0 = 4037.41 (entry)
+   * - L1 = 4038.41 (entry + 1.0)
+   * - L2 = 4039.41 (entry + 2.0)
+   * - L3 = 4040.41 (entry + 3.0)
+   *
+   * Ejemplo BUY con entry=4037.41, pipsDistance=10:
+   * - L0 = 4037.41 (entry)
+   * - L1 = 4036.41 (entry - 1.0)
+   * - L2 = 4035.41 (entry - 2.0)
+   * - L3 = 4034.41 (entry - 3.0)
    */
   private manageGridLevels(currentPrice: number, avgPrice: number): void {
     const { pipsDistance, maxLevels, useStopLoss } = this.config;
-    const gridDistance = pipsDistance * PIP_VALUE;
-    const halfGrid = gridDistance / 2;
+    const gridDistance = pipsDistance * PIP_VALUE; // 10 pips * 0.10 = 1.0 para XAUUSD
 
     const isBuy = this.side === "BUY";
-    const againstMovement = isBuy
-      ? (this.entryPrice! - currentPrice) // Movimiento en contra en BUY
-      : (currentPrice - this.entryPrice!); // Movimiento en contra en SELL
-
-    // Verificar si se ha movido suficiente para abrir nuevo nivel
-    if (againstMovement < halfGrid) {
-      return;
-    }
 
     // Calcular niveles vivos actuales
     const liveLevels = new Set<number>();
@@ -555,38 +562,48 @@ export class BacktestEngine {
       }
     }
 
-    // Niveles en el mercado (pendientes)
-    // Esto se llenaría con datos del CSV de señales
+    // Verificar cada nivel pendiente para ver si el precio lo ha alcanzado
+    for (let level = 1; level < this.totalLevels; level++) {
+      // Skip si ya está abierto
+      if (liveLevels.has(level)) continue;
 
-    // Niveles disponibles para abrir
-    const availableSlots = maxLevels - liveLevels.size;
-    if (availableSlots <= 0) {
-      return;
-    }
+      // Calcular el precio del nivel (distancia FIJA desde entry)
+      const levelPrice = isBuy
+        ? this.entryPrice! - (level * gridDistance)  // BUY: niveles por debajo
+        : this.entryPrice! + (level * gridDistance); // SELL: niveles por encima
 
-    // Abrir nuevo nivel
-    const nextLevel = this.getNextAvailableLevel(liveLevels);
-    if (nextLevel !== null && nextLevel < this.totalLevels) {
-      const newTrade: SimulatedTrade = {
-        id: `avg_${Date.now()}_${nextLevel}`,
-        type: "AVERAGE",
-        side: this.side!,
-        price: currentPrice,
-        lotSize: this.config.lotajeBase,
-        level: nextLevel,
-        profit: 0,
-        profitPips: 0,
-        timestamp: new Date(),
-      };
+      // Verificar si el precio actual ha alcanzado este nivel
+      // Para BUY: el nivel se activa cuando price <= levelPrice
+      // Para SELL: el nivel se activa cuando price >= levelPrice
+      const levelHit = isBuy
+        ? currentPrice <= levelPrice
+        : currentPrice >= levelPrice;
 
-      if (!this.positions.has(nextLevel)) {
-        this.positions.set(nextLevel, []);
+      if (levelHit) {
+        // Abrir nuevo nivel en el precio EXACTO del nivel
+        const newTrade: SimulatedTrade = {
+          id: `avg_${Date.now()}_${level}`,
+          type: "AVERAGE",
+          side: this.side!,
+          price: levelPrice, // Usar el precio del nivel, no currentPrice
+          lotSize: this.config.lotajeBase,
+          level: level,
+          profit: 0,
+          profitPips: 0,
+          timestamp: new Date(),
+        };
+
+        if (!this.positions.has(level)) {
+          this.positions.set(level, []);
+        }
+
+        const levelTrades = this.positions.get(level)!;
+        levelTrades.push(newTrade);
+
+        this.pendingLevels.add(level);
+
+        console.log(`[Engine] Nivel L${level} abierto a ${levelPrice.toFixed(2)} (entry: ${this.entryPrice!.toFixed(2)}, distance: ${gridDistance.toFixed(2)})`);
       }
-
-      const levelTrades = this.positions.get(nextLevel)!;
-      levelTrades.push(newTrade);
-
-      this.pendingLevels.add(nextLevel);
     }
   }
 
