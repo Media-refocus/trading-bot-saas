@@ -312,7 +312,7 @@ async function handleStatus(chatId: number): Promise<void> {
     },
   });
 
-  if (!tenant || !tenant.botConfigs) {
+  if (!tenant || !tenant.BotConfig) {
     await sendTelegramReply(
       chatId,
       `
@@ -337,7 +337,7 @@ Las notificaciones de Telegram requieren plan PRO o ENTERPRISE.
     return;
   }
 
-  const botConfig = tenant.botConfigs[0];
+  const botConfig = tenant.BotConfig[0];
   if (!botConfig) {
     await sendTelegramReply(
       chatId,
@@ -418,7 +418,7 @@ Las notificaciones de Telegram requieren plan PRO o ENTERPRISE.
   // Buscar posiciones abiertas
   const positions = await prisma.botPosition.findMany({
     where: {
-      botAccount: {
+      BotAccount: {
         botConfig: {
           tenantId: tenant.id,
         },
@@ -471,7 +471,7 @@ async function handleBalance(chatId: number): Promise<void> {
     include: { botConfigs: true },
   });
 
-  if (!tenant || !tenant.botConfigs) {
+  if (!tenant || !tenant.BotConfig) {
     await sendTelegramReply(
       chatId,
       `
@@ -498,7 +498,7 @@ Las notificaciones de Telegram requieren plan PRO o ENTERPRISE.
 
   const accounts = await prisma.botAccount.findMany({
     where: {
-      botConfigId: tenant.botConfigs[0]?.id,
+      botConfigId: tenant.BotConfig[0]?.id,
       isActive: true,
     },
   });
@@ -557,7 +557,7 @@ async function handleStop(chatId: number): Promise<void> {
     include: { botConfigs: true },
   });
 
-  if (!tenant || !tenant.botConfigs) {
+  if (!tenant || !tenant.BotConfig) {
     await sendTelegramReply(
       chatId,
       `
@@ -582,7 +582,7 @@ Las notificaciones de Telegram requieren plan PRO o ENTERPRISE.
     return;
   }
 
-  const botConfig = tenant.botConfigs[0];
+  const botConfig = tenant.BotConfig[0];
 
   if (!botConfig) {
     await sendTelegramReply(

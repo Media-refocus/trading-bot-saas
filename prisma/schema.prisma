@@ -10,6 +10,7 @@ datasource db {
 enum SubscriptionStatus {
   TRIAL
   ACTIVE
+  PAST_DUE
   PAUSED
   CANCELED
   EXPIRED

@@ -142,7 +142,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   if (subscriptionId) {
     // Get full subscription details from Stripe
     const stripe = getStripe();
-    const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const stripeSubscription = await stripe.Subscription.retrieve(subscriptionId);
 
     const priceId = stripeSubscription.items.data[0]?.price.id;
     if (priceId && PRICE_TO_PLAN[priceId]) {

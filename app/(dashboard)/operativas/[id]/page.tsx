@@ -316,7 +316,7 @@ export default function OperativaDetailPage() {
                           {c.authorId?.[0] || "?"}
                         </div>
                         <div>
-                          <span className="font-medium">{c.authorId || "Anonimo"}</span>
+                          <span className="font-medium">{c.author?.name || "Anonimo"}</span>
                           <span className="text-xs text-muted-foreground ml-2">
                             {formatRelativeTime(c.createdAt)}
                           </span>

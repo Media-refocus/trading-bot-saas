@@ -42,14 +42,14 @@ export default function SettingsPage() {
 
   const copyLinkCode = () => {
     if (user?.tenantId || "") {
-      navigator.clipboard.writeText(user.tenant.id);
+      navigator.clipboard.writeText(user?.tenantId || "");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
   // Verificar si tiene plan compatible con Telegram
-  const canUseTelegram = "" === "PRO" || "" === "ENTERPRISE";
+  const canUseTelegram = false; // TODO: implement plan check
 
   if (isLoading) {
     return (
@@ -84,8 +84,8 @@ export default function SettingsPage() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg gap-3">
               <div>
                 <h3 className="font-semibold text-[13px] md:text-base">
-                  {"" === "PRO" ? "Plan Pro" :
-                   "" === "BASIC" ? "Plan Básico" :
+                  {false ? "Plan Pro" :
+                   false ? "Plan Básico" :
                    "" || "Plan Gratuito"}
                 </h3>
                 <p className="text-[13px] md:text-sm text-muted-foreground">
