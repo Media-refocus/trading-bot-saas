@@ -15,12 +15,22 @@ export const authRouter = router({
         email: true,
         name: true,
         image: true,
+        role: true,
         createdAt: true,
         tenant: {
           select: {
             id: true,
             name: true,
             plan: true,
+            email: true,
+            createdAt: true,
+            _count: {
+              select: {
+                tradingAccounts: true,
+                signals: true,
+                trades: true,
+              },
+            },
           },
         },
       },
