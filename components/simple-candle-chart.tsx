@@ -41,7 +41,7 @@ interface OHLC {
   close: number;
 }
 
-type Timeframe = "1" | "5" | "15";
+type Timeframe = "1" | "5" | "15" | "60" | "240" | "1440";
 
 interface SimpleCandleChartProps {
   ticks: Tick[];
@@ -58,7 +58,7 @@ interface SimpleCandleChartProps {
 
 // ==================== CONSTANTS ====================
 
-const PIP_VALUE = 0.1; // XAUUSD: 1 pip = 0.10 en precio
+const PIP_VALUE = 0.1;
 const HISTORY_CANDLES = 50;
 const SPEED_INTERVALS: Record<number, number> = {
   1: 500,
@@ -67,12 +67,19 @@ const SPEED_INTERVALS: Record<number, number> = {
   10: 50,
 };
 const DEFAULT_SPEED = 1;
-const CANDLE_BODY_RATIO = 0.65;
+const CANDLE_BODY_RATIO = 0.7;
 const MIN_CANDLES_VISIBLE = 20;
 const MAX_CANDLES_VISIBLE = 200;
-
-// Touch target minimum
 const MIN_TOUCH_TARGET = 44;
+
+const TIMEFRAME_LABELS: Record<Timeframe, string> = {
+  "1": "M1",
+  "5": "M5",
+  "15": "M15",
+  "60": "H1",
+  "240": "H4",
+  "1440": "D1",
+};
 
 // ==================== UTILITY FUNCTIONS ====================
 
@@ -90,11 +97,6 @@ function getMidPrice(tick: Tick): number {
   return (tick.bid + tick.ask) / 2;
 }
 
-/**
- * Generate history candles with REALISTIC XAUUSD volatility
- * XAUUSD typical M1 volatility: 0.3-1.5 price points per candle
- * This equals 3-15 pips per minute
- */
 function generateHistoryCandles(
   entryPrice: number,
   entryTime: Date,
@@ -107,13 +109,9 @@ function generateHistoryCandles(
   let currentTime = getCandleTime(entryTime, tf) - intervalMs;
 
   for (let i = 0; i < count; i++) {
-    // XAUUSD realistic volatility: 0.3-1.5 price points per M1 candle
-    // For M5/M15, scale accordingly
     const tfMultiplier = parseInt(tf);
-    const baseVolatility = 0.3 + Math.random() * 1.2; // 0.3 to 1.5
-    const volatility = baseVolatility * Math.sqrt(tfMultiplier); // Scale by timeframe
-
-    // Random trend component (small)
+    const baseVolatility = 0.3 + Math.random() * 1.2;
+    const volatility = baseVolatility * Math.sqrt(tfMultiplier / 60);
     const trend = (Math.random() - 0.5) * 0.2;
 
     const open = currentPrice;
@@ -248,8 +246,8 @@ function LevelsStatus({
         const levelColor =
           level.level === 0
             ? isBuy
-              ? "#00c853"
-              : "#ff1744"
+              ? "#26a69a"
+              : "#ef5350"
             : levelColors[(level.level - 1) % levelColors.length];
 
         let pipsGained = 0;
@@ -262,11 +260,11 @@ function LevelsStatus({
         return (
           <div
             key={level.level}
-            className={`p-2 rounded text-[11px] sm:text-xs border ${
+            className={`p-2 rounded text-[11px] sm:text-xs border transition-all ${
               isPending
-                ? "border-gray-700 bg-gray-800/50 opacity-50"
+                ? "border-[#2a2e39] bg-[#1e222d]/50 opacity-50"
                 : isClosed
-                  ? "border-gray-600 bg-gray-800"
+                  ? "border-[#2a2e39] bg-[#1e222d]"
                   : "border-current"
             }`}
             style={{
@@ -280,20 +278,20 @@ function LevelsStatus({
               <span
                 className={`px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] ${
                   isPending
-                    ? "bg-gray-700 text-gray-400"
+                    ? "bg-[#2a2e39] text-[#787b86]"
                     : isClosed
-                      ? "bg-green-900/50 text-green-400"
-                      : "bg-blue-900/50 text-blue-400 animate-pulse"
+                      ? "bg-[#26a69a]/20 text-[#26a69a]"
+                      : "bg-[#2962ff]/20 text-[#2962ff] animate-pulse"
                 }`}
               >
                 {isPending ? "PEND" : isClosed ? "OK" : "ACT"}
               </span>
             </div>
-            <div className="font-mono text-gray-300">
+            <div className="font-mono text-[#d1d4dc]">
               {level.openPrice.toFixed(2)}
             </div>
             {isClosed && (
-              <div className="text-green-400 font-mono mt-1 text-[10px] sm:text-xs">
+              <div className="text-[#26a69a] font-mono mt-1 text-[10px] sm:text-xs">
                 +{pipsGained.toFixed(1)} pips
               </div>
             )}
@@ -311,7 +309,7 @@ export default function SimpleCandleChart({
   trade,
   config,
   hasRealTicks = true,
-  themeId = "mt5",
+  themeId = "tv-pro",
   onClose,
 }: SimpleCandleChartProps) {
   const colors = getThemeColors(themeId);
@@ -340,12 +338,13 @@ export default function SimpleCandleChart({
   // Touch zoom state
   const [lastPinchDistance, setLastPinchDistance] = useState<number | null>(null);
 
-  // Crosshair state (touch-hold)
+  // Crosshair state
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const [isTouchHolding, setIsTouchHolding] = useState(false);
+  const [hoveredCandle, setHoveredCandle] = useState<OHLC | null>(null);
   const touchHoldTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Dimensions - BIGGER CHART
+  // Dimensions
   const [dimensions, setDimensions] = useState({ width: 800, height: 450 });
   const [isMobile, setIsMobile] = useState(false);
 
@@ -361,27 +360,23 @@ export default function SimpleCandleChart({
 
     const prices: number[] = [trade.entryPrice, trade.exitPrice];
 
-    // Add TP
     const isBuy = trade.signalSide === "BUY";
     const tpPrice = isBuy
       ? trade.entryPrice + config.takeProfitPips * PIP_VALUE
       : trade.entryPrice - config.takeProfitPips * PIP_VALUE;
     prices.push(tpPrice);
 
-    // Add SL (assume 50 pips if not hit)
     const slPrice = isBuy
       ? trade.entryPrice - 50 * PIP_VALUE
       : trade.entryPrice + 50 * PIP_VALUE;
     prices.push(slPrice);
 
-    // Add all level prices
     if (trade.levels) {
       for (const level of trade.levels) {
         prices.push(level.openPrice);
       }
     }
 
-    // Add visible candle prices
     for (const c of displayedCandles) {
       prices.push(c.high, c.low);
     }
@@ -389,7 +384,7 @@ export default function SimpleCandleChart({
     return { min: Math.min(...prices), max: Math.max(...prices) };
   }, [trade, config, displayedCandles]);
 
-  // Price range for visible candles - AUTO-FIT to show ALL markers
+  // Price range for visible candles
   const priceRange = useMemo(() => {
     const visible = displayedCandles.slice(visibleStart, visibleStart + visibleCount);
     if (visible.length === 0) return { min: allPrices.min, max: allPrices.max };
@@ -401,7 +396,6 @@ export default function SimpleCandleChart({
       max = Math.max(max, c.high);
     }
 
-    // ALWAYS include trade markers in range
     if (trade) {
       const isBuy = trade.signalSide === "BUY";
       const tpPrice = isBuy
@@ -422,7 +416,7 @@ export default function SimpleCandleChart({
       }
     }
 
-    const padding = (max - min) * 0.15; // 15% padding
+    const padding = (max - min) * 0.15;
     return { min: min - padding, max: max + padding };
   }, [displayedCandles, visibleStart, visibleCount, trade, config, allPrices]);
 
@@ -435,10 +429,9 @@ export default function SimpleCandleChart({
         const mobile = rect.width < 768;
         setIsMobile(mobile);
 
-        // BIGGER CHART SIZES
         const height = mobile
-          ? Math.max(350, window.innerHeight * 0.5) // Mobile: 50% viewport, min 350px
-          : 450; // Desktop: 450px
+          ? Math.max(350, window.innerHeight * 0.5)
+          : 450;
 
         setDimensions({
           width: rect.width,
@@ -481,7 +474,6 @@ export default function SimpleCandleChart({
 
     setAllTicks(loadedTicks);
 
-    // Generate history candles
     const history = generateHistoryCandles(
       trade.entryPrice,
       new Date(trade.entryTime),
@@ -490,22 +482,18 @@ export default function SimpleCandleChart({
     );
     setHistoryCandles(history);
 
-    // Aggregate trade candles
     const tradeCndl = aggregateTicksToCandles(loadedTicks, timeframe);
     setTradeCandles(tradeCndl);
 
-    // AUTO-SHOW ALL CANDLES IMMEDIATELY (history + trade candles)
     const allCandles = [...history, ...tradeCndl];
     setDisplayedCandles(allCandles);
 
-    // Set progress to 100% since we're showing everything
     setProgress(100);
     setCurrentTickIndex(loadedTicks.length);
     if (loadedTicks.length > 0) {
       setCurrentTick(loadedTicks[loadedTicks.length - 1]);
     }
 
-    // Auto-fit to show all candles
     if (allCandles.length > 60) {
       setVisibleStart(Math.max(0, allCandles.length - 60));
     } else {
@@ -513,7 +501,6 @@ export default function SimpleCandleChart({
     }
     setVisibleCount(Math.min(60, allCandles.length));
 
-    // Don't auto-play
     setIsPlaying(false);
   }, [trade, ticks, timeframe]);
 
@@ -532,7 +519,6 @@ export default function SimpleCandleChart({
     let idx = 0;
     let currentCandles = [...historyCandles];
 
-    // Reset to history candles when starting replay
     setDisplayedCandles([...historyCandles]);
     setCurrentTickIndex(0);
     setProgress(0);
@@ -594,25 +580,23 @@ export default function SimpleCandleChart({
     const dpr = window.devicePixelRatio || 1;
     const { width, height } = dimensions;
 
-    // Set canvas size with DPR
     canvas.width = width * dpr;
     canvas.height = height * dpr;
     ctx.scale(dpr, dpr);
 
-    // Chart area with room for labels
-    const padding = { top: 20, right: 75, bottom: 35, left: 10 };
+    // Chart area with room for price scale
+    const padding = { top: 15, right: 70, bottom: 30, left: 10 };
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
 
-    // Clear with theme background
-    ctx.fillStyle = colors.background;
+    // Clear with TradingView background
+    ctx.fillStyle = "#131722";
     ctx.fillRect(0, 0, width, height);
 
-    // Get visible candles
     const visible = displayedCandles.slice(visibleStart, visibleStart + visibleCount);
     if (visible.length === 0) {
-      ctx.fillStyle = colors.text;
-      ctx.font = "14px sans-serif";
+      ctx.fillStyle = "#787b86";
+      ctx.font = "14px -apple-system, BlinkMacSystemFont, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText("No hay datos", width / 2, height / 2);
       return;
@@ -621,7 +605,6 @@ export default function SimpleCandleChart({
     const { min: minPrice, max: maxPrice } = priceRange;
     const priceRangeValue = maxPrice - minPrice || 1;
 
-    // Helper functions
     const priceToY = (price: number) =>
       padding.top + chartHeight - ((price - minPrice) / priceRangeValue) * chartHeight;
 
@@ -630,12 +613,12 @@ export default function SimpleCandleChart({
       return padding.left + index * candleWidth + candleWidth / 2;
     };
 
-    // Draw grid lines
-    ctx.strokeStyle = colors.grid;
+    // Draw subtle grid
+    ctx.strokeStyle = "#1e222d";
     ctx.lineWidth = 1;
 
-    // Horizontal grid (price) - with labels
-    const priceSteps = 5;
+    // Horizontal grid (price)
+    const priceSteps = 6;
     for (let i = 0; i <= priceSteps; i++) {
       const price = minPrice + (priceRangeValue * i) / priceSteps;
       const y = priceToY(price);
@@ -644,14 +627,14 @@ export default function SimpleCandleChart({
       ctx.lineTo(width - padding.right, y);
       ctx.stroke();
 
-      // Price labels on Y-axis (right side)
-      ctx.fillStyle = colors.text;
-      ctx.font = `${isMobile ? 10 : 11}px monospace`;
+      // Price labels
+      ctx.fillStyle = "#787b86";
+      ctx.font = `${isMobile ? 10 : 11}px "IBM Plex Mono", monospace`;
       ctx.textAlign = "left";
       ctx.fillText(price.toFixed(2), width - padding.right + 5, y + 4);
     }
 
-    // Vertical grid (time) - with labels
+    // Vertical grid (time)
     const timeSteps = Math.min(6, visible.length);
     for (let i = 0; i < timeSteps; i++) {
       const idx = Math.floor((i / Math.max(1, timeSteps - 1)) * (visible.length - 1));
@@ -661,12 +644,11 @@ export default function SimpleCandleChart({
       ctx.lineTo(x, height - padding.bottom);
       ctx.stroke();
 
-      // Time labels on X-axis (bottom)
       if (visible[idx]) {
         const date = new Date(visible[idx].time * 1000);
         const timeStr = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        ctx.fillStyle = colors.text;
-        ctx.font = `${isMobile ? 9 : 10}px monospace`;
+        ctx.fillStyle = "#787b86";
+        ctx.font = `${isMobile ? 9 : 10}px "IBM Plex Mono", monospace`;
         ctx.textAlign = "center";
         ctx.fillText(timeStr, x, height - padding.bottom + 15);
       }
@@ -683,8 +665,8 @@ export default function SimpleCandleChart({
       const x = indexToX(i);
       const isBullish = candle.close >= candle.open;
 
-      const color = isBullish ? colors.candleUp : colors.candleDown;
-      const wickColor = isBullish ? colors.wickUp : colors.wickDown;
+      const color = isBullish ? "#26a69a" : "#ef5350";
+      const wickColor = isBullish ? "#26a69a" : "#ef5350";
 
       const openY = priceToY(candle.open);
       const closeY = priceToY(candle.close);
@@ -705,6 +687,18 @@ export default function SimpleCandleChart({
 
       ctx.fillStyle = color;
       ctx.fillRect(x - candleBodyWidth / 2, bodyTop, candleBodyWidth, bodyHeight);
+
+      // Highlight hovered candle
+      if (hoveredCandle && hoveredCandle.time === candle.time) {
+        ctx.strokeStyle = "#2962ff";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(
+          x - candleBodyWidth / 2 - 2,
+          Math.min(openY, closeY) - 2,
+          candleBodyWidth + 4,
+          Math.abs(closeY - openY) + 4
+        );
+      }
     }
 
     // Draw trade markers
@@ -717,11 +711,11 @@ export default function SimpleCandleChart({
         ? trade.entryPrice - 50 * PIP_VALUE
         : trade.entryPrice + 50 * PIP_VALUE;
 
-      // Grid levels FIRST (so they're behind other markers)
+      // Grid levels (behind other markers)
       if (trade.levels) {
         for (const level of trade.levels) {
           if (level.level > 0) {
-            const levelColor = "#00bcd4"; // Cyan for grid levels
+            const levelColor = "#2962ff";
             const levelY = priceToY(level.openPrice);
 
             ctx.strokeStyle = levelColor;
@@ -733,7 +727,7 @@ export default function SimpleCandleChart({
             ctx.stroke();
 
             ctx.fillStyle = levelColor;
-            ctx.font = "10px sans-serif";
+            ctx.font = "10px 'IBM Plex Mono', monospace";
             ctx.textAlign = "left";
             ctx.fillText(`L${level.level} ${level.openPrice.toFixed(2)}`, width - padding.right + 5, levelY + 3);
           }
@@ -741,52 +735,51 @@ export default function SimpleCandleChart({
         ctx.setLineDash([]);
       }
 
-      // Entry line - SOLID BLUE, full width
+      // Entry line
       const entryY = priceToY(trade.entryPrice);
-      ctx.strokeStyle = "#2196f3"; // Blue
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#2962ff";
+      ctx.lineWidth = 1.5;
       ctx.setLineDash([]);
       ctx.beginPath();
       ctx.moveTo(padding.left, entryY);
       ctx.lineTo(width - padding.right, entryY);
       ctx.stroke();
 
-      ctx.fillStyle = "#2196f3";
-      ctx.font = "bold 11px sans-serif";
+      ctx.fillStyle = "#2962ff";
+      ctx.font = "bold 10px 'IBM Plex Mono', monospace";
       ctx.textAlign = "left";
-      ctx.fillText(`Entry ${trade.entryPrice.toFixed(2)}`, width - padding.right + 5, entryY + 4);
+      ctx.fillText(`E ${trade.entryPrice.toFixed(2)}`, width - padding.right + 5, entryY + 3);
 
-      // TP line - GREEN DASHED
+      // TP line
       const tpY = priceToY(tpPrice);
-      ctx.strokeStyle = "#4caf50"; // Green
-      ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = "#26a69a";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
       ctx.beginPath();
       ctx.moveTo(padding.left, tpY);
       ctx.lineTo(width - padding.right, tpY);
       ctx.stroke();
 
-      ctx.fillStyle = "#4caf50";
-      ctx.fillText(`TP ${tpPrice.toFixed(2)}`, width - padding.right + 5, tpY + 4);
+      ctx.fillStyle = "#26a69a";
+      ctx.fillText(`TP ${tpPrice.toFixed(2)}`, width - padding.right + 5, tpY + 3);
 
-      // SL line - RED DASHED
+      // SL line
       const slY = priceToY(slPrice);
-      ctx.strokeStyle = "#f44336"; // Red
-      ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = "#ef5350";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
       ctx.beginPath();
       ctx.moveTo(padding.left, slY);
       ctx.lineTo(width - padding.right, slY);
       ctx.stroke();
 
-      ctx.fillStyle = "#f44336";
-      ctx.fillText(`SL ${slPrice.toFixed(2)}`, width - padding.right + 5, slY + 4);
+      ctx.fillStyle = "#ef5350";
+      ctx.fillText(`SL ${slPrice.toFixed(2)}`, width - padding.right + 5, slY + 3);
 
       ctx.setLineDash([]);
 
-      // Exit marker - ORANGE/YELLOW at exit candle
+      // Exit marker
       if (trade.exitPrice && displayedCandles.length > 0) {
-        // Find the exit candle (last trade candle)
         const exitCandleTime = getCandleTime(new Date(trade.exitTime), timeframe);
         const exitIdx = displayedCandles.findIndex(c => c.time === Math.floor(exitCandleTime / 1000));
 
@@ -795,28 +788,27 @@ export default function SimpleCandleChart({
           const exitX = indexToX(relativeIdx);
           const exitY = priceToY(trade.exitPrice);
 
-          // Diamond marker for exit
-          ctx.fillStyle = "#ff9800"; // Orange
+          // Diamond marker
+          ctx.fillStyle = "#ff9800";
           ctx.beginPath();
-          ctx.moveTo(exitX, exitY - 8);
-          ctx.lineTo(exitX + 6, exitY);
-          ctx.lineTo(exitX, exitY + 8);
-          ctx.lineTo(exitX - 6, exitY);
+          ctx.moveTo(exitX, exitY - 6);
+          ctx.lineTo(exitX + 5, exitY);
+          ctx.lineTo(exitX, exitY + 6);
+          ctx.lineTo(exitX - 5, exitY);
           ctx.closePath();
           ctx.fill();
 
-          // Exit label
           ctx.fillStyle = "#ff9800";
-          ctx.font = "bold 10px sans-serif";
+          ctx.font = "bold 9px 'IBM Plex Mono', monospace";
           ctx.textAlign = "left";
-          ctx.fillText(`Exit ${trade.exitPrice.toFixed(2)}`, exitX + 10, exitY + 4);
+          ctx.fillText(`X ${trade.exitPrice.toFixed(2)}`, exitX + 8, exitY + 3);
         }
       }
     }
 
-    // Draw crosshair (on mouse or touch-hold)
+    // Draw crosshair
     if (mousePos && mousePos.x > padding.left && mousePos.x < width - padding.right) {
-      ctx.strokeStyle = colors.text + "60";
+      ctx.strokeStyle = "#787b86";
       ctx.lineWidth = 1;
       ctx.setLineDash([3, 3]);
 
@@ -837,18 +829,64 @@ export default function SimpleCandleChart({
         const price = minPrice + ((height - padding.bottom - mousePos.y) / chartHeight) * priceRangeValue;
 
         // Background for price label
-        ctx.fillStyle = colors.background;
-        ctx.fillRect(width - padding.right + 2, mousePos.y - 8, 70, 16);
+        ctx.fillStyle = "#2962ff";
+        ctx.fillRect(width - padding.right + 2, mousePos.y - 9, 65, 18);
 
-        ctx.fillStyle = colors.text;
-        ctx.font = "11px monospace";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "11px 'IBM Plex Mono', monospace";
         ctx.textAlign = "left";
-        ctx.fillText(price.toFixed(2), width - padding.right + 5, mousePos.y + 4);
+        ctx.fillText(price.toFixed(2), width - padding.right + 5, mousePos.y + 3);
+
+        // Time label at crosshair
+        const candleWidth = chartWidth / visibleCount;
+        const candleIndex = Math.floor((mousePos.x - padding.left) / candleWidth);
+        if (candleIndex >= 0 && candleIndex < visible.length) {
+          const candle = visible[candleIndex];
+          const date = new Date(candle.time * 1000);
+          const timeStr = date.toLocaleString("es-ES", {
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+
+          // Background for time label
+          const timeLabelWidth = ctx.measureText(timeStr).width + 10;
+          ctx.fillStyle = "#2962ff";
+          ctx.fillRect(mousePos.x - timeLabelWidth / 2, height - padding.bottom + 2, timeLabelWidth, 16);
+
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "10px 'IBM Plex Mono', monospace";
+          ctx.textAlign = "center";
+          ctx.fillText(timeStr, mousePos.x, height - padding.bottom + 13);
+        }
       }
 
       ctx.setLineDash([]);
     }
-  }, [dimensions, displayedCandles, visibleStart, visibleCount, priceRange, colors, trade, config, mousePos, isMobile]);
+
+    // Current price line (if playing)
+    if (currentTick && isPlaying) {
+      const currentPrice = getMidPrice(currentTick);
+      const currentY = priceToY(currentPrice);
+
+      ctx.strokeStyle = "#2962ff";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(padding.left, currentY);
+      ctx.lineTo(width - padding.right, currentY);
+      ctx.stroke();
+
+      // Current price label
+      ctx.fillStyle = "#2962ff";
+      ctx.fillRect(width - padding.right + 2, currentY - 9, 65, 18);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 11px 'IBM Plex Mono', monospace";
+      ctx.textAlign = "left";
+      ctx.fillText(currentPrice.toFixed(2), width - padding.right + 5, currentY + 3);
+    }
+  }, [dimensions, displayedCandles, visibleStart, visibleCount, priceRange, trade, config, mousePos, isMobile, currentTick, isPlaying, hoveredCandle]);
 
   // Render on state changes
   useEffect(() => {
@@ -861,14 +899,28 @@ export default function SimpleCandleChart({
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
 
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  }, []);
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    setMousePos({ x, y });
+
+    // Find hovered candle
+    const padding = { left: 10, right: 70 };
+    const chartWidth = rect.width - padding.left - padding.right;
+    const candleWidth = chartWidth / visibleCount;
+    const candleIndex = Math.floor((x - padding.left) / candleWidth);
+
+    const visible = displayedCandles.slice(visibleStart, visibleStart + visibleCount);
+    if (candleIndex >= 0 && candleIndex < visible.length) {
+      setHoveredCandle(visible[candleIndex]);
+    } else {
+      setHoveredCandle(null);
+    }
+  }, [visibleCount, displayedCandles, visibleStart]);
 
   const handleMouseLeave = useCallback(() => {
     setMousePos(null);
+    setHoveredCandle(null);
   }, []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -901,7 +953,6 @@ export default function SimpleCandleChart({
     const delta = e.deltaY > 0 ? 5 : -5;
     const newCount = Math.max(MIN_CANDLES_VISIBLE, Math.min(MAX_CANDLES_VISIBLE, visibleCount + delta));
 
-    // Adjust visibleStart to keep center candle in center
     const centerOffset = visibleCount / 2;
     const newCenterOffset = newCount / 2;
     const newStart = Math.max(0, Math.min(displayedCandles.length - newCount, Math.round(visibleStart + centerOffset - newCenterOffset)));
@@ -910,7 +961,7 @@ export default function SimpleCandleChart({
     setVisibleStart(newStart);
   }, [visibleCount, visibleStart, displayedCandles.length]);
 
-  // Touch handlers with touch-hold for crosshair
+  // Touch handlers
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     if (e.touches.length === 1) {
       const rect = canvasRef.current?.getBoundingClientRect();
@@ -918,12 +969,10 @@ export default function SimpleCandleChart({
 
       const touch = e.touches[0];
 
-      // Start drag immediately
       setIsDragging(true);
       setDragStartX(touch.clientX);
       setDragStartVisibleStart(visibleStart);
 
-      // Start touch-hold timer for crosshair (300ms)
       touchHoldTimerRef.current = setTimeout(() => {
         setIsTouchHolding(true);
         setMousePos({
@@ -932,7 +981,6 @@ export default function SimpleCandleChart({
         });
       }, 300);
     } else if (e.touches.length === 2) {
-      // Pinch start - cancel touch-hold
       if (touchHoldTimerRef.current) {
         clearTimeout(touchHoldTimerRef.current);
         touchHoldTimerRef.current = null;
@@ -951,21 +999,18 @@ export default function SimpleCandleChart({
     if (!rect) return;
 
     if (e.touches.length === 1) {
-      // Cancel touch-hold if moving
       if (touchHoldTimerRef.current) {
         clearTimeout(touchHoldTimerRef.current);
         touchHoldTimerRef.current = null;
       }
 
       if (isTouchHolding) {
-        // Update crosshair position
         const touch = e.touches[0];
         setMousePos({
           x: touch.clientX - rect.left,
           y: touch.clientY - rect.top,
         });
       } else if (isDragging) {
-        // Pan
         const touch = e.touches[0];
         const deltaX = touch.clientX - dragStartX;
         const candleWidth = (rect.width - 80) / visibleCount;
@@ -975,7 +1020,6 @@ export default function SimpleCandleChart({
         setVisibleStart(newStart);
       }
     } else if (e.touches.length === 2 && lastPinchDistance !== null) {
-      // Pinch zoom
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       const distance = Math.sqrt(dx * dx + dy * dy);
@@ -1003,7 +1047,6 @@ export default function SimpleCandleChart({
   // ==================== HANDLERS ====================
 
   const handleReset = useCallback(() => {
-    // Reset to show all candles (history + trade)
     const allCandles = [...historyCandles, ...tradeCandles];
     setDisplayedCandles(allCandles);
     setCurrentTickIndex(allTicks.length);
@@ -1011,7 +1054,6 @@ export default function SimpleCandleChart({
     setCurrentTick(allTicks.length > 0 ? allTicks[allTicks.length - 1] : null);
     setIsPlaying(false);
 
-    // Auto-fit
     if (allCandles.length > 60) {
       setVisibleStart(Math.max(0, allCandles.length - 60));
     } else {
@@ -1035,7 +1077,6 @@ export default function SimpleCandleChart({
         const tradeCndl = aggregateTicksToCandles(allTicks, tf);
         setTradeCandles(tradeCndl);
 
-        // Show all candles
         const allCandles = [...history, ...tradeCndl];
         setDisplayedCandles(allCandles);
         setCurrentTickIndex(allTicks.length);
@@ -1043,7 +1084,6 @@ export default function SimpleCandleChart({
         setIsPlaying(false);
         setCurrentTick(allTicks.length > 0 ? allTicks[allTicks.length - 1] : null);
 
-        // Auto-fit
         if (allCandles.length > 60) {
           setVisibleStart(Math.max(0, allCandles.length - 60));
         } else {
@@ -1059,7 +1099,6 @@ export default function SimpleCandleChart({
     if (isPlaying) {
       setIsPlaying(false);
     } else {
-      // Start replay from beginning
       setDisplayedCandles([...historyCandles]);
       setCurrentTickIndex(0);
       setProgress(0);
@@ -1068,11 +1107,23 @@ export default function SimpleCandleChart({
     }
   }, [isPlaying, historyCandles]);
 
+  const handleZoomIn = useCallback(() => {
+    const newCount = Math.max(MIN_CANDLES_VISIBLE, visibleCount - 10);
+    setVisibleCount(newCount);
+  }, [visibleCount]);
+
+  const handleZoomOut = useCallback(() => {
+    const newCount = Math.min(MAX_CANDLES_VISIBLE, visibleCount + 10);
+    const newStart = Math.max(0, Math.min(displayedCandles.length - newCount, visibleStart));
+    setVisibleCount(newCount);
+    setVisibleStart(newStart);
+  }, [visibleCount, visibleStart, displayedCandles.length]);
+
   // ==================== VALIDATION ====================
 
   if (!trade) {
     return (
-      <div className="text-center py-12 text-gray-400">
+      <div className="text-center py-12 text-[#787b86]">
         Selecciona un trade para ver el gráfico
       </div>
     );
@@ -1085,7 +1136,7 @@ export default function SimpleCandleChart({
     isNaN(trade.exitPrice)
   ) {
     return (
-      <div className="text-center py-12 text-gray-400">
+      <div className="text-center py-12 text-[#787b86]">
         Datos del trade incompletos
       </div>
     );
@@ -1099,273 +1150,284 @@ export default function SimpleCandleChart({
     ? trade.entryPrice - 50 * PIP_VALUE
     : trade.entryPrice + 50 * PIP_VALUE;
 
+  // Current price info
+  const currentPrice = currentTick ? getMidPrice(currentTick) : trade.exitPrice;
+  const spread = currentTick?.spread ?? 0.02;
+
   // ==================== RENDER ====================
 
   return (
-    <div className="space-y-3">
-      {/* Trade header - COMPACT ON MOBILE */}
-      <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-800 rounded-lg">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-          {/* Side badge + basic info - single line when possible */}
+    <div className="space-y-0 bg-[#131722] rounded-lg overflow-hidden">
+      {/* Header Bar - TradingView Style */}
+      <div className="flex items-center justify-between px-3 py-2 bg-[#1e222d] border-b border-[#2a2e39]">
+        <div className="flex items-center gap-3">
+          {/* Symbol */}
           <div className="flex items-center gap-2">
-            <span
-              className={`px-3 py-1.5 rounded font-bold text-[13px] sm:text-sm ${
-                isBuy ? "bg-green-600 text-white" : "bg-red-600 text-white"
-              }`}
-            >
+            <span className="font-bold text-[#d1d4dc] text-sm">XAUUSD</span>
+            <span className={`text-xs px-1.5 py-0.5 rounded ${
+              isBuy ? "bg-[#26a69a]/20 text-[#26a69a]" : "bg-[#ef5350]/20 text-[#ef5350]"
+            }`}>
               {isBuy ? "LONG" : "SHORT"}
             </span>
-            <span
-              className={`font-bold text-[13px] sm:text-sm ${
-                trade.totalProfit >= 0 ? "text-green-400" : "text-red-400"
-              }`}
-            >
-              {trade.totalProfit >= 0 ? "+" : ""}
-              {trade.totalProfit.toFixed(2)}€
+          </div>
+
+          {/* Price */}
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-lg font-bold text-[#d1d4dc]">
+              {currentPrice.toFixed(2)}
+            </span>
+            <span className={`text-xs font-mono ${
+              trade.totalProfit >= 0 ? "text-[#26a69a]" : "text-[#ef5350]"
+            }`}>
+              {trade.totalProfit >= 0 ? "+" : ""}{trade.totalProfit.toFixed(2)}€
             </span>
           </div>
-
-          {/* Entry/Exit info - compact */}
-          <div className="text-[13px] sm:text-sm flex gap-3">
-            <div>
-              <span className="text-gray-400">E: </span>
-              <span className="font-mono text-white">{trade.entryPrice.toFixed(2)}</span>
-            </div>
-            <div>
-              <span className="text-gray-400">X: </span>
-              <span className="font-mono text-white">{trade.exitPrice.toFixed(2)}</span>
-            </div>
-          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div
-            className={`text-[11px] sm:text-xs px-2 py-1 rounded ${
-              trade.exitReason === "TAKE_PROFIT"
-                ? "bg-green-900/50 text-green-400"
-                : trade.exitReason === "TRAILING_SL"
-                  ? "bg-yellow-900/50 text-yellow-400"
-                  : "bg-red-900/50 text-red-400"
-            }`}
+        {/* Close button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center w-8 h-8 rounded hover:bg-[#2a2e39] text-[#787b86] hover:text-[#d1d4dc] transition-colors"
+            aria-label="Cerrar"
           >
-            {trade.exitReason === "TAKE_PROFIT"
-              ? "TP Hit"
-              : trade.exitReason === "TRAILING_SL"
-                ? "Trailing SL"
-                : "Stop Loss"}
-          </div>
-
-          {/* Close button - 44x44 touch target */}
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="flex items-center justify-center w-11 h-11 rounded-lg bg-slate-700 hover:bg-slate-600 text-gray-400 hover:text-white transition-colors"
-              aria-label="Cerrar"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-        </div>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
-      {/* Controls - LARGER TOUCH TARGETS */}
-      <div className="flex flex-wrap items-center gap-2 p-3 bg-slate-800 rounded-lg">
-        {/* Timeframe buttons - flex-wrap for mobile */}
-        <div className="flex flex-wrap items-center gap-2">
-          {(["1", "5", "15"] as Timeframe[]).map((tf) => (
-            <button
-              key={tf}
-              onClick={() => handleTimeframeChange(tf)}
-              className={`px-4 py-2.5 rounded text-sm font-medium transition-colors min-h-[44px] min-w-[44px] ${
-                timeframe === tf
-                  ? "bg-blue-600 text-white"
-                  : "bg-slate-700 text-gray-300 hover:bg-slate-600"
-              }`}
-            >
-              M{tf}
-            </button>
-          ))}
-        </div>
+      {/* Timeframe Selector */}
+      <div className="flex items-center gap-1 px-3 py-2 bg-[#1e222d] border-b border-[#2a2e39] overflow-x-auto">
+        {(Object.keys(TIMEFRAME_LABELS) as Timeframe[]).map((tf) => (
+          <button
+            key={tf}
+            onClick={() => handleTimeframeChange(tf)}
+            className={`px-2.5 py-1 rounded text-xs font-medium transition-colors whitespace-nowrap ${
+              timeframe === tf
+                ? "bg-[#2962ff] text-white"
+                : "text-[#787b86] hover:text-[#d1d4dc] hover:bg-[#2a2e39]"
+            }`}
+          >
+            {TIMEFRAME_LABELS[tf]}
+          </button>
+        ))}
 
-        {/* Speed selector - flex-wrap for mobile */}
-        <div className="flex flex-wrap items-center gap-2">
-          {([1, 2, 5, 10] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setSpeed(s)}
-              className={`px-4 py-2.5 rounded text-sm font-medium transition-colors min-h-[44px] min-w-[44px] ${
-                speed === s
-                  ? "bg-purple-600 text-white"
-                  : "bg-slate-700 text-gray-300 hover:bg-slate-600"
-              }`}
-            >
-              {s}x
-            </button>
-          ))}
-        </div>
+        <div className="w-px h-4 bg-[#2a2e39] mx-2" />
 
-        {/* Play/Pause - PROMINENT */}
+        {/* Speed selector */}
+        {([1, 2, 5, 10] as const).map((s) => (
+          <button
+            key={s}
+            onClick={() => setSpeed(s)}
+            className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+              speed === s
+                ? "bg-[#2962ff] text-white"
+                : "text-[#787b86] hover:text-[#d1d4dc] hover:bg-[#2a2e39]"
+            }`}
+          >
+            {s}x
+          </button>
+        ))}
+
+        <div className="flex-1" />
+
+        {/* Play/Reset controls */}
         <button
           onClick={handlePlayPause}
-          className={`px-6 py-2.5 rounded font-medium text-white flex items-center justify-center gap-2 min-h-[48px] ${
+          className={`px-3 py-1 rounded text-xs font-medium flex items-center gap-1.5 ${
             isPlaying
-              ? "bg-amber-600 hover:bg-amber-700"
-              : "bg-green-600 hover:bg-green-700"
+              ? "bg-[#ff9800] text-white"
+              : "bg-[#26a69a] text-white"
           }`}
         >
           {isPlaying ? (
             <>
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
-              <span>Pausar</span>
+              <span>Pause</span>
             </>
           ) : (
             <>
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                  clipRule="evenodd"
-                />
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
               </svg>
               <span>Replay</span>
             </>
           )}
         </button>
 
-        {/* Reset */}
         <button
           onClick={handleReset}
-          className="px-4 py-2.5 bg-slate-600 hover:bg-slate-500 rounded font-medium text-white flex items-center justify-center gap-2 min-h-[44px]"
+          className="px-2 py-1 rounded text-xs font-medium text-[#787b86] hover:text-[#d1d4dc] hover:bg-[#2a2e39] flex items-center gap-1"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          <span className="hidden sm:inline">Reset</span>
+          Reset
         </button>
-
-        {/* Current price */}
-        {currentTick && (
-          <div className="w-full sm:w-auto sm:ml-auto text-sm text-center sm:text-left">
-            <span className="text-gray-400">Precio: </span>
-            <span className="font-mono text-yellow-400">
-              {getMidPrice(currentTick).toFixed(2)}
-            </span>
-          </div>
-        )}
       </div>
 
-      {/* Chart container - BIGGER */}
-      <div
-        ref={containerRef}
-        className="w-full rounded-lg overflow-hidden"
-        style={{ backgroundColor: colors.background, height: dimensions.height }}
-      >
-        <canvas
-          ref={canvasRef}
-          style={{ width: dimensions.width, height: dimensions.height }}
-          onMouseMove={(e) => {
-            handleMouseMove(e);
-            handleMouseMoveDrag(e);
-          }}
-          onMouseLeave={handleMouseLeave}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onWheel={handleWheel}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          className="cursor-crosshair touch-none"
-        />
-      </div>
-
-      {/* Progress bar - BELOW chart */}
-      <div className="space-y-1 px-3">
-        <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+      {/* Main Chart Area with Side Panel */}
+      <div className="flex">
+        {/* Chart Canvas */}
+        <div className="flex-1 relative">
           <div
-            className="h-full bg-blue-500 transition-all duration-100"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>{allTicks.length.toLocaleString()} ticks</span>
-          <span>{currentTickIndex.toLocaleString()} procesados</span>
-        </div>
-      </div>
-
-      {/* Price levels legend */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 p-3 bg-slate-800 rounded-lg text-sm">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-4 h-0.5"
-            style={{ backgroundColor: "#2196f3" }}
-          />
-          <span className="text-gray-400">Entry:</span>
-          <span className="font-mono text-white">
-            {trade.entryPrice.toFixed(2)}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-0.5" style={{ backgroundColor: "#4caf50" }} />
-          <span className="text-gray-400">TP:</span>
-          <span className="font-mono text-green-400">{tpPrice.toFixed(2)}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-0.5" style={{ backgroundColor: "#f44336" }} />
-          <span className="text-gray-400">SL:</span>
-          <span className="font-mono text-red-400">{slPrice.toFixed(2)}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-gray-400">Pips:</span>
-          <span
-            className={`font-mono font-bold ${
-              trade.totalProfit >= 0 ? "text-green-400" : "text-red-400"
-            }`}
+            ref={containerRef}
+            className="w-full"
+            style={{ height: dimensions.height }}
           >
-            {isBuy
-              ? ((trade.exitPrice - trade.entryPrice) / PIP_VALUE).toFixed(1)
-              : ((trade.entryPrice - trade.exitPrice) / PIP_VALUE).toFixed(1)}
+            <canvas
+              ref={canvasRef}
+              style={{ width: dimensions.width, height: dimensions.height }}
+              onMouseMove={(e) => {
+                handleMouseMove(e);
+                handleMouseMoveDrag(e);
+              }}
+              onMouseLeave={handleMouseLeave}
+              onMouseDown={handleMouseDown}
+              onMouseUp={handleMouseUp}
+              onWheel={handleWheel}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              className="cursor-crosshair touch-none"
+            />
+          </div>
+
+          {/* Hovered Candle Info Overlay */}
+          {hoveredCandle && mousePos && !isMobile && (
+            <div className="absolute top-2 left-2 bg-[#1e222d]/95 border border-[#2a2e39] rounded px-2 py-1.5 text-xs font-mono">
+              <div className="flex gap-3">
+                <span className="text-[#787b86]">O</span>
+                <span className="text-[#d1d4dc]">{hoveredCandle.open.toFixed(2)}</span>
+                <span className="text-[#787b86]">H</span>
+                <span className="text-[#d1d4dc]">{hoveredCandle.high.toFixed(2)}</span>
+                <span className="text-[#787b86]">L</span>
+                <span className="text-[#d1d4dc]">{hoveredCandle.low.toFixed(2)}</span>
+                <span className="text-[#787b86]">C</span>
+                <span className={hoveredCandle.close >= hoveredCandle.open ? "text-[#26a69a]" : "text-[#ef5350]"}>
+                  {hoveredCandle.close.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom Controls Bar */}
+      <div className="flex items-center justify-between px-3 py-2 bg-[#1e222d] border-t border-[#2a2e39]">
+        {/* Zoom Controls */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleZoomIn}
+            className="w-7 h-7 flex items-center justify-center rounded text-[#787b86] hover:text-[#d1d4dc] hover:bg-[#2a2e39] transition-colors"
+            title="Zoom In"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+            </svg>
+          </button>
+          <button
+            onClick={handleZoomOut}
+            className="w-7 h-7 flex items-center justify-center rounded text-[#787b86] hover:text-[#d1d4dc] hover:bg-[#2a2e39] transition-colors"
+            title="Zoom Out"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+            </svg>
+          </button>
+          <span className="text-[10px] text-[#787b86] font-mono ml-1">
+            {visibleCount} velas
           </span>
         </div>
+
+        {/* Progress */}
+        <div className="flex-1 mx-4 max-w-xs">
+          <div className="h-1 bg-[#2a2e39] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#2962ff] transition-all duration-100"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="flex items-center gap-3 text-[10px] text-[#787b86] font-mono">
+          <span>{allTicks.length.toLocaleString()} ticks</span>
+          <span className={trade.totalProfit >= 0 ? "text-[#26a69a]" : "text-[#ef5350]"}>
+            {isBuy ? "+" : ""}{((trade.exitPrice - trade.entryPrice) / PIP_VALUE).toFixed(1)} pips
+          </span>
+        </div>
+      </div>
+
+      {/* Price Levels Legend */}
+      <div className="grid grid-cols-4 gap-2 px-3 py-2 bg-[#1e222d] border-t border-[#2a2e39] text-xs">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-0.5 bg-[#2962ff]" />
+          <span className="text-[#787b86]">Entry</span>
+          <span className="font-mono text-[#d1d4dc]">{trade.entryPrice.toFixed(2)}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-0.5 bg-[#26a69a]" style={{ borderStyle: "dashed" }} />
+          <span className="text-[#787b86]">TP</span>
+          <span className="font-mono text-[#26a69a]">{tpPrice.toFixed(2)}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-0.5 bg-[#ef5350]" style={{ borderStyle: "dashed" }} />
+          <span className="text-[#787b86]">SL</span>
+          <span className="font-mono text-[#ef5350]">{slPrice.toFixed(2)}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-0.5 bg-[#ff9800]" />
+          <span className="text-[#787b86]">Exit</span>
+          <span className="font-mono text-[#ff9800]">{trade.exitPrice.toFixed(2)}</span>
+        </div>
+      </div>
+
+      {/* Exit Reason Badge */}
+      <div className="flex items-center justify-center py-2 bg-[#1e222d] border-t border-[#2a2e39]">
+        <span
+          className={`text-xs px-3 py-1 rounded-full ${
+            trade.exitReason === "TAKE_PROFIT"
+              ? "bg-[#26a69a]/20 text-[#26a69a]"
+              : trade.exitReason === "TRAILING_SL"
+                ? "bg-[#ff9800]/20 text-[#ff9800]"
+                : "bg-[#ef5350]/20 text-[#ef5350]"
+          }`}
+        >
+          {trade.exitReason === "TAKE_PROFIT"
+            ? "✓ Take Profit Hit"
+            : trade.exitReason === "TRAILING_SL"
+              ? "↗ Trailing Stop"
+              : "✗ Stop Loss"}
+        </span>
       </div>
 
       {/* Grid levels status */}
       {trade.levels && trade.levels.length > 0 && (
-        <div className="bg-slate-800 rounded-lg p-3">
-          <div className="text-xs text-gray-400 mb-2 uppercase tracking-wider">
+        <div className="bg-[#1e222d] border-t border-[#2a2e39] p-3">
+          <div className="text-[10px] text-[#787b86] mb-2 uppercase tracking-wider">
             Niveles de Grid
           </div>
           <LevelsStatus
             levels={trade.levels}
             currentTick={currentTick}
             isBuy={isBuy}
-            levelColors={colors.levelColors}
+            levelColors={["#7b1fa2", "#f57c00", "#388e3c", "#c2185b"]}
           />
         </div>
       )}
 
       {/* Synthetic ticks warning */}
       {!hasRealTicks && ticks.length === 0 && (
-        <p className="text-yellow-400 text-sm text-center py-2">
-          Sin ticks reales - simulando con ticks sintéticos
-        </p>
+        <div className="text-center py-2 bg-[#ff9800]/10 border-t border-[#ff9800]/20">
+          <span className="text-[#ff9800] text-xs">
+            Sin ticks reales - simulando con ticks sintéticos
+          </span>
+        </div>
       )}
     </div>
   );

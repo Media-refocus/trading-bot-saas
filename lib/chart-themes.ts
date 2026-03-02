@@ -44,6 +44,25 @@ export const CHART_THEMES: ChartTheme[] = [
     },
   },
   {
+    name: "TradingView Pro",
+    id: "tv-pro",
+    colors: {
+      background: "#131722",
+      grid: "#1e222d",
+      text: "#d1d4dc",
+      candleUp: "#26a69a",
+      candleDown: "#ef5350",
+      wickUp: "#26a69a",
+      wickDown: "#ef5350",
+      entryLine: "#2962ff",
+      tpLine: "#26a69a",
+      slLine: "#ef5350",
+      trailingLine: "#ff9800",
+      currentPrice: "#2962ff",
+      levelColors: ["#7b1fa2", "#f57c00", "#388e3c", "#c2185b"],
+    },
+  },
+  {
     name: "TradingView Dark",
     id: "tv-dark",
     colors: {
