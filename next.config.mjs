@@ -3,8 +3,6 @@ const nextConfig = {
   reactStrictMode: true,
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
-  // Necesario para Docker standalone
-  output: 'standalone',
 
   // Headers de seguridad
   async headers() {
