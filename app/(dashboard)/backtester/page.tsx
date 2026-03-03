@@ -890,7 +890,7 @@ export default function BacktesterPage() {
                     <span className="px-2 py-0.5 bg-blue-500/10 text-blue-600 rounded-full">Desde cache</span>
                   )}
                   <span className="font-mono">
-                    Tiempo: {(executeBacktest.data.elapsedMs / 1000).toFixed(2)}s
+                    Tiempo: {((backtestData?.elapsedMs || 0) / 1000).toFixed(2)}s
                   </span>
                 </div>
               )}
