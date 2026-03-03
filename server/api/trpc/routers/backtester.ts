@@ -772,4 +772,310 @@ export const backtesterRouter = router({
   getBatchCacheStats: procedure.query(() => {
     return getBatchCacheStats();
   }),
+
+  // ==================== PERSISTENCIA EN BD ====================
+
+  /**
+   * Lista backtests guardados en BD con paginacion
+   */
+  listSavedBacktests: protectedProcedure
+    .input(z.object({
+      page: z.number().min(1).default(1),
+      limit: z.number().min(1).max(100).default(20),
+      status: z.enum(["PENDING", "RUNNING", "COMPLETED", "FAILED", "CANCELLED"]).optional(),
+      sortBy: z.string().default("createdAt"),
+      sortOrder: z.enum(["asc", "desc"]).default("desc"),
+    }))
+    .query(async ({ ctx, input }) => {
+      const where: any = { tenantId: ctx.user.tenantId };
+      if (input.status) {
+        where.status = input.status;
+      }
+
+      const orderBy: any = {};
+      orderBy[input.sortBy] = input.sortOrder;
+
+      const [backtests, total] = await Promise.all([
+        prisma.backtest.findMany({
+          where,
+          select: {
+            id: true,
+            name: true,
+            strategyName: true,
+            status: true,
+            totalTrades: true,
+            totalProfit: true,
+            winRate: true,
+            profitFactor: true,
+            sharpeRatio: true,
+            maxDrawdown: true,
+            profitPercent: true,
+            createdAt: true,
+            completedAt: true,
+            startedAt: true,
+          },
+          orderBy,
+          skip: (input.page - 1) * input.limit,
+          take: input.limit,
+        }),
+        prisma.backtest.count({ where }),
+      ]);
+
+      return {
+        data: backtests,
+        pagination: {
+          page: input.page,
+          limit: input.limit,
+          total,
+          totalPages: Math.ceil(total / input.limit),
+        },
+      };
+    }),
+
+  /**
+   * Obtiene un backtest guardado por ID
+   */
+  getSavedBacktest: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const backtest = await prisma.backtest.findFirst({
+        where: {
+          id: input.id,
+          tenantId: ctx.user.tenantId,
+        },
+        include: {
+          SimulatedTrade: {
+            take: 200,
+            orderBy: { timestamp: "asc" },
+          },
+        },
+      });
+
+      if (!backtest) {
+        throw new Error("Backtest no encontrado");
+      }
+
+      return backtest;
+    }),
+
+  /**
+   * Elimina un backtest guardado
+   */
+  deleteSavedBacktest: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Verificar ownership
+      const backtest = await prisma.backtest.findFirst({
+        where: { id: input.id, tenantId: ctx.user.tenantId },
+        select: { id: true },
+      });
+
+      if (!backtest) {
+        throw new Error("Backtest no encontrado");
+      }
+
+      await prisma.backtest.delete({
+        where: { id: input.id },
+      });
+
+      return { success: true };
+    }),
+
+  /**
+   * Ejecuta backtest y guarda resultado en BD
+   */
+  executeAndSave: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().optional(),
+        config: BacktestConfigSchema,
+        signalLimit: z.number().min(1).max(10000).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const startTime = Date.now();
+
+      // Crear registro en BD
+      const backtest = await prisma.backtest.create({
+        data: {
+          tenantId: ctx.user.tenantId,
+          name: input.name || `Backtest ${new Date().toISOString()}`,
+          strategyName: input.config.strategyName || "Toni (G4)",
+          parameters: input.config,
+          status: "RUNNING",
+          startedAt: new Date(),
+          initialCapital: input.config.initialCapital || 10000,
+        },
+      });
+
+      try {
+        // Ejecutar backtest (reutilizar logica del execute normal)
+        const signalsSource = input.config.signalsSource || "signals_simple.csv";
+        const signalsPath = path.join(process.cwd(), signalsSource);
+        let signals = await loadSignalsFromFile(signalsPath);
+
+        // Aplicar filtros
+        if (input.config.filters) {
+          signals = filterSignals(signals, input.config.filters as any);
+        }
+
+        if (input.signalLimit) {
+          signals = signals.slice(0, input.signalLimit);
+        }
+
+        // Batch loading
+        const dbReady = await isTicksDBReady();
+        const wantsRealPrices = input.config.useRealPrices !== false;
+        let ticksByDay: Map<string, any[]> = new Map();
+
+        if (wantsRealPrices && dbReady && signals.length > 0) {
+          const daysNeeded = getDaysNeededForSignals(signals);
+          ticksByDay = await loadTicksByDayGrouped(daysNeeded);
+
+          // Enriquecer senales
+          const XAUUSD_REFERENCE_PRICES: Record<string, number> = {
+            "2024-05": 2350, "2024-06": 2330, "2024-07": 2400, "2024-08": 2470,
+            "2024-09": 2560, "2024-10": 2650, "2024-11": 2620, "2024-12": 2630,
+            "2025-01": 2720, "2025-02": 2850, "2025-03": 2950, "2025-04": 3200,
+            "2025-05": 3300, "2025-06": 3350, "2025-07": 3400, "2025-08": 3450,
+            "2025-09": 3500, "2025-10": 3550, "2025-11": 3600, "2025-12": 3650,
+            "2026-01": 2700, "2026-02": 2750,
+          };
+
+          const enrichedSignals: TradingSignal[] = [];
+          for (const signal of signals) {
+            const marketPrice = getMarketPriceFromCache(ticksByDay, signal.timestamp);
+            if (marketPrice) {
+              const entryPrice = (marketPrice.bid + marketPrice.ask) / 2;
+              enrichedSignals.push({ ...signal, entryPrice });
+            } else if (signal.entryPrice > 0) {
+              enrichedSignals.push(signal);
+            } else {
+              const monthKey = signal.timestamp.toISOString().slice(0, 7);
+              const refPrice = XAUUSD_REFERENCE_PRICES[monthKey] || 2500;
+              enrichedSignals.push({ ...signal, entryPrice: refPrice });
+            }
+          }
+          signals = enrichedSignals.filter(s => s.entryPrice > 0);
+        }
+
+        // Crear motor y ejecutar
+        const engine = new BacktestEngine(input.config as BacktestConfig);
+        let totalTicksProcessed = 0;
+
+        for (let i = 0; i < signals.length; i++) {
+          const signal = signals[i];
+          engine.startSignal(signal.side, signal.entryPrice, i, signal.timestamp);
+
+          let entryTimestamp = signal.timestamp;
+          if (wantsRealPrices && dbReady && ticksByDay.size > 0) {
+            const firstTick = getMarketPriceFromCache(ticksByDay, signal.timestamp);
+            if (firstTick) entryTimestamp = firstTick.timestamp;
+          }
+
+          engine.openInitialOrders(signal.entryPrice, entryTimestamp);
+
+          let ticks: { timestamp: Date; bid: number; ask: number; spread: number }[] = [];
+          if (wantsRealPrices && dbReady && ticksByDay.size > 0) {
+            ticks = getTicksForSignalFromBatch(ticksByDay, signal);
+          }
+
+          if (ticks.length === 0) {
+            const durationMs = signal.closeTimestamp
+              ? signal.closeTimestamp.getTime() - signal.timestamp.getTime()
+              : 30 * 60 * 1000;
+            const exitPrice = signal.side === "BUY"
+              ? signal.entryPrice + input.config.takeProfitPips * 0.1
+              : signal.entryPrice - input.config.takeProfitPips * 0.1;
+            ticks = generateSyntheticTicks(
+              signal.entryPrice, exitPrice, durationMs,
+              input.config.pipsDistance * 2, signal.timestamp
+            );
+          }
+
+          totalTicksProcessed += ticks.length;
+
+          for (const tick of ticks) {
+            engine.processTick(tick);
+          }
+
+          if (engine.hasOpenPositions() && ticks.length > 0) {
+            const lastTick = ticks[ticks.length - 1];
+            const closePrice = signal.side === "BUY" ? lastTick.bid : lastTick.ask;
+            engine.closeRemainingPositions(closePrice, signal.closeTimestamp || lastTick.timestamp);
+          }
+        }
+
+        const results = engine.getResults();
+        const profits = results.tradeDetails.map(d => d.totalProfit);
+        const segmentation = getSegmentationStats(
+          signals.filter((_, i) => i < results.tradeDetails.length),
+          profits
+        );
+
+        const elapsedMs = Date.now() - startTime;
+
+        // Actualizar registro en BD
+        const updated = await prisma.backtest.update({
+          where: { id: backtest.id },
+          data: {
+            status: "COMPLETED",
+            completedAt: new Date(),
+            totalTrades: results.totalTrades,
+            totalProfit: results.totalProfit,
+            totalProfitPips: results.totalProfitPips,
+            winRate: results.winRate,
+            maxDrawdown: results.maxDrawdown,
+            profitFactor: results.profitFactor,
+            finalCapital: results.finalCapital,
+            profitPercent: results.profitPercent,
+            maxDrawdownPercent: results.maxDrawdownPercent,
+            sharpeRatio: results.sharpeRatio,
+            sortinoRatio: results.sortinoRatio,
+            calmarRatio: results.calmarRatio,
+            expectancy: results.expectancy,
+            avgWin: results.avgWin,
+            avgLoss: results.avgLoss,
+            rewardRiskRatio: results.rewardRiskRatio,
+            maxConsecutiveWins: results.maxConsecutiveWins,
+            maxConsecutiveLosses: results.maxConsecutiveLosses,
+            profitFactorByMonth: results.profitFactorByMonth,
+            segmentation: segmentation,
+            results: {
+              tradeDetails: results.tradeDetails,
+              equityCurve: results.equityCurve,
+            },
+            ticksProcessed: totalTicksProcessed,
+            totalTicks: totalTicksProcessed,
+          },
+        });
+
+        return {
+          id: updated.id,
+          status: updated.status,
+          elapsedMs,
+          results: {
+            totalTrades: results.totalTrades,
+            totalProfit: results.totalProfit,
+            winRate: results.winRate,
+            profitFactor: results.profitFactor,
+            sharpeRatio: results.sharpeRatio,
+            maxDrawdown: results.maxDrawdown,
+            profitPercent: results.profitPercent,
+          },
+        };
+      } catch (error) {
+        // Actualizar estado de error
+        await prisma.backtest.update({
+          where: { id: backtest.id },
+          data: {
+            status: "FAILED",
+            error: error instanceof Error ? error.message : "Error desconocido",
+            completedAt: new Date(),
+          },
+        });
+
+        throw error;
+      }
+    }),
 });

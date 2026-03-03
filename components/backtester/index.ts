@@ -17,3 +17,9 @@ export {
   EnhancedCandleViewer,
   useDemoCandles,
 } from "./enhanced-candle-viewer";
+export {
+  ResultPanel,
+  exportResultsToCSV,
+  downloadCSV,
+  type BacktestResultHistory,
+} from "./result-panel";

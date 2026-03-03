@@ -43,27 +43,58 @@ model Account {
 }
 
 model Backtest {
-  id              String           @id @default(cuid())
-  tenantId        String
-  name            String?
-  strategyName    String
-  status          String           @default("PENDING")
-  parameters      Json
-  totalTrades     Int              @default(0)
-  totalProfit     Float            @default(0)
-  totalProfitPips Float            @default(0)
-  winRate         Float            @default(0)
-  maxDrawdown     Float            @default(0)
-  profitFactor    Float            @default(0)
-  startedAt       DateTime?
-  completedAt     DateTime?
-  error           String?
-  ticksProcessed  Int              @default(0)
-  totalTicks      Int              @default(0)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  Tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  SimulatedTrade  SimulatedTrade[]
+  id                    String           @id @default(cuid())
+  tenantId              String
+  name                  String?
+  strategyName          String
+  status                String           @default("PENDING")
+  parameters            Json
+
+  // Métricas básicas
+  totalTrades           Int              @default(0)
+  totalProfit           Float            @default(0)
+  totalProfitPips       Float            @default(0)
+  winRate               Float            @default(0)
+  maxDrawdown           Float            @default(0)
+  profitFactor          Float            @default(0)
+
+  // Capital
+  initialCapital        Float            @default(10000)
+  finalCapital          Float            @default(0)
+  profitPercent         Float            @default(0)
+  maxDrawdownPercent    Float            @default(0)
+
+  // Métricas avanzadas
+  sharpeRatio           Float            @default(0)
+  sortinoRatio          Float            @default(0)
+  calmarRatio           Float            @default(0)
+  expectancy            Float            @default(0)
+  avgWin                Float            @default(0)
+  avgLoss               Float            @default(0)
+  rewardRiskRatio       Float            @default(0)
+  maxConsecutiveWins    Int              @default(0)
+  maxConsecutiveLosses  Int              @default(0)
+  profitFactorByMonth   Json?
+
+  // Segmentación
+  segmentation          Json?
+
+  // Resultados detallados (JSONB grande)
+  results               Json?            // tradeDetails, equityCurve
+
+  // Control de ejecución
+  startedAt             DateTime?
+  completedAt           DateTime?
+  error                 String?
+  ticksProcessed        Int              @default(0)
+  totalTicks            Int              @default(0)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  Tenant                Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  SimulatedTrade        SimulatedTrade[]
+
+  @@index([tenantId, createdAt])
+  @@index([status])
 }
 
 model BotAccount {
