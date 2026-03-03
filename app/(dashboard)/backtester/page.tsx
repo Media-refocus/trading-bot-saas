@@ -147,6 +147,9 @@ export default function BacktesterPage() {
   const signalSources = trpc.backtester.listSignalSources.useQuery();
   const cacheStatus = trpc.backtester.getCacheStatus.useQuery();
   const executeBacktest = trpc.backtester.execute.useMutation();
+  const [supabaseResult, setSupabaseResult] = useState<any>(null);
+  const [supabaseLoading, setSupabaseLoading] = useState(false);
+  const [supabaseError, setSupabaseError] = useState<string | null>(null);
   const clearCache = trpc.backtester.clearCache.useMutation();
   const saveAsStrategy = trpc.backtester.saveAsStrategy.useMutation();
 
@@ -190,9 +193,9 @@ export default function BacktesterPage() {
   }, []);
 
   const saveCurrentResult = () => {
-    if (!executeBacktest.data?.results) return;
+    if (!backtestData?.results) return;
     const name = `${config.strategyName} - ${new Date().toLocaleDateString()}`;
-    const newSaved = [...savedResults, { name, config: { ...config }, results: executeBacktest.data.results }];
+    const newSaved = [...savedResults, { name, config: { ...config }, results: backtestData?.results }];
     setSavedResults(newSaved);
     localStorage.setItem("backtest-saved-results", JSON.stringify(newSaved));
   };
@@ -220,6 +223,10 @@ export default function BacktesterPage() {
           alert("Debes especificar fecha desde y hasta para usar Supabase");
           return;
         }
+
+        setSupabaseLoading(true);
+        setSupabaseError(null);
+        setSupabaseResult(null);
 
         // Llamar a la nueva API REST
         const response = await fetch("/api/backtest", {
@@ -253,9 +260,8 @@ export default function BacktesterPage() {
 
         const data = await response.json();
 
-        // Actualizar el estado manualmente para mostrar resultados
-        // Como no usamos tRPC aquí, necesitamos simular la respuesta
-        executeBacktest.setData({
+        // Guardar resultado en estado local (no tRPC)
+        setSupabaseResult({
           jobId: data.jobId || `supabase_${Date.now()}`,
           status: data.status,
           results: data.results,
@@ -272,6 +278,7 @@ export default function BacktesterPage() {
           debug: data.meta,
         });
 
+        setSupabaseLoading(false);
         setSelectedTradeIndex(null);
         setSaveSuccess(false);
         return;
@@ -291,7 +298,8 @@ export default function BacktesterPage() {
       setSaveSuccess(false);
     } catch (error) {
       console.error("Error ejecutando backtest:", error);
-      alert(error instanceof Error ? error.message : "Error desconocido");
+      setSupabaseLoading(false);
+      setSupabaseError(error instanceof Error ? error.message : "Error desconocido");
     }
   };
 
@@ -367,7 +375,12 @@ export default function BacktesterPage() {
     setConfig((prev) => ({ ...prev, [key]: value }));
   };
 
-  const results = executeBacktest.data?.results;
+  // Resultados: combinar tRPC (CSV) + estado local (Supabase)
+  const backtestData = supabaseResult || executeBacktest.data;
+  const results = backtestData?.results;
+  const isBacktestPending = supabaseLoading || isBacktestPending;
+  const isBacktestError = supabaseError || isBacktestError;
+  const backtestErrorMsg = supabaseError || executeBacktest.error?.message;
 
   // Build config summary string
   const configSummary = `${config.pipsDistance}p × ${config.maxLevels}L × ${config.takeProfitPips}TP × ${config.trailingSLPercent}%Trail`;
@@ -789,13 +802,13 @@ export default function BacktesterPage() {
             {/* Botón Ejecutar Backtest - GRANDE */}
             <Button
               className={`w-full h-14 text-base font-semibold transition-all duration-200 ${
-                executeBacktest.isPending ? "animate-pulse" : "hover:translate-y-[-1px] hover:shadow-lg hover:shadow-primary/40"
+                isBacktestPending ? "animate-pulse" : "hover:translate-y-[-1px] hover:shadow-lg hover:shadow-primary/40"
               }`}
               onClick={handleExecute}
-              disabled={executeBacktest.isPending}
+              disabled={isBacktestPending}
               size="lg"
             >
-              {executeBacktest.isPending ? (
+              {isBacktestPending ? (
                 <span className="flex items-center gap-2">
                   <RefreshCw className="w-5 h-5 animate-spin" />
                   Procesando {signalLimit} señales...
@@ -833,7 +846,7 @@ export default function BacktesterPage() {
             <Button
               variant="outline"
               className="w-full h-9 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50"
-              onClick={() => { clearCache.mutate(); executeBacktest.reset(); setSaveSuccess(false); }}
+              onClick={() => { clearCache.mutate(); executeBacktest.reset(); setSupabaseResult(null); setSupabaseError(null); setSaveSuccess(false); }}
               disabled={clearCache.isPending}
             >
               {clearCache.isPending ? (
@@ -849,10 +862,10 @@ export default function BacktesterPage() {
               )}
             </Button>
 
-            {executeBacktest.isError && (
+            {isBacktestError && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-lg text-xs animate-fade-in">
                 <div className="font-medium mb-1">Error</div>
-                {executeBacktest.error.message}
+                {backtestErrorMsg}
               </div>
             )}
           </CardContent>
@@ -871,9 +884,9 @@ export default function BacktesterPage() {
                   </span>
                 )}
               </CardTitle>
-              {executeBacktest.data?.elapsedMs && (
+              {backtestData?.elapsedMs && (
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  {executeBacktest.data.fromCache && (
+                  {backtestData?.fromCache && (
                     <span className="px-2 py-0.5 bg-blue-500/10 text-blue-600 rounded-full">Desde cache</span>
                   )}
                   <span className="font-mono">
@@ -1285,7 +1298,7 @@ export default function BacktesterPage() {
                   </div>
                   <Button
                     onClick={handleExecute}
-                    disabled={executeBacktest.isPending}
+                    disabled={isBacktestPending}
                     className="gap-2"
                   >
                     <Play className="w-4 h-4" />
