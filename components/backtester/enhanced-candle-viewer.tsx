@@ -92,7 +92,7 @@ export function EnhancedCandleViewer({
   className,
 }: EnhancedCandleViewerProps) {
   // State
-  const [period, setPeriod] = useState<PeriodOption>("month");
+  const [period, setPeriod] = useState<PeriodOption>("all");
   const [mode, setMode] = useState<VisualizationMode>("detail");
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
