@@ -12,12 +12,26 @@ import {
 import { PlaybackControls, PlaybackStatus } from "./playback-controls";
 import {
   autoCompressCandles,
+  compressCandles,
   formatTimeframe,
   type OHLC,
   type TimeframeMinutes,
 } from "@/lib/candle-compression";
 import { useVirtualCandles } from "@/hooks/use-virtual-candles";
 import { CandleChartCanvas } from "./candle-chart-canvas";
+import { MiniMap } from "./mini-map";
+import {
+  MAOverlay,
+  useMALines,
+  DEFAULT_MA_LINES,
+  type MAConfig,
+} from "./ma-overlay";
+import {
+  DrawToolsToolbar,
+  DrawToolsOverlay,
+  useDrawTools,
+  type DrawShape,
+} from "./draw-tools";
 
 // ==================== TYPES ====================
 
@@ -58,6 +72,15 @@ const SPEED_INTERVALS: Record<number, number> = {
   50: 10,
 };
 
+const TIMEFRAME_OPTIONS: { value: TimeframeMinutes; label: string }[] = [
+  { value: 1, label: "1m" },
+  { value: 5, label: "5m" },
+  { value: 15, label: "15m" },
+  { value: 60, label: "1h" },
+  { value: 240, label: "4h" },
+  { value: 1440, label: "1D" },
+];
+
 // ==================== COMPONENT ====================
 
 export function EnhancedCandleViewer({
@@ -75,10 +98,20 @@ export function EnhancedCandleViewer({
   const [speed, setSpeed] = useState(1);
   const [progress, setProgress] = useState(0);
   const [currentCandleIndex, setCurrentCandleIndex] = useState(0);
+  const [showVolume, setShowVolume] = useState(true);
+  const [showEquity, setShowEquity] = useState(true);
+  const [theme, setTheme] = useState<"mt5" | "light">("mt5");
+  const [manualTimeframe, setManualTimeframe] = useState<TimeframeMinutes | null>(null);
+  const [maConfigs, setMaConfigs] = useState<MAConfig[]>(DEFAULT_MA_LINES);
   // isMobile: false inicial para SSR consistente, actualizado en cliente
   const [isMobile, setIsMobile] = useState(false);
   // mounted: para evitar hydration mismatch en contenido dependiente del cliente
   const [mounted, setMounted] = useState(false);
+  // Chart dimensions for draw tools overlay
+  const [chartDimensions, setChartDimensions] = useState({ width: 800, height: 400 });
+
+  // Draw tools hook
+  const drawTools = useDrawTools();
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -106,6 +139,18 @@ export function EnhancedCandleViewer({
 
   // Compress candles based on mode and count
   const compressedData = useMemo(() => {
+    // Si hay timeframe manual seleccionado, usarlo
+    if (manualTimeframe !== null) {
+      const compressed = compressCandles(filteredCandles, 1, manualTimeframe);
+      return {
+        candles: compressed,
+        originalCount: filteredCandles.length,
+        compressedCount: compressed.length,
+        timeframe: manualTimeframe,
+        compressionRatio: filteredCandles.length / compressed.length || 1,
+      };
+    }
+
     if (mode === "detail") {
       // Detail mode: show raw candles, but compress if too many
       if (filteredCandles.length > 500) {
@@ -127,7 +172,7 @@ export function EnhancedCandleViewer({
 
     // Overview mode: heavy compression for equity view
     return autoCompressCandles(filteredCandles, 80);
-  }, [filteredCandles, mode]);
+  }, [filteredCandles, mode, manualTimeframe]);
 
   // Virtual scrolling for large datasets
   const virtualScroll = useVirtualCandles(compressedData.candles, {
@@ -173,6 +218,28 @@ export function EnhancedCandleViewer({
     setCurrentCandleIndex(0);
   }, []);
 
+  // Handle manual timeframe change
+  const handleTimeframeChange = useCallback((tf: TimeframeMinutes | null) => {
+    setManualTimeframe(tf);
+    setIsPlaying(false);
+    setProgress(0);
+    setCurrentCandleIndex(0);
+  }, []);
+
+  // Handle MA toggle
+  const handleMAToggle = useCallback((period: number, type: "SMA" | "EMA") => {
+    setMaConfigs((prev) =>
+      prev.map((config) =>
+        config.period === period && config.type === type
+          ? { ...config, visible: !config.visible }
+          : config
+      )
+    );
+  }, []);
+
+  // Calculate MA lines for current candles
+  const maLines = useMALines(compressedData.candles, maConfigs);
+
   // Playback controls
   const handlePlay = useCallback(() => {
     if (compressedData.candles.length === 0) return;
@@ -202,6 +269,17 @@ export function EnhancedCandleViewer({
       setCurrentCandleIndex(newIndex);
       setProgress(newProgress);
       virtualScroll.scrollToIndex(newIndex);
+    },
+    [compressedData.candles.length, virtualScroll]
+  );
+
+  // Handle mini-map navigation
+  const handleMiniMapNavigate = useCallback(
+    (newStart: number) => {
+      virtualScroll.scrollToIndex(newStart);
+      setCurrentCandleIndex(newStart);
+      const newProgress = (newStart / Math.max(1, compressedData.candles.length - 1)) * 100;
+      setProgress(newProgress);
     },
     [compressedData.candles.length, virtualScroll]
   );
@@ -285,6 +363,56 @@ export function EnhancedCandleViewer({
     };
   }, [filteredTrades, compressedData.candles, currentCandleIndex]);
 
+  // Calculate equity curve for chart
+  const equityCurve = useMemo(() => {
+    if (filteredTrades.length === 0 || compressedData.candles.length === 0) return [];
+
+    const points: { time: number; equity: number }[] = [];
+    let runningEquity = 10000;
+    let tradeIdx = 0;
+
+    // Sort trades by entry time
+    const sortedTrades = [...filteredTrades].sort((a, b) =>
+      new Date(a.entryTime).getTime() - new Date(b.entryTime).getTime()
+    );
+
+    // Sample candles for equity curve (max 200 points for performance)
+    const sampleRate = Math.max(1, Math.floor(compressedData.candles.length / 200));
+
+    for (let i = 0; i < compressedData.candles.length; i += sampleRate) {
+      const candle = compressedData.candles[i];
+      const candleTime = candle.time * 1000;
+
+      // Add profit from trades that closed before this candle
+      while (tradeIdx < sortedTrades.length) {
+        const trade = sortedTrades[tradeIdx];
+        if (new Date(trade.exitTime).getTime() <= candleTime) {
+          runningEquity += trade.profit;
+          tradeIdx++;
+        } else {
+          break;
+        }
+      }
+
+      points.push({ time: candle.time, equity: runningEquity });
+    }
+
+    // Add final point
+    while (tradeIdx < sortedTrades.length) {
+      runningEquity += sortedTrades[tradeIdx].profit;
+      tradeIdx++;
+    }
+
+    if (points.length > 0) {
+      points.push({
+        time: compressedData.candles[compressedData.candles.length - 1].time,
+        equity: runningEquity
+      });
+    }
+
+    return points;
+  }, [filteredTrades, compressedData.candles]);
+
   return (
     <div className={cn("flex flex-col bg-[#1E1E1E]", className)}>
       {/* Period & Mode Selector */}
@@ -332,6 +460,89 @@ export function EnhancedCandleViewer({
         />
       )}
 
+      {/* Timeframe Tabs */}
+      <div className="flex items-center gap-1 px-4 py-2 bg-[#252526] border-b border-[#3C3C3C]">
+        <span className="text-xs text-[#888888] mr-2">TF:</span>
+        <button
+          onClick={() => handleTimeframeChange(null)}
+          className={cn(
+            "px-2 py-1 rounded text-xs transition-colors",
+            manualTimeframe === null
+              ? "bg-[#0078D4] text-white"
+              : "bg-[#333333] text-[#888888] hover:bg-[#444444] hover:text-white"
+          )}
+        >
+          Auto
+        </button>
+        {TIMEFRAME_OPTIONS.map((tf) => (
+          <button
+            key={tf.value}
+            onClick={() => handleTimeframeChange(tf.value)}
+            className={cn(
+              "px-2 py-1 rounded text-xs transition-colors",
+              manualTimeframe === tf.value
+                ? "bg-[#0078D4] text-white"
+                : "bg-[#333333] text-[#888888] hover:bg-[#444444] hover:text-white"
+            )}
+          >
+            {tf.label}
+          </button>
+        ))}
+      </div>
+
+      {/* MA Overlay Controls */}
+      <MAOverlay lines={maConfigs} onToggle={handleMAToggle} />
+
+      {/* Toolbar - Volume, Equity, Theme, Export */}
+      <div className="flex items-center justify-between px-4 py-2 bg-[#252526] border-b border-[#3C3C3C]">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowVolume(!showVolume)}
+            className={cn(
+              "px-3 py-1 rounded text-xs transition-colors",
+              showVolume 
+                ? "bg-[#0078D4] text-white" 
+                : "bg-[#333333] text-[#888888] hover:bg-[#444444] hover:text-white"
+            )}
+          >
+            📊 Volume
+          </button>
+          <button
+            onClick={() => setShowEquity(!showEquity)}
+            className={cn(
+              "px-3 py-1 rounded text-xs transition-colors",
+              showEquity 
+                ? "bg-[#0078D4] text-white" 
+                : "bg-[#333333] text-[#888888] hover:bg-[#444444] hover:text-white"
+            )}
+          >
+            📈 Equity
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setTheme(theme === "mt5" ? "light" : "mt5")}
+            className="px-3 py-1 rounded text-xs bg-[#333333] hover:bg-[#444444] text-[#888888] hover:text-white transition-colors"
+          >
+            {theme === "mt5" ? "🌙 Dark" : "☀️ Light"}
+          </button>
+          <button
+            onClick={() => {
+              const canvas = document.querySelector("canvas");
+              if (canvas) {
+                const link = document.createElement("a");
+                link.download = `backtester-${new Date().toISOString().slice(0, 10)}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+              }
+            }}
+            className="px-3 py-1 rounded text-xs bg-[#333333] hover:bg-[#444444] text-[#888888] hover:text-white transition-colors"
+          >
+            📷 Export PNG
+          </button>
+        </div>
+      </div>
+
       {/* Chart Area */}
       <div
         ref={containerRef}
@@ -366,7 +577,11 @@ export function EnhancedCandleViewer({
                 entryTime: t.entryTime,
                 exitTime: t.exitTime,
                 side: t.side,
+                profit: t.profit,
               }))}
+              equityCurve={equityCurve}
+              maLines={maLines}
+              showEquityCurve={mode === "overview"}
               config={{
                 takeProfitPips: config.takeProfitPips ?? 50,
               }}
@@ -396,6 +611,20 @@ export function EnhancedCandleViewer({
           </div>
         )}
       </div>
+
+      {/* Mini-map */}
+      {!isLoading && compressedData.candles.length > 0 && (
+        <MiniMap
+          candles={compressedData.candles}
+          visibleStart={virtualScroll.virtualRange.startIndex}
+          visibleCount={Math.min(
+            virtualScroll.virtualRange.endIndex - virtualScroll.virtualRange.startIndex + 1,
+            100
+          )}
+          onNavigate={handleMiniMapNavigate}
+          className="border-t border-[#3C3C3C]"
+        />
+      )}
 
       {/* Playback Controls */}
       <PlaybackControls

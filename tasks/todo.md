@@ -1,13 +1,87 @@
 # Trading Bot SaaS - TODO
 
-## Sprint Actual: Visor de Velas Mejorado
+## Sprint Actual: MA/EMA Overlay + Multi-timeframe
 
-### En Progreso
-- [ ] Fase 7: Integración Final en backtester/page.tsx
+### Completado ✅
+- [x] MA Overlay component (ma-overlay.tsx)
+  - SMA 20, SMA 50, EMA 12, EMA 26
+  - Toggle para mostrar/ocultar cada una
+  - Colores diferenciados: amarillo, cyan, morado, rosa
+  - Cálculo optimizado con memoización (useMALines hook)
+- [x] Multi-timeframe tabs
+  - 1m, 5m, 15m, 1h, 4h, 1D + Auto
+  - Recompresión de velas usando compressCandles()
+  - Estado persistente del timeframe seleccionado
+- [x] Integración en candle-chart-canvas.tsx
+  - Dibujo de líneas de MA sobre velas
+  - Soporte para múltiples MA simultáneas
+- [x] npm run build pasa sin errores
 
-### Pendiente
-- [ ] Testear con 10k+ velas
-- [ ] Conectar con SimpleCandleChart para renderizado real
+### Archivos Creados/Modificados
+```
+components/backtester/ma-overlay.tsx (nuevo)
+components/backtester/candle-chart-canvas.tsx
+components/backtester/enhanced-candle-viewer.tsx
+```
+
+---
+
+## Sprint Anterior: Mini-map para Backtester
+
+### Completado ✅
+- [x] Crear components/backtester/mini-map.tsx
+  - [x] Canvas 60px altura
+  - [x] Línea/área de todas las velas comprimidas
+  - [x] Rectángulo viewport con borde azul
+  - [x] Click para navegar
+  - [x] Drag del rectángulo para navegar
+- [x] Integrar en enhanced-candle-viewer.tsx
+- [x] Verificar npm run build pasa
+
+### Completado ✅ (Sprint Anterior)
+- [x] Crosshair interactivo con OHLC tooltip
+- [x] Zoom con scroll wheel centrado en cursor
+- [x] Equity curve panel debajo del chart
+- [x] Trade arrows ↑↓ reemplazando líneas horizontales
+- [x] npm run build pasa sin errores
+
+---
+
+## Implementación Detallada
+
+### 1. Crosshair Interactivo
+- Cursor vertical/horizontal que sigue mouse
+- Líneas punteadas semitransparentes
+- Precio actual en marker a la derecha
+- Tooltip OHLC con fecha/hora
+
+### 2. Zoom con Scroll Wheel
+- Sensibilidad: 0.001
+- Rango: 0.5x - 3x
+- Zoom centrado en posición actual
+
+### 3. Equity Curve Panel
+- Panel de 100px debajo del chart principal
+- Curva azul con línea
+- Labels de min/max equity
+- Línea base punteada si baja de $10,000
+
+### 4. Trade Arrows
+- Flecha verde ↑ para BUY (debajo del low)
+- Flecha rojo ↓ para SELL (encima del high)
+- Label de entry price a la derecha
+
+---
+
+## Archivos Modificados
+```
+- components/backtester/candle-chart-canvas.tsx
+- components/backtester/enhanced-candle-viewer.tsx
+```
+
+---
+
+## Sprint Anterior: Visor de Velas Mejorado
 
 ### Completado
 - [x] Análisis del código existente
@@ -18,71 +92,3 @@
 - [x] Fase 4: Modos de Visualización (detail, operative, overview)
 - [x] Fase 5: Playback con x50 - playback-controls.tsx
 - [x] Fase 6: Componente EnhancedCandleViewer
-
----
-
-## Detalle de Fases
-
-### Fase 1: Virtual Scrolling ✅
-- [x] 1.1 Crear `hooks/use-virtual-candles.ts`
-- [x] 1.2 Implementar cálculo de rango visible
-- [x] 1.3 Buffer de 50 velas antes/después
-
-### Fase 2: Compresión de Velas ✅
-- [x] 2.1 Crear `lib/candle-compression.ts`
-- [x] 2.2 Niveles: 1min, 5min, 15min, 1h, 4h, 1d
-- [x] 2.3 Compresión adaptativa según count
-
-### Fase 3: Selector de Período ✅
-- [x] 3.1 Crear `components/backtester/period-selector.tsx`
-- [x] 3.2 Opciones: Hoy, semana, mes, 3 meses, año, todo
-- [x] 3.3 Versión desktop y mobile
-
-### Fase 4: Modos de Visualización ✅
-- [x] 4.1 Tipo `VisualizationMode`
-- [x] 4.2 Modo Detalle (trade individual)
-- [x] 4.3 Modo Operativa (todos los trades)
-- [x] 4.4 Modo Overview (equity + marcadores)
-
-### Fase 5: Playback Mejorado ✅
-- [x] 5.1 Añadir velocidad x50 a playback-controls.tsx
-- [x] 5.2 Integrar con virtual scrolling en EnhancedCandleViewer
-- [x] 5.3 Intervalos de velocidad optimizados
-
-### Fase 6: Optimizaciones ✅
-- [x] 6.1 Máx 300 velas renderizadas en virtual scroll
-- [x] 6.2 Memoización de cálculos
-- [x] 6.3 Componente EnhancedCandleViewer creado
-
-### Fase 7: Integración
-- [ ] 7.1 Actualizar backtester/page.tsx
-- [ ] 7.2 Tests rendimiento 10k+ velas
-- [ ] 7.3 Verificar mobile-first
-
----
-
-## Archivos Creados/Modificados
-```
-NUEVOS:
-- hooks/use-virtual-candles.ts ✅
-- lib/candle-compression.ts ✅
-- components/backtester/period-selector.tsx ✅
-- components/backtester/enhanced-candle-viewer.tsx ✅
-
-MODIFICADOS:
-- components/backtester/playback-controls.tsx ✅ (x50 speed)
-- components/backtester/index.ts ✅ (exports)
-```
-
-## Criterios de Aceptación
-- [ ] Renderizar 10,000 velas sin lag
-- [ ] Cambio de período < 500ms
-- [ ] Playback fluido a x50
-- [ ] Mobile-first (375px)
-
----
-
-## Notas
-- EnhancedCandleViewer está listo pero necesita conectarse con SimpleCandleChart para el renderizado real de velas
-- Por ahora muestra placeholder con info del virtual scrolling
-- Siguiente paso: integrar en backtester/page.tsx como opción de vista
