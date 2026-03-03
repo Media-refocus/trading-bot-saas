@@ -378,8 +378,8 @@ export default function BacktesterPage() {
   // Resultados: combinar tRPC (CSV) + estado local (Supabase)
   const backtestData = supabaseResult || executeBacktest.data;
   const results = backtestData?.results;
-  const isBacktestPending = supabaseLoading || isBacktestPending;
-  const isBacktestError = supabaseError || isBacktestError;
+  const isBacktestPending = supabaseLoading || executeBacktest.isPending;
+  const isBacktestError = supabaseError !== null || executeBacktest.isError;
   const backtestErrorMsg = supabaseError || executeBacktest.error?.message;
 
   // Build config summary string
