@@ -436,9 +436,9 @@ export function EnhancedCandleViewer({
         />
       )}
 
-      {/* Compression info */}
+      {/* Compression info — hidden on mobile */}
       {compressedData.compressionRatio > 1 && (
-        <div className="flex items-center gap-2 px-4 py-1 bg-[#252526] text-xs text-[#888888]">
+        <div className="hidden sm:flex items-center gap-2 px-4 py-1 bg-[#252526] text-xs text-[#888888]">
           <span>
             {compressedData.originalCount.toLocaleString()} velas →{" "}
             {compressedData.compressedCount.toLocaleString()} ({formatTimeframe(compressedData.timeframe)})
@@ -449,15 +449,15 @@ export function EnhancedCandleViewer({
         </div>
       )}
 
-      {/* Playback Status */}
+      {/* Playback Status — hidden on mobile */}
       {mode !== "overview" && (
-        <PlaybackStatus
+        <div className="hidden sm:block"><PlaybackStatus
           currentTrade={stats.currentTrade}
           totalTrades={stats.totalTrades}
           balance={stats.balance}
           equity={stats.equity}
           floatingPL={stats.floatingPL}
-        />
+        /></div>
       )}
 
       {/* Timeframe Tabs */}
@@ -490,11 +490,13 @@ export function EnhancedCandleViewer({
         ))}
       </div>
 
-      {/* MA Overlay Controls */}
-      <MAOverlay lines={maConfigs} onToggle={handleMAToggle} />
+      {/* MA Overlay Controls — hidden on mobile */}
+      <div className="hidden sm:block">
+        <MAOverlay lines={maConfigs} onToggle={handleMAToggle} />
+      </div>
 
-      {/* Toolbar - Volume, Equity, Theme, Export */}
-      <div className="flex items-center justify-between px-4 py-2 bg-[#252526] border-b border-[#3C3C3C]">
+      {/* Toolbar - Volume, Equity, Theme, Export — compact on mobile */}
+      <div className="flex items-center justify-between px-2 sm:px-4 py-1 sm:py-2 bg-[#252526] border-b border-[#3C3C3C]">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowVolume(!showVolume)}
@@ -626,8 +628,8 @@ export function EnhancedCandleViewer({
         />
       )}
 
-      {/* Playback Controls */}
-      <PlaybackControls
+      {/* Playback Controls — hidden on mobile */}
+      <div className="hidden sm:block"><PlaybackControls
         isPlaying={isPlaying}
         speed={speed}
         progress={progress}
@@ -637,10 +639,10 @@ export function EnhancedCandleViewer({
         onStop={handleStop}
         onSpeedChange={handleSpeedChange}
         onSeek={handleSeek}
-      />
+      /></div>
 
-      {/* Zoom controls */}
-      <div className="flex items-center justify-center gap-2 px-4 py-2 bg-[#252526] border-t border-[#3C3C3C]">
+      {/* Zoom controls — hidden on mobile (use touch gestures instead) */}
+      <div className="hidden sm:flex items-center justify-center gap-2 px-4 py-2 bg-[#252526] border-t border-[#3C3C3C]">
         <button
           onClick={virtualScroll.zoomOut}
           className="px-3 py-1 rounded text-xs bg-[#333333] hover:bg-[#444444] text-[#888888] hover:text-white transition-colors"

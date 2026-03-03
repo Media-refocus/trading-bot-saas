@@ -1075,7 +1075,7 @@ export default function BacktesterPage() {
                           pipsDistance: config.pipsDistance,
                           maxLevels: config.maxLevels,
                         }}
-                        className="h-[400px] sm:h-[500px]"
+                        className="h-[600px] sm:h-[700px]"
                       />
                     )}
                   </div>
