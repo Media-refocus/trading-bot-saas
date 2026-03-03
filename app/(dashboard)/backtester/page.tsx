@@ -631,7 +631,7 @@ export default function BacktesterPage() {
                     onCheckedChange={(checked) => updateConfig("useStopLoss", checked)}
                   />
                   <Shield className="w-3.5 h-3.5 text-muted-foreground" />
-                  <Label className="text-xs font-medium cursor-pointer">Use Stop Loss</Label>
+                  <Label className="text-xs font-medium cursor-pointer">Stop Loss</Label>
                 </div>
               </div>
 
@@ -657,10 +657,21 @@ export default function BacktesterPage() {
               )}
             </div>
 
-            {/* Lot Size Input */}
-            <div className="grid grid-cols-2 gap-2">
+            {/* Sección: Ejecución - colapsable en mobile */}
+            <div className="sm:block">
+              <button
+                type="button"
+                onClick={() => toggleSection("ejecucion")}
+                className="w-full flex items-center justify-between py-2 sm:hidden border-b border-border/30 mb-2"
+              >
+                <span className="text-xs font-semibold text-muted-foreground">Ejecución y Filtros</span>
+                {expandedSections.ejecucion ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+              <div className={`space-y-3 ${expandedSections.ejecucion ? 'block' : 'hidden sm:block'}`}>
+            {/* Lot Size + Capital */}
+            <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg border border-border/30 bg-muted/10">
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Lot Size</Label>
+                <Label className="text-xs text-muted-foreground font-medium">Lot Size</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -683,7 +694,7 @@ export default function BacktesterPage() {
             </div>
 
             {/* Filtros */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2.5 rounded-lg border border-border/30 bg-muted/10">
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground uppercase tracking-wide">Sesión</Label>
                 <select
@@ -720,6 +731,9 @@ export default function BacktesterPage() {
                 />
               </div>
             </div>
+
+              </div>{/* fin space-y-3 ejecucion */}
+            </div>{/* fin sm:block ejecucion */}
 
             {/* Toggle: Trailing SL */}
             <div className={`flex items-center gap-2 p-2.5 rounded-lg transition-all ${
@@ -1084,18 +1098,18 @@ export default function BacktesterPage() {
                       </div>
                     </div>
                     <div className="max-h-64 overflow-y-auto overflow-x-auto border rounded-lg">
-                      <table className="w-full text-[13px] sm:text-xs min-w-[600px]">
+                      <table className="w-full text-[13px] sm:text-xs min-w-[480px] sm:min-w-[600px]">
                         <thead className="sticky top-0 bg-gradient-to-r from-muted to-muted/80 z-10">
                           <tr>
-                            <th className="text-left p-2 font-medium">#</th>
-                            <th className="text-left p-2 font-medium">Fecha</th>
-                            <th className="text-left p-2 font-medium">Side</th>
-                            <th className="text-right p-2 font-medium">Entry</th>
-                            <th className="text-right p-2 font-medium">Exit</th>
-                            <th className="text-center p-2 font-medium">Lvls</th>
-                            <th className="text-right p-2 font-medium">Pips</th>
-                            <th className="text-right p-2 font-medium">Profit</th>
-                            <th className="text-center p-2 font-medium">Close</th>
+                            <th className="text-left p-1.5 sm:p-2 font-medium">#</th>
+                            <th className="text-left p-1.5 sm:p-2 font-medium">Fecha</th>
+                            <th className="text-left p-1.5 sm:p-2 font-medium">Side</th>
+                            <th className="text-right p-1.5 sm:p-2 font-medium">Entry</th>
+                            <th className="text-right p-1.5 sm:p-2 font-medium hidden sm:table-cell">Exit</th>
+                            <th className="text-center p-1.5 sm:p-2 font-medium hidden sm:table-cell">Lvls</th>
+                            <th className="text-right p-1.5 sm:p-2 font-medium">Pips</th>
+                            <th className="text-right p-1.5 sm:p-2 font-medium font-bold">P&L</th>
+                            <th className="text-center p-1.5 sm:p-2 font-medium hidden sm:table-cell">Close</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1128,8 +1142,8 @@ export default function BacktesterPage() {
                                 </span>
                               </td>
                               <td className="p-2 text-right font-mono">{trade.entryPrice?.toFixed(2)}</td>
-                              <td className="p-2 text-right font-mono">{trade.exitPrice?.toFixed(2)}</td>
-                              <td className="p-2 text-center">
+                              <td className="p-2 text-right font-mono hidden sm:table-cell">{trade.exitPrice?.toFixed(2)}</td>
+                              <td className="p-2 text-center hidden sm:table-cell">
                                 <span className={`inline-flex items-center justify-center w-6 h-5 rounded text-[10px] font-mono ${
                                   trade.maxLevels > 1
                                     ? "bg-amber-500/20 text-amber-600"
@@ -1148,7 +1162,7 @@ export default function BacktesterPage() {
                               }`}>
                                 {trade.totalProfit >= 0 ? "+" : ""}{trade.totalProfit?.toFixed(2)}€
                               </td>
-                              <td className="p-2 text-center">
+                              <td className="p-2 text-center hidden sm:table-cell">
                                 <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${
                                   trade.exitReason === "TAKE_PROFIT"
                                     ? "bg-green-500/20 text-green-700 dark:text-green-400"
@@ -1572,7 +1586,7 @@ export default function BacktesterPage() {
               <TrendingUp className="w-4 h-4 text-primary" />
               Curva de Equity
               <span className="text-xs font-normal text-muted-foreground ml-auto">
-                Hover para ver detalles
+                Toca para ver detalles
               </span>
             </CardTitle>
           </CardHeader>
