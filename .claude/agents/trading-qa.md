@@ -4,6 +4,10 @@ description: QA & Security Auditor. Tests, code review, vulnerabilidades, valida
 tools: Read, Glob, Grep, Bash, Edit, Write, WebFetch
 model: inherit
 memory: project
+maxTurns: 50
+skills:
+  - tbs-domain
+  - tbs-patterns
 ---
 
 ## Pre-Flight Check (OBLIGATORIO antes de actuar)

@@ -845,9 +845,9 @@ export default function BacktesterPage() {
               </div>
             )}
 
-            {/* Botón Ejecutar Backtest - GRANDE */}
+            {/* Botón Ejecutar Backtest - GRANDE (oculto en mobile, hay sticky) */}
             <Button
-              className={`w-full h-14 text-base font-semibold transition-all duration-200 ${
+              className={`w-full h-14 text-base font-semibold transition-all duration-200 hidden sm:flex ${
                 isBacktestPending ? "animate-pulse" : "hover:translate-y-[-1px] hover:shadow-lg hover:shadow-primary/40"
               }`}
               onClick={handleExecute}
@@ -1097,8 +1097,9 @@ export default function BacktesterPage() {
                         </span>
                       </div>
                     </div>
-                    <div className="max-h-64 overflow-y-auto overflow-x-auto border rounded-lg">
-                      <table className="w-full text-[13px] sm:text-xs min-w-[480px] sm:min-w-[600px]">
+                    <div className="max-h-64 overflow-y-auto overflow-x-auto border rounded-lg relative" style={{ WebkitOverflowScrolling: 'touch' }}>
+                      <div className="sm:hidden absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-background/80 to-transparent pointer-events-none z-10" />
+                      <table className="w-full text-[13px] sm:text-xs min-w-[420px] sm:min-w-[600px]">
                         <thead className="sticky top-0 bg-gradient-to-r from-muted to-muted/80 z-10">
                           <tr>
                             <th className="text-left p-1.5 sm:p-2 font-medium">#</th>

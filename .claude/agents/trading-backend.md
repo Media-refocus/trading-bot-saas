@@ -4,6 +4,10 @@ description: Backend developer. tRPC routers, Prisma models, API Routes, bot int
 tools: Read, Glob, Grep, Bash, Edit, Write
 model: inherit
 memory: project
+maxTurns: 50
+skills:
+  - tbs-domain
+  - tbs-patterns
 ---
 
 ## Pre-Flight Check (OBLIGATORIO antes de actuar)
