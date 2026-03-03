@@ -189,7 +189,15 @@ export function CandleChartCanvas({
       max = Math.max(max, c.high);
     }
 
-    const padding = (max - min) * 0.08 || 1;
+    // Ensure minimum visible spread (at least 0.5% of price)
+    const minSpread = Math.max((max + min) / 2 * 0.005, 1);
+    const rawSpread = max - min;
+    if (rawSpread < minSpread) {
+      const center = (max + min) / 2;
+      min = center - minSpread / 2;
+      max = center + minSpread / 2;
+    }
+    const padding = (max - min) * 0.15 || 1;
     min -= padding;
     max += padding;
     const center = (min + max) / 2;
@@ -352,9 +360,9 @@ export function CandleChartCanvas({
       ctx.lineTo(x, lY);
       ctx.stroke();
 
-      // Body
+      // Body — min 2px height for visibility
       const top = Math.min(oY, cY);
-      const h = Math.max(1, Math.abs(cY - oY));
+      const h = Math.max(2, Math.abs(cY - oY));
       ctx.fillStyle = color;
       ctx.fillRect(Math.round(x - bodyW / 2), Math.round(top), Math.round(bodyW), Math.round(h));
     }

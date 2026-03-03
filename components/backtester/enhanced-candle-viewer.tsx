@@ -414,7 +414,7 @@ export function EnhancedCandleViewer({
   }, [filteredTrades, compressedData.candles]);
 
   return (
-    <div className={cn("flex flex-col bg-[#1E1E1E]", className)}>
+    <div className={cn("flex flex-col bg-[#000000]", className)}>
       {/* Period & Mode Selector */}
       {isMobile ? (
         <PeriodSelectorMobile
