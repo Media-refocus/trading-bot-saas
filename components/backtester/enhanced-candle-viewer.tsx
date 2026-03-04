@@ -507,7 +507,7 @@ export function EnhancedCandleViewer({
                 : "bg-[#333333] text-[#888888] hover:bg-[#444444] hover:text-white"
             )}
           >
-            📊 Volume
+            📊 Volumen
           </button>
           <button
             onClick={() => setShowEquity(!showEquity)}
@@ -526,7 +526,7 @@ export function EnhancedCandleViewer({
             onClick={() => setTheme(theme === "mt5" ? "light" : "mt5")}
             className="px-3 py-1 rounded text-xs bg-[#333333] hover:bg-[#444444] text-[#888888] hover:text-white transition-colors"
           >
-            {theme === "mt5" ? "🌙 Dark" : "☀️ Light"}
+            {theme === "mt5" ? "🌙 Oscuro" : "☀️ Claro"}
           </button>
           <button
             onClick={() => {
@@ -540,7 +540,7 @@ export function EnhancedCandleViewer({
             }}
             className="px-3 py-1 rounded text-xs bg-[#333333] hover:bg-[#444444] text-[#888888] hover:text-white transition-colors"
           >
-            📷 Export PNG
+            📷 Exportar PNG
           </button>
         </div>
       </div>
@@ -647,7 +647,7 @@ export function EnhancedCandleViewer({
           onClick={virtualScroll.zoomOut}
           className="px-3 py-1 rounded text-xs bg-[#333333] hover:bg-[#444444] text-[#888888] hover:text-white transition-colors"
         >
-          Zoom Out
+          Alejar
         </button>
         <span className="text-xs text-[#888888] font-mono min-w-[60px] text-center">
           {virtualScroll.scrollState.zoom.toFixed(1)}x
@@ -656,7 +656,7 @@ export function EnhancedCandleViewer({
           onClick={virtualScroll.zoomIn}
           className="px-3 py-1 rounded text-xs bg-[#333333] hover:bg-[#444444] text-[#888888] hover:text-white transition-colors"
         >
-          Zoom In
+          Acercar
         </button>
         <div className="w-px h-4 bg-[#3C3C3C] mx-2" />
         <button

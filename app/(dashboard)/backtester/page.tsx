@@ -553,7 +553,7 @@ export default function BacktesterPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Activity className="w-3.5 h-3.5 text-purple-500" />
-                  <Label className="text-xs font-medium text-purple-600 dark:text-purple-400">Max Levels</Label>
+                  <Label className="text-xs font-medium text-purple-600 dark:text-purple-400">Niveles Máx.</Label>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -671,7 +671,7 @@ export default function BacktesterPage() {
             {/* Lot Size + Capital */}
             <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg border border-border/30 bg-muted/10">
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground font-medium">Lot Size</Label>
+                <Label className="text-xs text-muted-foreground font-medium">Tamaño Lote</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -926,14 +926,14 @@ export default function BacktesterPage() {
                 Resultados
                 {results && (
                   <span className="text-xs font-normal text-muted-foreground ml-2">
-                    {results.totalTrades} trades procesados
+                    {results.totalTrades} operaciones procesadas
                   </span>
                 )}
               </CardTitle>
               {backtestData?.elapsedMs && (
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   {backtestData?.fromCache && (
-                    <span className="px-2 py-0.5 bg-blue-500/10 text-blue-600 rounded-full">Desde cache</span>
+                    <span className="px-2 py-0.5 bg-blue-500/10 text-blue-600 rounded-full">Desde caché</span>
                   )}
                   <span className="font-mono">
                     Tiempo: {((backtestData?.elapsedMs || 0) / 1000).toFixed(2)}s
@@ -948,7 +948,7 @@ export default function BacktesterPage() {
                 {/* Métricas principales con diseño mejorado - 2 cols mobile, 4 cols desktop */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <MetricBox
-                    label="Profit Total"
+                    label="Beneficio Total"
                     value={`${results.totalProfit >= 0 ? "+" : ""}${results.totalProfit?.toFixed(2)}€`}
                     positive={results.totalProfit >= 0}
                     highlight
@@ -956,21 +956,21 @@ export default function BacktesterPage() {
                     subtitle={results.profitPercent ? `${results.profitPercent >= 0 ? "+" : ""}${results.profitPercent.toFixed(1)}%` : undefined}
                   />
                   <MetricBox
-                    label="Win Rate"
+                    label="Tasa Aciertos"
                     value={`${results.winRate?.toFixed(0)}%`}
                     positive={results.winRate >= 50}
                     icon={<Target className="w-3.5 h-3.5" />}
                     subtitle={results.totalTrades ? `${Math.round(results.totalTrades * results.winRate / 100)}W / ${results.totalTrades - Math.round(results.totalTrades * results.winRate / 100)}L` : undefined}
                   />
                   <MetricBox
-                    label="Profit Factor"
+                    label="Factor Beneficio"
                     value={results.profitFactor === Infinity ? "∞" : (results.profitFactor?.toFixed(2) || "-")}
                     positive={(results.profitFactor ?? 0) >= 1.5}
                     warning={(results.profitFactor ?? 0) >= 1 && (results.profitFactor ?? 0) < 1.5}
                     icon={<Scale className="w-3.5 h-3.5" />}
                   />
                   <MetricBox
-                    label="Max Drawdown"
+                    label="Caída Máxima"
                     value={`${results.maxDrawdownPercent?.toFixed(1)}%`}
                     positive={results.maxDrawdownPercent < 15}
                     warning={results.maxDrawdownPercent >= 15 && results.maxDrawdownPercent < 25}
@@ -982,12 +982,12 @@ export default function BacktesterPage() {
                 {/* Segunda fila de métricas - 3 cols mobile, 5 cols desktop */}
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                   <MetricBox
-                    label="Total Pips"
+                    label="Pips Totales"
                     value={`${results.totalProfitPips >= 0 ? "+" : ""}${results.totalProfitPips?.toFixed(1)}`}
                     positive={results.totalProfitPips >= 0}
                   />
                   <MetricBox
-                    label="Trades"
+                    label="Operaciones"
                     value={results.totalTrades?.toString()}
                     subtitle={results.avgWin ? `Avg: €${results.avgWin.toFixed(0)}` : undefined}
                   />
@@ -997,7 +997,7 @@ export default function BacktesterPage() {
                     positive={(results.sharpeRatio ?? 0) >= 1}
                   />
                   <MetricBox
-                    label="Expectancy"
+                    label="Expectativa"
                     value={`€${results.expectancy?.toFixed(2) || "0.00"}`}
                     positive={(results.expectancy ?? 0) >= 0}
                   />
@@ -1051,7 +1051,7 @@ export default function BacktesterPage() {
                       <div className="flex items-center gap-2">
                         <BarChart3 className="w-4 h-4 text-blue-400" />
                         <span className="text-sm font-semibold text-white">
-                          Chart de Velas con Trades
+                          Gráfico de Velas con Operaciones
                         </span>
                         <span className="text-xs text-gray-400">
                           ({results.tradeDetails.length} trades)
@@ -1086,11 +1086,11 @@ export default function BacktesterPage() {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-[13px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        Historial de Trades
+                        Historial de Operaciones
                       </h4>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded hidden sm:inline">
-                          Click para ver gráfico
+                          Toca para ver gráfico
                         </span>
                         <span className="text-[10px] font-mono text-muted-foreground">
                           {results.tradeDetails.filter((t: any) => t.totalProfit >= 0).length}W / {results.tradeDetails.filter((t: any) => t.totalProfit < 0).length}L
@@ -1104,9 +1104,9 @@ export default function BacktesterPage() {
                           <tr>
                             <th className="text-left p-1.5 sm:p-2 font-medium">#</th>
                             <th className="text-left p-1.5 sm:p-2 font-medium">Fecha</th>
-                            <th className="text-left p-1.5 sm:p-2 font-medium">Side</th>
-                            <th className="text-right p-1.5 sm:p-2 font-medium">Entry</th>
-                            <th className="text-right p-1.5 sm:p-2 font-medium hidden sm:table-cell">Exit</th>
+                            <th className="text-left p-1.5 sm:p-2 font-medium">Dir.</th>
+                            <th className="text-right p-1.5 sm:p-2 font-medium">Entrada</th>
+                            <th className="text-right p-1.5 sm:p-2 font-medium hidden sm:table-cell">Salida</th>
                             <th className="text-center p-1.5 sm:p-2 font-medium hidden sm:table-cell">Lvls</th>
                             <th className="text-right p-1.5 sm:p-2 font-medium">Pips</th>
                             <th className="text-right p-1.5 sm:p-2 font-medium font-bold">P&L</th>
@@ -1199,8 +1199,8 @@ export default function BacktesterPage() {
                                 : "text-red-400"
                             }`}>
                               {results.tradeDetails[selectedTradeIndex].signalSide === "BUY"
-                                ? <><ChevronUp className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> LONG</>
-                                : <><ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> SHORT</>
+                                ? <><ChevronUp className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> LARGO</>
+                                : <><ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> CORTO</>
                               }
                             </span>
                             <span className={`text-[11px] sm:text-xs font-bold font-mono ${
@@ -1249,25 +1249,25 @@ export default function BacktesterPage() {
                 {results.tradeDetails && results.tradeDetails.length > 0 && (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2 sm:p-2 bg-muted/20 rounded-lg border border-border/30">
                     <div className="text-center">
-                      <div className="text-[10px] sm:text-[10px] text-muted-foreground uppercase">Mejor Trade</div>
+                      <div className="text-[10px] sm:text-[10px] text-muted-foreground uppercase">Mejor Op.</div>
                       <div className="text-[13px] sm:text-sm font-bold text-green-500 font-mono">
                         +{Math.max(...results.tradeDetails.map((t: any) => t.totalProfit || 0)).toFixed(2)}€
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-[10px] sm:text-[10px] text-muted-foreground uppercase">Peor Trade</div>
+                      <div className="text-[10px] sm:text-[10px] text-muted-foreground uppercase">Peor Op.</div>
                       <div className="text-[13px] sm:text-sm font-bold text-red-500 font-mono">
                         {Math.min(...results.tradeDetails.map((t: any) => t.totalProfit || 0)).toFixed(2)}€
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-[10px] sm:text-[10px] text-muted-foreground uppercase">Racha Max W</div>
+                      <div className="text-[10px] sm:text-[10px] text-muted-foreground uppercase">Racha G</div>
                       <div className="text-[13px] sm:text-sm font-bold text-green-500 font-mono">
                         {results.maxConsecutiveWins || 0}
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-[10px] sm:text-[10px] text-muted-foreground uppercase">Racha Max L</div>
+                      <div className="text-[10px] sm:text-[10px] text-muted-foreground uppercase">Racha P</div>
                       <div className="text-[13px] sm:text-sm font-bold text-red-500 font-mono">
                         {results.maxConsecutiveLosses || 0}
                       </div>
@@ -1459,7 +1459,7 @@ export default function BacktesterPage() {
                   <tr className="border-b border-border/50">
                     <th className="text-left p-2 font-medium text-muted-foreground">#</th>
                     <th className="text-left p-2 font-medium text-muted-foreground">Config</th>
-                    <th className="text-right p-2 font-medium text-muted-foreground">Profit</th>
+                    <th className="text-right p-2 font-medium text-muted-foreground">Beneficio</th>
                     <th className="text-right p-2 font-medium text-muted-foreground">WR%</th>
                     <th className="text-right p-2 font-medium text-muted-foreground">Sharpe</th>
                     <th className="text-center p-2 font-medium text-muted-foreground">Acción</th>
