@@ -691,24 +691,24 @@ export default function BacktesterPage() {
               </button>
               <div className={`space-y-3 ${expandedSections.ejecucion ? 'block' : 'hidden sm:block'}`}>
             {/* Lot Size + Capital */}
-            <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg border border-border/30 bg-muted/10">
+            <div className="grid grid-cols-2 gap-2 p-3 rounded-lg border border-blue-500/20 bg-gradient-to-r from-blue-500/5 to-blue-500/10">
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground font-medium">Tamaño Lote</Label>
+                <Label className="text-xs text-blue-600 dark:text-blue-400 font-medium">Tamaño Lote</Label>
                 <Input
                   type="number"
                   step="0.01"
                   min="0.01"
                   max="1.0"
-                  className="h-10 text-sm font-mono min-h-[44px]"
+                  className="h-10 text-sm font-mono min-h-[44px] border-blue-500/30 focus:border-blue-500"
                   value={config.lotajeBase}
                   onChange={(e) => updateConfig("lotajeBase", parseFloat(e.target.value) || 0.1)}
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Capital €</Label>
+                <Label className="text-xs text-blue-600 dark:text-blue-400 font-medium">Capital €</Label>
                 <Input
                   type="number"
-                  className="h-10 text-sm font-mono min-h-[44px]"
+                  className="h-10 text-sm font-mono min-h-[44px] border-blue-500/30 focus:border-blue-500"
                   value={config.initialCapital}
                   onChange={(e) => updateConfig("initialCapital", parseFloat(e.target.value) || 10000)}
                 />
@@ -716,11 +716,11 @@ export default function BacktesterPage() {
             </div>
 
             {/* Filtros */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2.5 rounded-lg border border-border/30 bg-muted/10">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 rounded-lg border border-amber-500/20 bg-gradient-to-r from-amber-500/5 to-amber-500/10">
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Sesión</Label>
+                <Label className="text-xs text-amber-600 dark:text-amber-400 font-medium">Sesión</Label>
                 <select
-                  className="w-full px-2.5 py-2.5 text-xs border rounded-lg bg-background/50 hover:bg-background transition-colors min-h-[44px]"
+                  className="w-full px-2.5 py-2.5 text-xs border border-amber-500/30 rounded-lg bg-background/50 hover:bg-background transition-colors min-h-[44px] focus:border-amber-500"
                   value={config.filters?.session || ""}
                   onChange={(e) => updateConfig("filters", { ...config.filters, session: e.target.value as any || undefined })}
                 >
@@ -731,9 +731,9 @@ export default function BacktesterPage() {
                 </select>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Dirección</Label>
+                <Label className="text-xs text-amber-600 dark:text-amber-400 font-medium">Dirección</Label>
                 <select
-                  className="w-full px-2.5 py-2.5 text-xs border rounded-lg bg-background/50 hover:bg-background transition-colors min-h-[44px]"
+                  className="w-full px-2.5 py-2.5 text-xs border border-amber-500/30 rounded-lg bg-background/50 hover:bg-background transition-colors min-h-[44px] focus:border-amber-500"
                   value={config.filters?.side || ""}
                   onChange={(e) => updateConfig("filters", { ...config.filters, side: e.target.value as any || undefined })}
                 >
@@ -743,11 +743,11 @@ export default function BacktesterPage() {
                 </select>
               </div>
               <div className="space-y-1 col-span-2 sm:col-span-1">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Límite</Label>
+                <Label className="text-xs text-amber-600 dark:text-amber-400 font-medium">Límite</Label>
                 <Input
                   type="number"
                   min="1"
-                  className="h-11 text-xs font-mono bg-background/50 hover:bg-background transition-colors min-h-[44px]"
+                  className="h-11 text-xs font-mono bg-background/50 hover:bg-background transition-colors min-h-[44px] border-amber-500/30 focus:border-amber-500"
                   value={signalLimit}
                   onChange={(e) => setSignalLimit(parseInt(e.target.value) || 0)}
                 />
