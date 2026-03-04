@@ -188,7 +188,15 @@ export default function BacktesterPage() {
 
   // Gráfico
   const [selectedTradeIndex, setSelectedTradeIndex] = useState<number | null>(null);
-  const [showEnhancedChart, setShowEnhancedChart] = useState(true);
+  const [showEnhancedChart, setShowEnhancedChartState] = useState(false); // false inicial, useEffect ajusta
+
+  // Toggle chart con persistencia en localStorage
+  const setShowEnhancedChart = (value: boolean) => {
+    setShowEnhancedChartState(value);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("backtester-chart-expanded", String(value));
+    }
+  };
 
   // Secciones colapsables en mobile
   const [expandedSections, setExpandedSections] = useState({
@@ -208,6 +216,20 @@ export default function BacktesterPage() {
       const saved = localStorage.getItem("backtest-saved-results");
       if (saved) {
         try { setSavedResults(JSON.parse(saved)); } catch (e) {}
+      }
+    }
+  }, []);
+
+  // Inicializar estado del chart según pantalla y preferencia guardada
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("backtester-chart-expanded");
+      if (stored !== null) {
+        setShowEnhancedChartState(stored === "true");
+      } else {
+        // Sin preferencia guardada: colapsado en móvil, expandido en desktop
+        const isMobile = window.innerWidth < 768;
+        setShowEnhancedChartState(!isMobile);
       }
     }
   }, []);
