@@ -178,7 +178,7 @@ export function CandleChartCanvas({
   const visibleStart = Math.max(0, visibleEnd - visibleCandlesCount);
   const visibleCandles = candles.slice(visibleStart, visibleEnd);
 
-  // Price range calculation
+  // Price range calculation — fit to visible candles only, with minimum spread
   const priceRange = useMemo(() => {
     if (visibleCandles.length === 0) return { min: 0, max: 1, center: 0.5 };
 
@@ -189,22 +189,27 @@ export function CandleChartCanvas({
       max = Math.max(max, c.high);
     }
 
-    // Ensure minimum visible spread (at least 0.5% of price)
-    const minSpread = Math.max((max + min) / 2 * 0.005, 1);
+    // If no valid prices, return default
+    if (!isFinite(min) || !isFinite(max)) return { min: 0, max: 1, center: 0.5 };
+
+    // Ensure minimum visible spread (at least 0.3% of price)
+    const center = (max + min) / 2;
+    const minSpread = Math.max(center * 0.003, 5);
     const rawSpread = max - min;
     if (rawSpread < minSpread) {
-      const center = (max + min) / 2;
       min = center - minSpread / 2;
       max = center + minSpread / 2;
     }
-    const padding = (max - min) * 0.15 || 1;
+
+    // Add 10% padding on each side
+    const spread = max - min;
+    const padding = spread * 0.1;
     min -= padding;
     max += padding;
-    const center = (min + max) / 2;
 
+    // Apply manual Y scale if user has zoomed
     if (!isAutoFitY) {
-      // Apply manual Y scale
-      const halfRange = ((max - min) / 2) * scaleY;
+      const halfRange = (spread / 2) * scaleY;
       return { min: center - halfRange, max: center + halfRange, center };
     }
 
