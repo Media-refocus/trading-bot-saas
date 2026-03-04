@@ -1102,14 +1102,14 @@ export default function BacktesterPage() {
                       <table className="w-full text-[13px] sm:text-xs min-w-[420px] sm:min-w-[600px]">
                         <thead className="sticky top-0 bg-gradient-to-r from-muted to-muted/80 z-10">
                           <tr>
-                            <th className="text-left p-1.5 sm:p-2 font-medium">#</th>
+                            <th className="text-left p-1.5 sm:p-2 font-medium sticky left-0 bg-gradient-to-r from-muted to-muted/95 sm:static sm:bg-transparent z-20">#</th>
                             <th className="text-left p-1.5 sm:p-2 font-medium">Fecha</th>
                             <th className="text-left p-1.5 sm:p-2 font-medium">Dir.</th>
                             <th className="text-right p-1.5 sm:p-2 font-medium">Entrada</th>
                             <th className="text-right p-1.5 sm:p-2 font-medium hidden sm:table-cell">Salida</th>
                             <th className="text-center p-1.5 sm:p-2 font-medium hidden sm:table-cell">Lvls</th>
                             <th className="text-right p-1.5 sm:p-2 font-medium">Pips</th>
-                            <th className="text-right p-1.5 sm:p-2 font-medium font-bold">P&L</th>
+                            <th className="text-right p-1.5 sm:p-2 font-medium font-bold sticky right-0 bg-gradient-to-l from-muted to-muted/95 sm:static sm:bg-transparent z-20">P&L</th>
                             <th className="text-center p-1.5 sm:p-2 font-medium hidden sm:table-cell">Close</th>
                           </tr>
                         </thead>
@@ -1126,7 +1126,7 @@ export default function BacktesterPage() {
                                     : "bg-red-500/5 hover:bg-red-500/10"
                               }`}
                             >
-                              <td className="p-2 font-mono text-muted-foreground">{i + 1}</td>
+                              <td className="p-2 font-mono text-muted-foreground sticky left-0 bg-background sm:static z-10">{i + 1}</td>
                               <td className="p-2">
                                 <div className="flex flex-col">
                                   <span className="font-mono">{new Date(trade.signalTimestamp).toLocaleDateString()}</span>
@@ -1158,7 +1158,7 @@ export default function BacktesterPage() {
                               }`}>
                                 {trade.totalProfitPips >= 0 ? "+" : ""}{trade.totalProfitPips?.toFixed(1)}
                               </td>
-                              <td className={`p-2 text-right font-mono font-bold ${
+                              <td className={`p-2 text-right font-mono font-bold sticky right-0 bg-background sm:static z-10 ${
                                 trade.totalProfit >= 0 ? "text-green-600" : "text-red-600"
                               }`}>
                                 {trade.totalProfit >= 0 ? "+" : ""}{trade.totalProfit?.toFixed(2)}€
