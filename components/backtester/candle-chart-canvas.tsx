@@ -178,34 +178,34 @@ export function CandleChartCanvas({
   const visibleStart = Math.max(0, visibleEnd - visibleCandlesCount);
   const visibleCandles = candles.slice(visibleStart, visibleEnd);
 
-  // Price range — use median-based approach to exclude outlier candles
+  // Price range — IQR-based to handle synthetic candle outliers
   const priceRange = useMemo(() => {
     if (visibleCandles.length === 0) return { min: 0, max: 1, center: 0.5 };
 
-    // Collect all close prices to find median
-    const closes = visibleCandles.map(c => c.close).filter(p => isFinite(p) && p > 0).sort((a, b) => a - b);
-    if (closes.length === 0) return { min: 0, max: 1, center: 0.5 };
-
-    const median = closes[Math.floor(closes.length / 2)];
-    // Allow 5% deviation from median for valid candles
-    const tolerance = median * 0.05;
-    const validLow = median - tolerance;
-    const validHigh = median + tolerance;
-
-    let min = Infinity;
-    let max = -Infinity;
+    // Collect ALL price points (open, high, low, close) that are positive
+    const allPrices: number[] = [];
     for (const c of visibleCandles) {
-      // Only include candles within reasonable range of median
-      if (c.close < validLow || c.close > validHigh) continue;
-      if (c.low > 0 && isFinite(c.low)) min = Math.min(min, c.low);
-      if (c.high > 0 && isFinite(c.high)) max = Math.max(max, c.high);
+      if (c.open > 0 && isFinite(c.open)) allPrices.push(c.open);
+      if (c.close > 0 && isFinite(c.close)) allPrices.push(c.close);
+      if (c.high > 0 && isFinite(c.high)) allPrices.push(c.high);
+      if (c.low > 0 && isFinite(c.low)) allPrices.push(c.low);
     }
 
-    // Fallback: if filtering excluded everything, use median +/- 1%
-    if (!isFinite(min) || !isFinite(max)) {
-      min = median * 0.99;
-      max = median * 1.01;
-    }
+    if (allPrices.length === 0) return { min: 0, max: 1, center: 0.5 };
+
+    // Sort and compute IQR
+    allPrices.sort((a, b) => a - b);
+    const q1 = allPrices[Math.floor(allPrices.length * 0.25)];
+    const q3 = allPrices[Math.floor(allPrices.length * 0.75)];
+    const iqr = q3 - q1;
+    const lowerFence = q1 - 1.5 * iqr;
+    const upperFence = q3 + 1.5 * iqr;
+
+    // Filter to only inlier prices
+    const inliers = allPrices.filter(p => p >= lowerFence && p <= upperFence);
+
+    let min = inliers.length > 0 ? inliers[0] : allPrices[0];
+    let max = inliers.length > 0 ? inliers[inliers.length - 1] : allPrices[allPrices.length - 1];
 
     // Ensure minimum visible spread
     const center = (max + min) / 2;
@@ -221,7 +221,7 @@ export function CandleChartCanvas({
     min -= padding;
     max += padding;
 
-    // Apply manual Y scale if user has zoomed
+    // Manual Y zoom
     if (!isAutoFitY) {
       const halfRange = (spread / 2) * scaleY;
       return { min: center - halfRange, max: center + halfRange, center };
