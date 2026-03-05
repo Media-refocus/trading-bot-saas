@@ -1,124 +1,66 @@
 # Trading Bot SaaS — CLAUDE.md
 
-## Project Overview
-SaaS multi-tenant que automatiza señales de trading XAUUSD desde Telegram → MetaTrader 5.
-Incluye backtester web, bot de operativa, provisioning de VPS, y dashboard.
+> SaaS multi-tenant: señales XAUUSD desde Telegram → MetaTrader 5. Backtester web, bot operativa, provisioning VPS, dashboard.
+
+## Árbol de decisión
+- Arquitectura / cambios de schema DB → consultar agent `trading-architect` PRIMERO
+- Feature backend (tRPC, Prisma, API) → agent `trading-backend`
+- Feature frontend (UI, charts, dashboard) → agent `trading-frontend`
+- Infra / provisioning / deploy → agent `trading-devops`
+- Review de seguridad o QA → agent `trading-qa` (SIEMPRE al final)
+- Estado del proyecto → `tasks/todo.md`
+- Lecciones aprendidas → `tasks/lessons.md`
 
 ## Stack
 - **Frontend:** Next.js 15 + TypeScript + Tailwind + shadcn/ui + lightweight-charts
 - **Backend:** tRPC v11 + Next.js API Routes + Prisma ORM
 - **DB:** SQLite (multi-tenant con tenantId)
-- **Auth:** NextAuth.js v5 beta
-- **Payments:** Stripe
-- **Bot:** Python (VPS Windows cliente, conecta via API REST)
+- **Auth:** NextAuth.js v5 beta | **Payments:** Stripe
+- **Bot:** Python (VPS Windows, conecta via API REST)
 
 ## Agent Team
 
-| Agent | Role | When to invoke |
+| Agent | Role | Cuándo invocar |
 |-------|------|----------------|
-| `trading-architect` | Arquitectura, schema DB, decisiones de diseño | Antes de cambios estructurales |
-| `trading-backend` | tRPC routers, Prisma, API, bot integration | Features de backend |
-| `trading-frontend` | Dashboard, UI, charts, componentes | Features de frontend |
-| `trading-devops` | Provisioning, scripts, deploy, monitoring | Infra y deploy |
-| `trading-qa` | Tests, security audit, code review, trading logic | Después de cada feature |
+| `trading-architect` | Arquitectura, schema DB | Antes de cambios estructurales |
+| `trading-backend` | tRPC, Prisma, API, bot | Features backend |
+| `trading-frontend` | Dashboard, UI, charts | Features frontend |
+| `trading-devops` | Provisioning, deploy, monitoring | Infra y deploy |
+| `trading-qa` | Tests, security, code review | SIEMPRE al final de cada feature |
 
-### Team workflow
-1. **Architect** diseña el approach y schema
-2. **Backend** implementa API + DB
-3. **Frontend** implementa UI
-4. **DevOps** si toca infra/provisioning
-5. **QA** revisa SIEMPRE al final — security + correctness + edge cases
-
-### Critical rule for QA
-QA agent MUST run after every significant feature. This is a **financial application** — bugs = real money lost.
+**Team workflow:** Architect → Backend → Frontend → DevOps (si aplica) → QA (obligatorio)
 
 ## Project Structure
 ```
 app/(auth)/           — Login, Register
 app/(dashboard)/      — Dashboard, Backtester, Settings, Setup
-app/api/bot/          — Bot REST endpoints (heartbeat, config, signals, status)
+app/api/bot/          — Bot REST endpoints
 app/api/signals/      — Signal ingestion from Telegram
-components/           — UI components (backtester/, ui/)
 lib/                  — Core logic (backtest-engine, ticks-cache, parsers)
-server/api/trpc/      — tRPC server (routers: backtester, auth, tenant, strategies)
+server/api/trpc/      — tRPC routers (backtester, auth, tenant, strategies)
 prisma/               — Schema + migrations
-operative/            — Trading strategies configs + analysis
 provisioning/         — VPS setup scripts (Windows + Linux)
-docs/                 — Analysis, historical data, guides
 ```
 
-## Key branches
-- `master` — stable
-- `feature/bot-operativa` — bot Python + provisioning + dashboard updates
-
-## Multi-tenant rules
+## Multi-tenant rules (CRÍTICO)
 - EVERY DB query MUST filter by `tenantId`
 - EVERY API endpoint MUST verify tenant ownership
 - Bot API endpoints validate per-tenant API key
 - Data NEVER leaks between tenants
 
-**Por qué:** Es una app financiera multi-cliente. Un leak de datos entre tenants = pérdida de confianza + problemas legales. Cada cliente debe ver SOLO sus datos.
-
-## Workflow Orchestration (Injected by launch-cc.sh)
-
-### 1. Plan First
-- Tarea >3 pasos → escribe plan en `tasks/todo.md` con checkboxes ANTES de codear
-- Si algo va mal → STOP y re-plan. No seguir empujando
-- Incluye pasos de verificación en el plan, no solo implementación
-- Specs detalladas upfront → menos ambigüedad
-
-**Por qué:** Sin plan, CC tiende a "yak shaving" — arreglar cosas periféricas mientras la tarea principal se olvida. Un plan escrito mantiene el foco y permite a Guillermo verificar dirección antes de gastar tokens.
-
-### 2. Self-Improvement Loop
-- Después de CUALQUIER corrección → actualiza `tasks/lessons.md` con el patrón
-- Escribe reglas que prevengan el mismo error
-- Revisa lessons.md al inicio de cada sesión
-- Itera hasta que la tasa de errores baje
-
-**Por qué:** Los mismos errores se repiten si no se documentan. Lessons.md convierte bugs en reglas preventivas.
-
-### 3. Verification Before Done
-- NUNCA marcar tarea como completada sin demostrar que funciona
-- Diff entre comportamiento esperado vs actual
-- Pregúntate: "¿Un staff engineer aprobaría esto?"
-- Ejecuta tests, revisa logs, demuestra que es correcto
-
-**Por qué:** Es una app financiera — bugs = dinero real perdido para clientes. "Parece que funciona" no es suficiente. Verificar antes de done evita retrabajo y frustración.
-
-### 4. Demand Elegance (Balanced)
-- Para cambios no triviales: "¿hay una forma más elegante?"
-- Si el fix es hacky y sabes la solución limpia → implementa la limpia
-- Para fixes simples/obvios → no sobre-ingeniear
-
-### 5. Autonomous Bug Fixing
-- Si ves un bug → arréglalo directamente. No pidas permiso
-- Apunta a logs, errores, tests que fallan → resuélvelos
-- Zero context switching para el usuario
-
-**Por qué:** Guillermo delega para no micro-gestionar. Pedir permiso para cada bug rompe el flujo. Si ves el problema, tienes el contexto — arréglalo.
-
-### 6. Task Management
-1. **Plan First**: Escribe plan en `tasks/todo.md` con items checkeables
-2. **Verify Plan**: Revísalo antes de empezar
-3. **Track Progress**: Marca items como completados según avanzas
-4. **Explain Changes**: Resumen de alto nivel en cada paso
-5. **Document Results**: Añade sección de review en `tasks/todo.md`
-6. **Capture Lessons**: Actualiza `tasks/lessons.md` después de correcciones
-
 ## Agent Coordination
-- Cada agente tiene file ownership definido en su .md
-- Shared dirs (lib/): el que llega primero documenta en MEMORY.md qué está tocando
+- Pre-flight OBLIGATORIO: leer `SESSION_CONTEXT.md` + `MEMORY.md` antes de actuar
+- Shared dirs (lib/): documentar en MEMORY.md qué estás tocando
 - Conflictos: architect decide prioridad
-- Pre-flight: OBLIGATORIO — leer SESSION_CONTEXT.md + MEMORY.md antes de actuar
-
-### Core Principles
-- **Simplicity First**: Cada cambio lo más simple posible. Impacto mínimo
-- **No Laziness**: Busca root causes. No fixes temporales. Estándares de senior dev
-- **Minimal Impact**: Solo toca lo necesario. Evita introducir bugs
 
 ## Commit Rules
-- **NUNCA hacer commit parcial sin terminar la tarea.** Si quedan errores, investiga la causa raíz antes de commit.
-- Si el problema es más grande de lo esperado → PARA y pregunta antes de seguir.
-- Ejemplo: Si arreglas author→authorId pero hay 179 errores de schema → NO commits parciales. Arregla el schema primero.
+- NUNCA commit parcial sin terminar la tarea — arregla el root cause antes
+- Si el problema es mayor de lo esperado → PARA y pregunta
 
-**Por qué:** Commits parciales dejan el repo en estado roto. Guillermo espera que CC complete tareas, no que las deje a medias.
+## 🔴 NUNCA (app financiera — bugs = dinero real perdido)
+- NUNCA omitir filtro `tenantId` en queries DB → data leak entre tenants
+- NUNCA exponer API keys o tenantId en logs de producción
+- NUNCA commit con tests en rojo
+- NUNCA saltarse QA agent en features que tocan señales/trades
+- NUNCA borrar datos de producción sin backup verificado
+- NUNCA deploy directo a `master` sin feature branch

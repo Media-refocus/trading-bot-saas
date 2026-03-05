@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,10 +22,12 @@ import {
   Send,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 export default function OperativaDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const strategyId = params.id as string;
 
   const [comment, setComment] = useState("");
@@ -135,6 +138,9 @@ export default function OperativaDetailPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb items={[{ label: "Operativas", href: "/operativas" }, { label: "Detalle" }]} />
+
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/operativas">
@@ -145,7 +151,7 @@ export default function OperativaDetailPage() {
         <div className="flex-1">
           <h1 className="text-3xl font-bold">{strategy.name}</h1>
           <p className="text-muted-foreground mt-1">
-            por {"Usuario"} - Publicado el {formatDate(strategy.publishedAt)}
+            por {session?.user?.name ?? "Usuario"} - Publicado el {formatDate(strategy.publishedAt)}
           </p>
         </div>
         <div className="flex items-center gap-2">

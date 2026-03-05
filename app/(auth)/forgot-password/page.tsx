@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowLeft, Mail, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Mail, CheckCircle2, Info } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -27,9 +27,18 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Implementar endpoint de recuperación con email real
-      // Por ahora mostramos mensaje genérico de éxito
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.error || "Error al enviar el email. Intenta nuevamente.");
+        return;
+      }
+
       setSent(true);
     } catch {
       setError("Error al enviar el email. Intenta nuevamente.");
@@ -99,11 +108,11 @@ export default function ForgotPasswordPage() {
               className="bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus-visible:ring-blue-500 h-11"
             />
           </div>
-          {/* Disclaimer de funcionalidad en desarrollo */}
-          <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-            <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-200">
-              Funcionalidad en desarrollo. Si necesitas restablecer tu contraseña, contacta a soporte.
+          {/* Info sobre el proceso */}
+          <div className="flex items-start gap-2 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+            <Info className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-200">
+              Recibirás un enlace para restablecer tu contraseña. El enlace expira en 1 hora.
             </p>
           </div>
         </CardContent>

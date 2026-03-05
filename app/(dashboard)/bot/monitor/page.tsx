@@ -44,6 +44,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 // ==================== TYPES ====================
 
@@ -275,6 +276,9 @@ export default function BotMonitorPage() {
 
   return (
     <div className="space-y-6 pb-8 md:pb-0">
+      {/* Breadcrumb */}
+      <Breadcrumb items={[{ label: "Bot", href: "/bot" }, { label: "Monitor" }]} />
+
       {/* Header */}
       <div className="flex flex-col gap-4">
         {/* Title row */}

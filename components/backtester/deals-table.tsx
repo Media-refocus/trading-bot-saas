@@ -102,19 +102,19 @@ export function DealsTable({
 // Vista de Deals individuales (estilo MT5)
 function DealsView({ deals }: { deals: Deal[] }) {
   return (
-    <table className="w-full text-xs">
+    <table className="w-full text-xs" aria-label="Tabla de operaciones individuales">
       <thead className="bg-[#2D2D2D] sticky top-0">
         <tr>
-          <th className="text-left py-2 px-3 text-[#888888]">#</th>
-          <th className="text-left py-2 px-3 text-[#888888]">Time</th>
-          <th className="text-left py-2 px-3 text-[#888888]">Type</th>
-          <th className="text-left py-2 px-3 text-[#888888]">Order</th>
-          <th className="text-right py-2 px-3 text-[#888888]">Volume</th>
-          <th className="text-right py-2 px-3 text-[#888888]">Price</th>
-          <th className="text-right py-2 px-3 text-[#888888]">S/L</th>
-          <th className="text-right py-2 px-3 text-[#888888]">T/P</th>
-          <th className="text-right py-2 px-3 text-[#888888]">Profit</th>
-          <th className="text-right py-2 px-3 text-[#888888]">Balance</th>
+          <th scope="col" className="text-left py-2 px-3 text-[#888888]">#</th>
+          <th scope="col" className="text-left py-2 px-3 text-[#888888]">Time</th>
+          <th scope="col" className="text-left py-2 px-3 text-[#888888]">Type</th>
+          <th scope="col" className="text-left py-2 px-3 text-[#888888]">Order</th>
+          <th scope="col" className="text-right py-2 px-3 text-[#888888]">Volume</th>
+          <th scope="col" className="text-right py-2 px-3 text-[#888888]">Price</th>
+          <th scope="col" className="text-right py-2 px-3 text-[#888888]">S/L</th>
+          <th scope="col" className="text-right py-2 px-3 text-[#888888]">T/P</th>
+          <th scope="col" className="text-right py-2 px-3 text-[#888888]">Profit</th>
+          <th scope="col" className="text-right py-2 px-3 text-[#888888]">Balance</th>
         </tr>
       </thead>
       <tbody>
@@ -176,18 +176,18 @@ function TradesView({
   selectedTradeIndex: number | null;
 }) {
   return (
-    <table className="w-full text-xs">
+    <table className="w-full text-xs" aria-label="Tabla de trades agrupados">
       <thead className="bg-[#2D2D2D] sticky top-0">
         <tr>
-          <th className="text-left py-2 px-3 text-[#888888]">#</th>
-          <th className="text-left py-2 px-3 text-[#888888]">Date</th>
-          <th className="text-left py-2 px-3 text-[#888888]">Side</th>
-          <th className="text-right py-2 px-3 text-[#888888]">Entry</th>
-          <th className="text-right py-2 px-3 text-[#888888]">Exit</th>
-          <th className="text-right py-2 px-3 text-[#888888]">Levels</th>
-          <th className="text-right py-2 px-3 text-[#888888]">Pips</th>
-          <th className="text-right py-2 px-3 text-[#888888]">Profit</th>
-          <th className="text-left py-2 px-3 text-[#888888]">Close</th>
+          <th scope="col" className="text-left py-2 px-3 text-[#888888]">#</th>
+          <th scope="col" className="text-left py-2 px-3 text-[#888888]">Date</th>
+          <th scope="col" className="text-left py-2 px-3 text-[#888888]">Side</th>
+          <th scope="col" className="text-right py-2 px-3 text-[#888888]">Entry</th>
+          <th scope="col" className="text-right py-2 px-3 text-[#888888]">Exit</th>
+          <th scope="col" className="text-right py-2 px-3 text-[#888888]">Levels</th>
+          <th scope="col" className="text-right py-2 px-3 text-[#888888]">Pips</th>
+          <th scope="col" className="text-right py-2 px-3 text-[#888888]">Profit</th>
+          <th scope="col" className="text-left py-2 px-3 text-[#888888]">Close</th>
         </tr>
       </thead>
       <tbody>
@@ -195,6 +195,9 @@ function TradesView({
           <tr
             key={i}
             onClick={() => onSelectTrade(i)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelectTrade(i); }}
+            role="button"
+            tabIndex={0}
             className={cn(
               "border-b border-[#333333] cursor-pointer transition-colors",
               selectedTradeIndex === i

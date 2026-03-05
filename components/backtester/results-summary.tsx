@@ -120,7 +120,7 @@ export function ResultsSummary({ results }: ResultsSummaryProps) {
   return (
     <div className="p-4 space-y-1">
       {/* Header con métricas principales */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-4">
         <div className="bg-[#252526] p-4 rounded border border-[#3C3C3C] text-center">
           <div className="text-xs text-[#888888] mb-1">Initial Capital</div>
           <div className="text-xl font-bold font-mono">

@@ -47,15 +47,16 @@ export function SettingsPanel({
 }: SettingsPanelProps) {
   return (
     <div className="p-4 space-y-6">
-      {/* Grid Layout - 3 columnas */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Grid Layout - responsive */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {/* Columna 1: Fuente y Período */}
         <div className="space-y-4">
           <SectionTitle>Fuente de Datos</SectionTitle>
 
           {/* Signal Source */}
-          <InputGroup label="Signal Source">
+          <InputGroup label="Signal Source" id="signal-source">
             <select
+              id="signal-source"
               className="mt5-select"
               value={config.signalsSource}
               onChange={(e) => onUpdateConfig("signalsSource", e.target.value)}
@@ -87,8 +88,9 @@ export function SettingsPanel({
           )}
 
           {/* Signal Limit */}
-          <InputGroup label="Signals to Test">
+          <InputGroup label="Signals to Test" id="signal-limit">
             <input
+              id="signal-limit"
               type="number"
               className="mt5-input"
               min={1}
@@ -104,8 +106,9 @@ export function SettingsPanel({
           <SectionTitle>Grid Parameters</SectionTitle>
 
           <div className="grid grid-cols-2 gap-2">
-            <InputGroup label="Pips Distance">
+            <InputGroup label="Pips Distance" id="pips-distance">
               <input
+                id="pips-distance"
                 type="number"
                 className="mt5-input"
                 min={1}
@@ -115,8 +118,9 @@ export function SettingsPanel({
               />
             </InputGroup>
 
-            <InputGroup label="Max Levels">
+            <InputGroup label="Max Levels" id="max-levels">
               <input
+                id="max-levels"
                 type="number"
                 className="mt5-input"
                 min={1}
@@ -128,8 +132,9 @@ export function SettingsPanel({
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <InputGroup label="Take Profit (pips)">
+            <InputGroup label="Take Profit (pips)" id="take-profit">
               <input
+                id="take-profit"
                 type="number"
                 className="mt5-input"
                 min={5}
@@ -139,8 +144,9 @@ export function SettingsPanel({
               />
             </InputGroup>
 
-            <InputGroup label="Lot Size">
+            <InputGroup label="Lot Size" id="lot-size">
               <input
+                id="lot-size"
                 type="number"
                 className="mt5-input"
                 step="0.01"
@@ -154,8 +160,9 @@ export function SettingsPanel({
 
           {/* Trailing SL */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <label htmlFor="trailing-sl" className="flex items-center gap-2 text-sm cursor-pointer">
               <input
+                id="trailing-sl"
                 type="checkbox"
                 checked={config.useTrailingSL}
                 onChange={(e) => onUpdateConfig("useTrailingSL", e.target.checked)}
@@ -164,8 +171,9 @@ export function SettingsPanel({
               <span>Trailing Stop Loss</span>
             </label>
             {config.useTrailingSL && (
-              <InputGroup label="Trail Distance (% of TP)">
+              <InputGroup label="Trail Distance (% of TP)" id="trail-distance">
                 <input
+                  id="trail-distance"
                   type="number"
                   className="mt5-input"
                   min={10}
@@ -182,8 +190,9 @@ export function SettingsPanel({
         <div className="space-y-4">
           <SectionTitle>Capital & Filters</SectionTitle>
 
-          <InputGroup label="Initial Capital (€)">
+          <InputGroup label="Initial Capital (€)" id="initial-capital">
             <input
+              id="initial-capital"
               type="number"
               className="mt5-input"
               step="100"
@@ -195,8 +204,9 @@ export function SettingsPanel({
           </InputGroup>
 
           {/* Session Filter */}
-          <InputGroup label="Session">
+          <InputGroup label="Session" id="session">
             <select
+              id="session"
               className="mt5-select"
               value={config.filters?.session || ""}
               onChange={(e) =>
@@ -214,8 +224,9 @@ export function SettingsPanel({
           </InputGroup>
 
           {/* Side Filter */}
-          <InputGroup label="Direction">
+          <InputGroup label="Direction" id="direction">
             <select
+              id="direction"
               className="mt5-select"
               value={config.filters?.side || ""}
               onChange={(e) =>
@@ -270,8 +281,9 @@ export function SettingsPanel({
       {/* Action Bar */}
       <div className="flex items-center justify-between pt-4 border-t border-[#3C3C3C]">
         <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <label htmlFor="use-real-prices" className="flex items-center gap-2 text-sm cursor-pointer">
             <input
+              id="use-real-prices"
               type="checkbox"
               checked={config.useRealPrices}
               onChange={(e) => onUpdateConfig("useRealPrices", e.target.checked)}
@@ -320,10 +332,10 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-function InputGroup({ label, children }: { label: string; children: React.ReactNode }) {
+function InputGroup({ label, id, children }: { label: string; id?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1">
-      <div className="text-xs text-[#888888]">{label}</div>
+      <label htmlFor={id} className="text-xs text-[#888888]">{label}</label>
       {children}
     </div>
   );

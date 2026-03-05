@@ -10,6 +10,7 @@ import Link from "next/link";
 import { trpc } from "@/lib/trpc";
 import { CheckCircle2, Loader2, MessageCircle, Copy, Check, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { signOut } from "next-auth/react";
 
 export default function SettingsPage() {
   const [name, setName] = useState("");
@@ -202,9 +203,13 @@ export default function SettingsPage() {
             <p className="text-muted-foreground text-[13px] md:text-sm mb-4">
               Para cambiar tu contraseña, cierra sesión y usa la opción "Olvidé mi contraseña" en la pantalla de login.
             </p>
-            <Link href="/login" className="block">
-              <Button variant="outline" className="w-full sm:w-auto min-h-[44px]">Cerrar Sesión</Button>
-            </Link>
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto min-h-[44px]"
+              onClick={() => signOut({ callbackUrl: "/login" })}
+            >
+              Cerrar Sesión
+            </Button>
           </CardContent>
         </Card>
 

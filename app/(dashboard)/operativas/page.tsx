@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,6 +103,7 @@ function formatRelativeDate(date: Date): string {
 }
 
 export default function OperativasPage() {
+  const { data: session } = useSession();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("recent");
   const [selectedStrategy, setSelectedStrategy] = useState<PublishedStrategy | null>(null);
@@ -325,7 +327,7 @@ export default function OperativasPage() {
                   <div>
                     <CardTitle className="text-lg">{strategy.name}</CardTitle>
                     <CardDescription className="flex items-center gap-1 mt-1">
-                      <span>por {"Usuario"}</span>
+                      <span>por {session?.user?.name ?? "Usuario"}</span>
                     </CardDescription>
                   </div>
                   {strategy.totalProfit >= 0 ? (
@@ -627,7 +629,7 @@ export default function OperativasPage() {
                               <CardContent className="p-3">
                                 <div className="font-medium truncate mb-1">{related.name}</div>
                                 <div className="text-sm text-muted-foreground mb-2">
-                                  por {"Usuario"}
+                                  por {session?.user?.name ?? "Usuario"}
                                 </div>
                                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                                   <span className={`font-medium ${related.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>

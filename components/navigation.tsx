@@ -105,7 +105,7 @@ export default function Navigation() {
           )}
         >
           <div className="container mx-auto flex items-center justify-center gap-2 flex-wrap">
-            <AlertTriangle className="h-4 w-4" />
+            <AlertTriangle className="h-4 w-4" aria-hidden="true" />
             {subscription.isPastDue && (
               <>
                 <span className="hidden sm:inline">Pago pendiente. Tu suscripción será cancelada si no se completa el pago.</span>
@@ -156,6 +156,7 @@ export default function Navigation() {
                       isOnline ? "fill-green-500 text-green-500 animate-pulse" :
                       "fill-red-500 text-red-500"
                     )}
+                    aria-hidden="true"
                   />
                   <span className="text-xs text-muted-foreground font-normal hidden sm:inline">
                     {isPaused ? "Pausado" : isOnline ? "Online" : "Offline"}
@@ -182,7 +183,7 @@ export default function Navigation() {
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-4 w-4" aria-hidden="true" />
                     {link.label}
                   </Link>
                 );
@@ -219,13 +220,13 @@ export default function Navigation() {
                     )}
                   >
                     {subscription.isTrial && (
-                      <Clock className="h-3 w-3" />
+                      <Clock className="h-3 w-3" aria-hidden="true" />
                     )}
                     {subscription.isPastDue && (
-                      <AlertTriangle className="h-3 w-3" />
+                      <AlertTriangle className="h-3 w-3" aria-hidden="true" />
                     )}
                     {subscription.isPaused && (
-                      <Zap className="h-3 w-3" />
+                      <Zap className="h-3 w-3" aria-hidden="true" />
                     )}
                     {subscription.planName}
                     {subscription.isTrial && subscription.trialDaysRemaining !== null && subscription.trialDaysRemaining > 0 && (
@@ -240,7 +241,7 @@ export default function Navigation() {
               <NotificationBell />
               <Link href="/bot/monitor">
                 <Button variant="outline" size="sm" className="gap-2">
-                  <Activity className="h-4 w-4" />
+                  <Activity className="h-4 w-4" aria-hidden="true" />
                   Monitor
                 </Button>
               </Link>
@@ -250,7 +251,7 @@ export default function Navigation() {
                 className="gap-2 text-muted-foreground"
                 onClick={handleLogout}
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-4 w-4" aria-hidden="true" />
                 Cerrar Sesion
               </Button>
             </div>
@@ -262,9 +263,9 @@ export default function Navigation() {
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
-                <X className="h-6 w-6" />
+                <X className="h-6 w-6" aria-hidden="true" />
               ) : (
-                <Menu className="h-6 w-6" />
+                <Menu className="h-6 w-6" aria-hidden="true" />
               )}
             </button>
           </div>
@@ -302,7 +303,7 @@ export default function Navigation() {
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5" aria-hidden="true" />
                     {link.label}
                   </Link>
                 );
@@ -333,9 +334,9 @@ export default function Navigation() {
                       subscription.isPaused && "border-red-500/50 text-red-600"
                     )}
                   >
-                    {subscription.isTrial && <Clock className="h-3 w-3" />}
-                    {subscription.isPastDue && <AlertTriangle className="h-3 w-3" />}
-                    {subscription.isPaused && <Zap className="h-3 w-3" />}
+                    {subscription.isTrial && <Clock className="h-3 w-3" aria-hidden="true" />}
+                    {subscription.isPastDue && <AlertTriangle className="h-3 w-3" aria-hidden="true" />}
+                    {subscription.isPaused && <Zap className="h-3 w-3" aria-hidden="true" />}
                     {subscription.planName}
                     {subscription.isTrial && subscription.trialDaysRemaining !== null && subscription.trialDaysRemaining > 0 && (
                       <span className="text-[10px] opacity-80">({subscription.trialDaysRemaining}d)</span>
@@ -349,7 +350,7 @@ export default function Navigation() {
                 href="/bot/monitor"
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition min-h-[48px]"
               >
-                <Activity className="h-5 w-5" />
+                <Activity className="h-5 w-5" aria-hidden="true" />
                 Monitor en vivo
               </Link>
 
@@ -364,7 +365,7 @@ export default function Navigation() {
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors min-h-[48px]"
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-5 w-5" aria-hidden="true" />
                 Cerrar Sesión
               </button>
             </div>

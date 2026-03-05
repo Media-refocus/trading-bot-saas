@@ -129,7 +129,7 @@ export function PeriodSelector({
           onClick={() => setIsPeriodOpen(!isPeriodOpen)}
           disabled={isLoading}
           className={cn(
-            "flex items-center gap-2 px-3 py-1.5 rounded text-sm",
+            "flex items-center gap-2 px-3 py-2 min-h-[44px] rounded text-sm",
             "bg-[#333333] hover:bg-[#444444] transition-colors",
             isLoading && "opacity-50 cursor-wait"
           )}
@@ -191,7 +191,7 @@ export function PeriodSelector({
               disabled={isLoading}
               title={mode.description}
               className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium transition-colors",
+                "flex items-center gap-1.5 px-2.5 py-2 min-h-[44px] rounded text-xs font-medium transition-colors",
                 isSelected
                   ? "bg-[#0078D4] text-white"
                   : "bg-[#333333] text-[#888888] hover:bg-[#444444] hover:text-white",
@@ -255,7 +255,7 @@ export function PeriodSelectorMobile({
               onClick={() => onModeChange(mode.value)}
               disabled={isLoading}
               className={cn(
-                "flex-1 flex flex-col items-center gap-1 px-2 py-2 rounded text-xs",
+                "flex-1 flex flex-col items-center gap-1 px-2 py-2 min-h-[44px] rounded text-xs",
                 isSelected
                   ? "bg-[#0078D4] text-white"
                   : "bg-[#333333] text-[#888888]",
@@ -277,7 +277,7 @@ export function PeriodSelectorMobile({
             onClick={() => onPeriodChange(option.value)}
             disabled={isLoading}
             className={cn(
-              "flex-shrink-0 px-3 py-1 rounded-full text-xs whitespace-nowrap transition-colors",
+              "flex-shrink-0 px-3 py-2 min-h-[44px] rounded-full text-xs whitespace-nowrap transition-colors",
               selectedPeriod === option.value
                 ? "bg-[#0078D4] text-white"
                 : "bg-[#333333] text-[#888888]"
