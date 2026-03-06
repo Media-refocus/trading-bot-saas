@@ -14,6 +14,7 @@ import {
   createRateLimitHeaders,
 } from "@/lib/rate-limit";
 import { checkAndUpdateExpiredTrial } from "@/lib/plan-gates";
+import { decryptCredential } from "@/lib/encryption";
 
 // Cache de bot configs para evitar consultas repetidas
 // TTL: 60 segundos
@@ -149,6 +150,12 @@ export async function authenticateBot(
         };
       }
 
+      // Validar account number MT4/MT5 (opcional — solo si viene header)
+      const mtValidation = await validateMtAccount(request, config.tenantId);
+      if (!mtValidation.valid) {
+        return { success: false, error: mtValidation.error };
+      }
+
       // Guardar en cache
       botConfigCache.set(apiKey, {
         botConfig: botConfigContext,
@@ -180,6 +187,67 @@ export async function getFullBotConfig(botConfigId: string) {
       },
     },
   });
+}
+
+/**
+ * Valida que el número de cuenta MT4/MT5 del request coincida
+ * con algún BotAccount registrado para el tenant.
+ *
+ * La validación es OPCIONAL: si el header X-MT-Account no está presente
+ * (bots MT5 existentes), se permite sin restricción.
+ *
+ * Si está presente y NO coincide → 403 MT_ACCOUNT_MISMATCH
+ *
+ * @param request  - NextRequest con posible header X-MT-Account
+ * @param tenantId - ID del tenant ya autenticado vía API key
+ */
+export async function validateMtAccount(
+  request: NextRequest,
+  tenantId: string
+): Promise<{ valid: true } | { valid: false; error: NextResponse }> {
+  const mtAccount = request.headers.get("X-MT-Account");
+
+  // Sin header → compatibilidad total con MT5 existente
+  if (!mtAccount) {
+    return { valid: true };
+  }
+
+  // Obtener todas las cuentas activas del tenant
+  const botAccounts = await prisma.botAccount.findMany({
+    where: {
+      BotConfig: { tenantId },
+      isActive: true,
+    },
+    select: { id: true, loginEnc: true },
+  });
+
+  // Comparar mt_account con cada loginEnc descifrado
+  for (const account of botAccounts) {
+    try {
+      const decryptedLogin = decryptCredential(account.loginEnc);
+      if (decryptedLogin === mtAccount) {
+        return { valid: true };
+      }
+    } catch {
+      // Si falla el descifrado de una cuenta, continuamos con las demás
+      continue;
+    }
+  }
+
+  // No coincide ninguna cuenta registrada
+  return {
+    valid: false,
+    error: NextResponse.json(
+      {
+        error: "Account not authorized",
+        code: "MT_ACCOUNT_MISMATCH",
+        message:
+          "El número de cuenta MT4 no está registrado en tu suscripción TBS. " +
+          "Añádelo desde el dashboard antes de usar el EA.",
+      },
+      { status: 403 }
+    ),
+  };
 }
 
 /**
