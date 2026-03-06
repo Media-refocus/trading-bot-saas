@@ -57,6 +57,15 @@ provisioning/         — VPS setup scripts (Windows + Linux)
 - NUNCA commit parcial sin terminar la tarea — arregla el root cause antes
 - Si el problema es mayor de lo esperado → PARA y pregunta
 
+## ⚠️ CC Pitfalls — Errores frecuentes
+- **Omitir `tenantId` en queries Prisma** → data leak entre tenants, bug crítico
+- **Usar `db.` en vez de `prisma.`** → naming convention del proyecto
+- **Crear endpoint en `/app/api/` en vez de `server/api/trpc/`** → arquitectura tRPC, no REST directo
+- **Cambiar schema Prisma sin consultar trading-architect agent** → puede romper migraciones
+- **No correr `npx prisma generate` tras cambio de schema** → tipos TypeScript desactualizados
+- **Deploy en `master` directamente** → siempre feature branch + PR
+- **Olvidar que SQLite es multi-tenant** → cada query DEBE tener `where: { tenantId }`
+
 ## 🔴 NUNCA (app financiera — bugs = dinero real perdido)
 - NUNCA omitir filtro `tenantId` en queries DB → data leak entre tenants
 - NUNCA exponer API keys o tenantId en logs de producción
