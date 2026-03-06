@@ -15,7 +15,7 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../init";
 import { prisma } from "@/lib/prisma";
 import { generateApiKey } from "@/lib/api-key";
-import { encryptCredential } from "@/lib/encryption";
+import { encryptCredential, decryptCredential } from "@/lib/encryption";
 
 // ==================== SCHEMAS ====================
 
@@ -52,11 +52,12 @@ const BotConfigInputSchema = z.object({
 
 const BotAccountInputSchema = z.object({
   login: z.string().min(1),
-  password: z.string().min(1),
-  server: z.string().min(1),
+  password: z.string().optional().default(""),
+  server: z.string().optional().default(""),
   path: z.string().optional(),
   symbol: z.string().default("XAUUSD"),
   magic: z.number(),
+  platform: z.enum(["MT4", "MT5"]).default("MT5"),
 });
 
 // ==================== ROUTER ====================
@@ -114,16 +115,29 @@ export const botRouter = router({
       dailyLossResetAt: botConfig.dailyLossResetAt,
       hasTelegramConfig: !!(botConfig.telegramApiIdEnc && botConfig.telegramApiHashEnc),
       telegramChannels: botConfig.telegramChannels,
-      accounts: botConfig.BotAccount.map((acc: { id: string; serverEnc: string; symbol: string; magic: number; isActive: boolean; lastSyncAt: Date | null; lastBalance: number | null; lastEquity: number | null }) => ({
-        id: acc.id,
-        server: "***", // No mostrar server real
-        symbol: acc.symbol,
-        magic: acc.magic,
-        isActive: acc.isActive,
-        lastSyncAt: acc.lastSyncAt,
-        lastBalance: acc.lastBalance,
-        lastEquity: acc.lastEquity,
-      })),
+      accounts: botConfig.BotAccount.map((acc: { id: string; loginEnc: string; serverEnc: string; symbol: string; magic: number; isActive: boolean; lastSyncAt: Date | null; lastBalance: number | null; lastEquity: number | null; platform: string }) => {
+        // Mostrar últimos 4 dígitos del login (número de cuenta)
+        let loginMasked = "****";
+        try {
+          const loginPlain = decryptCredential(acc.loginEnc);
+          loginMasked = loginPlain.length > 4
+            ? "****" + loginPlain.slice(-4)
+            : loginPlain;
+        } catch { /* silenciar error de descifrado */ }
+
+        return {
+          id: acc.id,
+          server: "***", // No mostrar server real
+          loginMasked,
+          platform: acc.platform ?? "MT5",
+          symbol: acc.symbol,
+          magic: acc.magic,
+          isActive: acc.isActive,
+          lastSyncAt: acc.lastSyncAt,
+          lastBalance: acc.lastBalance,
+          lastEquity: acc.lastEquity,
+        };
+      }),
       lastHeartbeat: botConfig.BotHeartbeat[0]
         ? {
             timestamp: botConfig.BotHeartbeat[0].timestamp,
@@ -284,11 +298,12 @@ export const botRouter = router({
         data: {
           botConfigId: botConfig.id,
           loginEnc: encryptCredential(input.login),
-          passwordEnc: encryptCredential(input.password),
-          serverEnc: encryptCredential(input.server),
+          passwordEnc: encryptCredential(input.password || ""),
+          serverEnc: encryptCredential(input.server || ""),
           pathEnc: input.path ? encryptCredential(input.path) : undefined,
           symbol: input.symbol,
           magic: input.magic,
+          platform: input.platform,
         },
       });
 

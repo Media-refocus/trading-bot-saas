@@ -663,7 +663,8 @@ function AccountsSection({ accounts }: { accounts: BotConfig["accounts"] }) {
     server: "",
     path: "",
     symbol: "XAUUSD",
-    magic: 20250101,
+    magic: 20260101,
+    platform: "MT5" as "MT4" | "MT5",
   });
 
   const addAccount = trpc.bot.addAccount.useMutation();
@@ -675,15 +676,8 @@ function AccountsSection({ accounts }: { accounts: BotConfig["accounts"] }) {
       await addAccount.mutateAsync(newAccount);
       utils.bot.getConfig.invalidate();
       setIsAddDialogOpen(false);
-      setNewAccount({
-        login: "",
-        password: "",
-        server: "",
-        path: "",
-        symbol: "XAUUSD",
-        magic: 20250101,
-      });
-      toast.success("Cuenta MT5 añadida correctamente");
+      setNewAccount({ login: "", password: "", server: "", path: "", symbol: "XAUUSD", magic: 20260101, platform: "MT5" });
+      toast.success(`Cuenta ${newAccount.platform} añadida correctamente`);
     } catch (error) {
       toast.error("Error al añadir la cuenta");
     }
@@ -699,6 +693,8 @@ function AccountsSection({ accounts }: { accounts: BotConfig["accounts"] }) {
     }
   };
 
+  const isMT4 = newAccount.platform === "MT4";
+
   return (
     <Card>
       <CardHeader>
@@ -706,10 +702,10 @@ function AccountsSection({ accounts }: { accounts: BotConfig["accounts"] }) {
           <div>
             <CardTitle className="flex items-center gap-2 text-base md:text-lg">
               <CreditCard className="h-4 w-4 md:h-5 md:w-5" />
-              Cuentas MT5
+              Cuentas de Trading
             </CardTitle>
             <CardDescription className="text-xs md:text-sm">
-              Cuentas de MetaTrader donde el bot ejecutará trades
+              Cuentas MT4 (via EA) y MT5 donde el bot ejecutará trades
             </CardDescription>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -721,14 +717,38 @@ function AccountsSection({ accounts }: { accounts: BotConfig["accounts"] }) {
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-base md:text-lg">Añadir cuenta MT5</DialogTitle>
+                <DialogTitle className="text-base md:text-lg">Añadir cuenta de trading</DialogTitle>
                 <DialogDescription className="text-xs md:text-sm">
                   Las credenciales se cifran con AES-256-GCM antes de guardar
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-3 md:gap-4 py-4">
+                {/* Selector de plataforma */}
                 <div className="grid grid-cols-4 items-center gap-2 md:gap-4">
-                  <Label htmlFor="login" className="text-right text-xs md:text-sm">Login</Label>
+                  <Label className="text-right text-xs md:text-sm">Plataforma</Label>
+                  <div className="col-span-3 flex gap-2">
+                    {(["MT5", "MT4"] as const).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setNewAccount({ ...newAccount, platform: p })}
+                        className={`flex-1 py-2 px-3 rounded-md border text-sm font-medium transition-colors ${
+                          newAccount.platform === p
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background hover:bg-muted border-input"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Login (número de cuenta) — siempre visible */}
+                <div className="grid grid-cols-4 items-center gap-2 md:gap-4">
+                  <Label htmlFor="login" className="text-right text-xs md:text-sm">
+                    {isMT4 ? "Nº cuenta" : "Login"}
+                  </Label>
                   <Input
                     id="login"
                     value={newAccount.login}
@@ -737,26 +757,34 @@ function AccountsSection({ accounts }: { accounts: BotConfig["accounts"] }) {
                     placeholder="12345678"
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-2 md:gap-4">
-                  <Label htmlFor="password" className="text-right text-xs md:text-sm">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={newAccount.password}
-                    onChange={(e) => setNewAccount({ ...newAccount, password: e.target.value })}
-                    className="col-span-3 h-9 md:h-10"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-2 md:gap-4">
-                  <Label htmlFor="server" className="text-right text-xs md:text-sm">Servidor</Label>
-                  <Input
-                    id="server"
-                    value={newAccount.server}
-                    onChange={(e) => setNewAccount({ ...newAccount, server: e.target.value })}
-                    className="col-span-3 h-9 md:h-10"
-                    placeholder="Broker-Demo"
-                  />
-                </div>
+
+                {/* Campos solo para MT5 */}
+                {!isMT4 && (
+                  <>
+                    <div className="grid grid-cols-4 items-center gap-2 md:gap-4">
+                      <Label htmlFor="password" className="text-right text-xs md:text-sm">Password</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={newAccount.password}
+                        onChange={(e) => setNewAccount({ ...newAccount, password: e.target.value })}
+                        className="col-span-3 h-9 md:h-10"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-2 md:gap-4">
+                      <Label htmlFor="server" className="text-right text-xs md:text-sm">Servidor</Label>
+                      <Input
+                        id="server"
+                        value={newAccount.server}
+                        onChange={(e) => setNewAccount({ ...newAccount, server: e.target.value })}
+                        className="col-span-3 h-9 md:h-10"
+                        placeholder="Broker-Demo"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Magic number */}
                 <div className="grid grid-cols-4 items-center gap-2 md:gap-4">
                   <Label htmlFor="magic" className="text-right text-xs md:text-sm">Magic</Label>
                   <Input
@@ -765,16 +793,34 @@ function AccountsSection({ accounts }: { accounts: BotConfig["accounts"] }) {
                     value={newAccount.magic}
                     onChange={(e) => setNewAccount({ ...newAccount, magic: parseInt(e.target.value) })}
                     className="col-span-3 h-9 md:h-10"
-                    placeholder="20250101"
+                    placeholder="20260101"
                   />
                 </div>
+
+                {/* Instrucciones MT4 */}
+                {isMT4 && (
+                  <div className="col-span-4 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-3 text-xs space-y-1.5">
+                    <p className="font-semibold text-blue-800 dark:text-blue-200">📥 Cómo activar el EA en MT4:</p>
+                    <ol className="list-decimal list-inside space-y-1 text-blue-700 dark:text-blue-300">
+                      <li>Descarga <span className="font-mono">TBSSignalEA.ex4</span> desde el botón de abajo</li>
+                      <li>Cópialo a <span className="font-mono">MT4 / MQL4 / Experts /</span></li>
+                      <li>Arrastra el EA al gráfico XAUUSD</li>
+                      <li>En MT4: <span className="font-medium">Herramientas → Opciones → Asesores Expertos</span></li>
+                      <li>Activa <span className="font-medium">&quot;Permitir solicitudes Web&quot;</span> y añade la URL del servidor</li>
+                      <li>Introduce tu API Key del dashboard en los inputs del EA</li>
+                    </ol>
+                    <p className="text-blue-600 dark:text-blue-400 pt-1">
+                      ⚠️ El número de cuenta que introduces aquí debe coincidir exactamente con el de tu MT4.
+                    </p>
+                  </div>
+                )}
               </div>
-              <DialogFooter>
+              <DialogFooter className="flex-col sm:flex-row gap-2">
                 <Button variant="outline" size="sm" onClick={() => setIsAddDialogOpen(false)} className="text-sm">
                   Cancelar
                 </Button>
                 <Button onClick={handleAddAccount} disabled={addAccount.isPending} size="sm" className="text-sm">
-                  {addAccount.isPending ? "Añadiendo..." : "Añadir cuenta"}
+                  {addAccount.isPending ? "Añadiendo..." : `Añadir cuenta ${newAccount.platform}`}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -785,10 +831,10 @@ function AccountsSection({ accounts }: { accounts: BotConfig["accounts"] }) {
         {accounts.length === 0 ? (
           <div className="text-center py-6 md:py-8 border-2 border-dashed rounded-lg">
             <p className="text-muted-foreground mb-2 text-sm md:text-base">
-              No hay cuentas MT5 configuradas
+              No hay cuentas configuradas
             </p>
             <p className="text-xs md:text-sm text-muted-foreground">
-              Añade una cuenta para que el bot pueda operar
+              Añade una cuenta MT4 o MT5 para que el bot pueda operar
             </p>
           </div>
         ) : (
@@ -801,7 +847,12 @@ function AccountsSection({ accounts }: { accounts: BotConfig["accounts"] }) {
                 <div className="flex items-center gap-3 md:gap-4 min-w-0">
                   <div className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full shrink-0 ${account.isActive ? "bg-green-500" : "bg-gray-400"}`} />
                   <div className="min-w-0">
-                    <p className="font-medium text-sm md:text-base truncate">{account.server}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-sm md:text-base">{account.loginMasked ?? "****"}</p>
+                      <Badge variant={account.platform === "MT4" ? "secondary" : "outline"} className="text-[10px] px-1.5 py-0">
+                        {account.platform ?? "MT5"}
+                      </Badge>
+                    </div>
                     <p className="text-xs md:text-sm text-muted-foreground truncate">
                       {account.symbol} · Magic: {account.magic}
                     </p>

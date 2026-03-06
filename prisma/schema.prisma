@@ -101,6 +101,7 @@ model BotAccount {
   id          String        @id @default(cuid())
   botConfigId String
   loginEnc    String
+  platform    String        @default("MT5")
   passwordEnc String
   serverEnc   String
   pathEnc     String?

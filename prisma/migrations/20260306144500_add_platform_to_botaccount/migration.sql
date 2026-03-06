@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "BotAccount" ADD COLUMN IF NOT EXISTS "platform" TEXT NOT NULL DEFAULT 'MT5';
