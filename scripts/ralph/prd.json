@@ -124,7 +124,7 @@
       "id": "STORY-014",
       "title": "Calcular profitFactor en marketplace",
       "priority": "LOW",
-      "passes": false,
+      "passes": true,
       "description": "Resolver TODO en server/api/trpc/routers/marketplace.ts: calcular profitFactor real = grossProfit / grossLoss. Actualizar campo en PublishedStrategy. Mostrar en card de estrategia. Test unitario.",
       "testCriteria": "Marketplace muestra profitFactor calculado correctamente",
       "files": ["server/api/trpc/routers/marketplace.ts"]

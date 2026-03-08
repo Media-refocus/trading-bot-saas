@@ -231,3 +231,16 @@ Started: Sun Mar  8 00:11:43 CET 2026
   - Module-level variables persist across requests in Node.js
   - Track both hits (found) and misses (not found or expired) for accurate hit rate
 ---
+
+## [Sat Mar 8 17:43 CET 2026] - STORY-014
+- Added `lastProfitFactor` field to Strategy model in schema.prisma
+- Updated marketplace publish mutation to use `originalStrategy.lastProfitFactor || 0`
+- Removed TODO comment
+- Now profitFactor is properly stored and displayed in marketplace
+- **Files changed:** prisma/schema.prisma, server/api/trpc/routers/marketplace.ts
+- **Commit:** 93d2360
+- **Learnings:**
+  - profitFactor = grossProfit / grossLoss (calculated by backtest engine)
+  - Strategy model now stores: lastTotalTrades, lastTotalProfit, lastWinRate, lastMaxDrawdown, lastProfitFactor
+  - Migration required for production (npx prisma migrate deploy)
+---
