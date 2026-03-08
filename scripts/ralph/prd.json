@@ -88,7 +88,7 @@
       "id": "STORY-010",
       "title": "Exportar trades a CSV",
       "priority": "MEDIUM",
-      "passes": false,
+      "passes": true,
       "description": "Botón 'Exportar CSV' en deals table. CSV incluye: timestamp, side, entry, exit, profit pips, profit €, close reason. Formato Excel-compatible. Filename: backtest-{strategy}-{date}.csv.",
       "testCriteria": "Click en 'Exportar CSV' → descarga archivo válido para Excel",
       "files": ["components/backtester/deals-table.tsx", "lib/export-csv.ts"]

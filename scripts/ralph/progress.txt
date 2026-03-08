@@ -200,3 +200,20 @@ Started: Sun Mar  8 00:11:43 CET 2026
   - Use fragment (`<>...</>`) when mapping with expanded rows in JSX
   - ChevronDown/ChevronRight icons from lucide-react for expand indicators
 ---
+
+## [Sat Mar 8 17:34 CET 2026] - STORY-010
+- Added "Export CSV" button to backtester deals table toolbar
+- Created lib/export-csv.ts with exportTradesToCSV function
+- CSV format:
+  - Headers: Timestamp, Side, Entry Price, Exit Price, Profit Pips, Profit EUR, Close Reason, Levels, Duration (min)
+  - Excel-compatible with BOM for UTF-8
+  - Proper CSV escaping (quotes, commas, newlines)
+  - Filename: {strategyName}-{date}.csv
+- Uses lucide-react Download icon
+- **Files changed:** lib/export-csv.ts (created), components/backtester/deals-table.tsx
+- **Commit:** 5c96572
+- **Learnings:**
+  - Add BOM (\uFEFF) at start of CSV for Excel UTF-8 compatibility
+  - Use document.createElement("a") + blob URL for client-side file download
+  - Clean up URL with URL.revokeObjectURL after download
+---
