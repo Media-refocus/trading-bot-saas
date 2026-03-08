@@ -1,8 +1,9 @@
+// @prod - This test targets VPS, exclude from CI
 import { test, expect } from '@playwright/test';
 
 const VPS_URL = 'http://91.98.238.147:3000';
 
-test.describe('VPS Home Test', () => {
+test.describe('VPS Home Test @prod', () => {
   test('should load home page and check buttons', async ({ page }) => {
     // Ir a la home
     await page.goto(VPS_URL);

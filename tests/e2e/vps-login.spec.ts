@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 
 const VPS_URL = 'http://91.98.238.147:3000';
 
-test.describe('VPS Login Test', () => {
+// @prod - This test targets VPS, exclude from CI
+test.describe('VPS Login Test @prod', () => {
   test('should login with demo credentials', async ({ page }) => {
     // Ir directamente a login
     await page.goto(`${VPS_URL}/login`);

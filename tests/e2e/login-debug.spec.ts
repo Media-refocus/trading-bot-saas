@@ -1,8 +1,9 @@
+// @prod - Debug tests, exclude from CI
 import { test, expect } from '@playwright/test';
 
 const BASE_URL = 'http://localhost:3000';
 
-test('Debug: Medir tiempo de login', async ({ page }) => {
+test('Debug: Medir tiempo de login @prod', async ({ page }) => {
   // Ir a login
   await page.goto(`${BASE_URL}/login`);
   console.log('1. Página login cargada');
@@ -38,7 +39,7 @@ test('Debug: Medir tiempo de login', async ({ page }) => {
   await page.screenshot({ path: 'tests/e2e/screenshots/debug-login.png', fullPage: true });
 });
 
-test('Debug: Verificar que la sesión se crea', async ({ page, context }) => {
+test('Debug: Verificar que la sesión se crea @prod', async ({ page, context }) => {
   // Login
   await page.goto(`${BASE_URL}/login`);
   await page.fill('input#email', 'demo@tradingbot.com');

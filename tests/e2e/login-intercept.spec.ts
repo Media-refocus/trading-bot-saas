@@ -1,8 +1,9 @@
+// @prod - Debug tests, exclude from CI
 import { test, expect } from '@playwright/test';
 
 const BASE_URL = 'http://localhost:3000';
 
-test('Debug: Intercept login API call', async ({ page }) => {
+test('Debug: Intercept login API call @prod', async ({ page }) => {
   // Interceptar todas las llamadas a auth
   const authRequests: any[] = [];
 
@@ -64,7 +65,7 @@ test('Debug: Intercept login API call', async ({ page }) => {
   await page.screenshot({ path: 'tests/e2e/screenshots/debug-intercept.png', fullPage: true });
 });
 
-test('Debug: Login manual sin redirect', async ({ page }) => {
+test('Debug: Login manual sin redirect @prod', async ({ page }) => {
   // Primero obtener CSRF token
   await page.goto(`${BASE_URL}/api/auth/csrf`);
   const csrfData = await page.evaluate(() => document.body.textContent);

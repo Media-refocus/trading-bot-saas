@@ -4,7 +4,8 @@ const BASE = "https://trading-bot-saas.vercel.app";
 
 test.setTimeout(120000);
 
-test("backtester loads signals and renders chart", async ({ page }) => {
+// @prod - This test targets production, exclude from CI
+test("backtester loads signals and renders chart @prod", async ({ page }) => {
   // Capture console
   const consoleLogs: string[] = [];
   page.on("console", msg => consoleLogs.push(`[${msg.type()}] ${msg.text()}`));

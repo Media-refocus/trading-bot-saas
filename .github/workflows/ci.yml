@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [master, main]
 
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     name: Lint
@@ -69,10 +74,35 @@ jobs:
           NEXTAUTH_SECRET: test-secret-for-ci
           AUTH_SECRET: test-secret-for-ci
 
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Run unit tests
+        run: npm run test
+        env:
+          DATABASE_URL: file:./test.db
+
   test-e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
-    needs: [build]
+    # Run in parallel with build (not dependent on it)
+    needs: [lint, typecheck]
     steps:
       - uses: actions/checkout@v4
 
@@ -91,22 +121,33 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Seed database
-        run: npx ts-node prisma/seed.ts
+      - name: Setup test database
+        run: |
+          npx prisma db push --skip-generate
+          npx ts-node prisma/seed.ts
         env:
           DATABASE_URL: file:./prisma/test.db
 
       - name: Run E2E tests
-        run: npx playwright test tests/e2e/audit-full.spec.ts --reporter=list
+        run: npx playwright test --grep-invert "@prod" --reporter=list
         env:
           DATABASE_URL: file:./prisma/test.db
           NEXTAUTH_SECRET: test-secret-for-ci
           AUTH_SECRET: test-secret-for-ci
+          CI: true
 
-      - name: Upload test results
+      - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
+          retention-days: 7
+
+      - name: Upload test screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-screenshots
+          path: tests/e2e/screenshots/
           retention-days: 7

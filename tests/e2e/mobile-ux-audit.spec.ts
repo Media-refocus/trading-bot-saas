@@ -6,7 +6,8 @@ test.use({ viewport: { width: 390, height: 844 } }); // iPhone 14
 
 test.setTimeout(120000);
 
-test("mobile UX audit - backtester", async ({ page }) => {
+// @prod - This test targets production, exclude from CI
+test("mobile UX audit - backtester @prod", async ({ page }) => {
   // Login
   await page.goto(`${BASE}/login`);
   await page.waitForLoadState("networkidle");
