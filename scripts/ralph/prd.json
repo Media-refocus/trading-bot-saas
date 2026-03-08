@@ -70,7 +70,7 @@
       "id": "STORY-008",
       "title": "Eliminar código deprecado",
       "priority": "MEDIUM",
-      "passes": false,
+      "passes": true,
       "description": "Eliminar deprecated/ folder. Mover scripts/fix-all-timestamps.ts a archive/. Resolver o documentar todos los TODOs en código. npm run build sin warnings de código muerto.",
       "testCriteria": "npm run build pasa sin warnings, deprecated/ no existe",
       "files": ["deprecated/", "scripts/fix-all-timestamps.ts"]

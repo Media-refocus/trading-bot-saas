@@ -165,3 +165,20 @@ Started: Sun Mar  8 00:11:43 CET 2026
   - Tailwind CSS requires 'unsafe-inline' in style-src
   - Google Fonts via Next.js may need fonts.gstatic.com in font-src
 ---
+
+## [Sat Mar 8 17:22 CET 2026] - STORY-008
+- Deleted deprecated/ticks-cache.ts (633 lines)
+  - Superseded by lib/ticks-db.ts (SQLite-based, more efficient)
+  - No code was importing from deprecated folder
+- Moved scripts/fix-all-timestamps.ts to scripts/archive/fix-all-timestamps.ts
+  - One-time data migration script, no longer needed in main scripts/
+- Remaining TODOs in code are intentional:
+  - marketplace.ts:199 - profitFactor calculation (STORY-014)
+  - backtest-cache.ts:152 - hitRate counter (STORY-013)
+- Build passes with no dead code warnings
+- **Files changed:** deprecated/ticks-cache.ts (deleted), scripts/fix-all-timestamps.ts (moved)
+- **Commit:** 516470d
+- **Learnings:**
+  - Check imports before deleting deprecated files
+  - One-time migration scripts belong in archive/ after use
+---
