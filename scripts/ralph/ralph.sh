@@ -3,7 +3,8 @@
 # Adapted from snarktank/ralph for OpenClaw + launch-cc.sh
 # Usage: ./scripts/ralph/ralph.sh [max_iterations]
 
-set -e
+# Don't use set -e - we handle errors manually
+set -o pipefail
 
 MAX_ITERATIONS=${1:-10}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -103,16 +104,23 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   # Build the prompt from CLAUDE.md template
   PROMPT=$(cat "$SCRIPT_DIR/CLAUDE.md")
 
-  # Run Claude Code with --dangerously-skip-permissions for autonomous operation
+  # Run Claude Code with GLM-5 for cost efficiency
+  # Model: use RALPH_MODEL env var (set by launch-ralph.sh) or default to glm-5
+  RALPH_MODEL_USE="${RALPH_MODEL:-glm-5}"
+  echo -e "${BLUE}Starting Claude Code (${RALPH_MODEL_USE})...${NC}"
   OUTPUT=$(cd "$PROJECT_DIR" && claude \
     --dangerously-skip-permissions \
     --print \
     --output-format text \
+    --model "$RALPH_MODEL_USE" \
     -p "$PROMPT" \
-    2>&1 | tee /dev/stderr) || true
+    2>&1) || OUTPUT="ERROR: Claude Code failed with exit code $?"
+  
+  echo "$OUTPUT"
+  echo -e "${BLUE}Claude Code finished.${NC}"
 
-  # Check for completion signal
-  if echo "$OUTPUT" | grep -q "COMPLETE"; then
+  # Check for completion signal (exact match on its own line)
+  if echo "$OUTPUT" | grep -q "^COMPLETE$"; then
     echo ""
     echo -e "${GREEN}🎉 Ralph completed all tasks!${NC}"
     echo "Completed at iteration $i of $MAX_ITERATIONS"
