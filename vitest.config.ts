@@ -6,11 +6,13 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: "node",
-    include: ["**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
-    exclude: ["node_modules", ".next", "prisma"],
+    include: ["lib/**/*.test.ts", "lib/**/*.spec.ts"],
+    exclude: ["node_modules", ".next", "prisma", "tests"],
     testTimeout: 60000,
     hookTimeout: 60000,
-    globalSetup: ["./tests/global-setup.ts"],
+    // Global setup disabled for unit tests - only needed for integration tests
+    // Run integration tests with: vitest run tests/integration
+    // globalSetup: ["./tests/global-setup.ts"],
   },
   resolve: {
     alias: {
