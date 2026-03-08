@@ -79,7 +79,7 @@
       "id": "STORY-009",
       "title": "Expandir/contraer trades en backtester",
       "priority": "MEDIUM",
-      "passes": false,
+      "passes": true,
       "description": "Añadir UI para expandir cada trade y ver niveles de grid: niveles de promedio, SL virtual, trailing history. Animación suave. Mobile-friendly.",
       "testCriteria": "Click en fila de trade → expande con detalles → click contrae",
       "files": ["components/backtester/deals-table.tsx"]

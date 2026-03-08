@@ -182,3 +182,21 @@ Started: Sun Mar  8 00:11:43 CET 2026
   - Check imports before deleting deprecated files
   - One-time migration scripts belong in archive/ after use
 ---
+
+## [Sat Mar 8 17:26 CET 2026] - STORY-009
+- Added expandable rows to backtester deals table:
+  - Chevron icon (lucide-react) to expand/collapse each trade
+  - Expanded view shows grid level breakdown:
+    - Level number (L0 base, L1+ averages)
+    - Open time, open price, close price, lots
+    - Profit pips and profit € per level
+  - Summary row: avg price, duration, total lots
+  - Smooth CSS transition for expand/collapse animation
+  - Mobile-friendly with horizontal scroll in details
+- **Files changed:** components/backtester/deals-table.tsx
+- **Commit:** c161f1f
+- **Learnings:**
+  - TradeDetail interface has `levels: TradeLevel[]` for grid breakdown
+  - Use fragment (`<>...</>`) when mapping with expanded rows in JSX
+  - ChevronDown/ChevronRight icons from lucide-react for expand indicators
+---
