@@ -363,6 +363,7 @@ model Strategy {
   lastTotalProfit   Float?
   lastWinRate       Float?
   lastMaxDrawdown   Float?
+  lastProfitFactor  Float?
   lastTestedAt      DateTime?
   isFavorite        Boolean   @default(false)
   isActive          Boolean   @default(true)

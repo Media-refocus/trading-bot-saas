@@ -196,7 +196,7 @@ export const marketplaceRouter = router({
           totalProfit: originalStrategy.lastTotalProfit || 0,
           winRate: originalStrategy.lastWinRate || 0,
           maxDrawdown: originalStrategy.lastMaxDrawdown || 0,
-          profitFactor: 0, // TODO: calcular
+          profitFactor: originalStrategy.lastProfitFactor || 0,
         },
       });
 
