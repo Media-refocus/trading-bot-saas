@@ -33,6 +33,10 @@ interface BacktestConfig {
 // Cache en memoria
 const resultsCache = new Map<string, CachedResult>();
 
+// Estadísticas de hit/miss
+let cacheHits = 0;
+let cacheMisses = 0;
+
 // Configuración
 const MAX_CACHE_SIZE = 100; // Máximo 100 resultados en cache
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas
@@ -106,6 +110,7 @@ export function getCachedResult(
   const cached = resultsCache.get(hash);
 
   if (!cached) {
+    cacheMisses++;
     return null;
   }
 
@@ -113,10 +118,12 @@ export function getCachedResult(
   const age = Date.now() - cached.timestamp.getTime();
   if (age > CACHE_TTL_MS) {
     resultsCache.delete(hash);
+    cacheMisses++;
     console.log(`[BacktestCache] Resultado expirado: ${hash}`);
     return null;
   }
 
+  cacheHits++;
   console.log(`[BacktestCache] Resultado desde cache: ${hash}`);
   return cached.results;
 }
@@ -145,11 +152,18 @@ export function getCacheStats(): {
   size: number;
   maxSize: number;
   hitRate: number;
+  hits: number;
+  misses: number;
 } {
+  const totalRequests = cacheHits + cacheMisses;
+  const hitRate = totalRequests > 0 ? cacheHits / totalRequests : 0;
+
   return {
     size: resultsCache.size,
     maxSize: MAX_CACHE_SIZE,
-    hitRate: 0, // TODO: Implementar contador de hits/misses
+    hitRate,
+    hits: cacheHits,
+    misses: cacheMisses,
   };
 }
 
