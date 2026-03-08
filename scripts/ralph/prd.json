@@ -52,7 +52,7 @@
       "id": "STORY-006",
       "title": "Configurar auto-deploy a Vercel",
       "priority": "HIGH",
-      "passes": false,
+      "passes": true,
       "description": "Crear .github/workflows/deploy.yml para deploy automático a producción cuando se mergea PR a master. Deploy solo si CI pasa. Configurar VERCEL_TOKEN en GitHub secrets.",
       "testCriteria": "Merge PR a master → deploy automático a Vercel → notificación",
       "files": [".github/workflows/deploy.yml"]
@@ -61,7 +61,7 @@
       "id": "STORY-007",
       "title": "Añadir CSP headers y revisar CORS",
       "priority": "HIGH",
-      "passes": false,
+      "passes": true,
       "description": "Añadir Content Security Policy en next.config.ts. CSP permite: self, unsafe-inline (si necesario), stripe.com, cdn.jsdelivr.net. Configurar CORS si es necesario. Test con securityheaders.com → grade A o B.",
       "testCriteria": "securityheaders.com reporta grade A o B para el dominio",
       "files": ["next.config.ts", "middleware.ts"]

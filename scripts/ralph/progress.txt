@@ -125,3 +125,43 @@ Started: Sun Mar  8 00:11:43 CET 2026
   - CI now runs: lint → typecheck → (build || test-unit || test-e2e) in parallel
   - Playwright --grep-invert flag filters out tagged tests
 ---
+
+## [Sat Mar 8 17:14 CET 2026] - STORY-006
+- Created .github/workflows/deploy.yml for automatic Vercel production deploys:
+  - Triggers on push to master/main branches
+  - Uses `ahmadnassri/action-workflow-run-wait` to wait for CI workflow completion
+  - Deploys only after CI passes (lint → typecheck → build → tests)
+  - Uses Vercel CLI for pull, build, and deploy steps
+  - Adds deployment status notification
+  - Requires GitHub secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
+- Vercel project already configured with:
+  - Project ID: prj_mX2FW8Gt0M8ipESYqFzSVNfqnE05
+  - Org ID: team_cpT2Q9nGVHV4eeuxjzhAelRd
+- **Files changed:** .github/workflows/deploy.yml (created)
+- **Commit:** ab2ae23
+- **Learnings:**
+  - Deploy workflow uses `needs: [wait-for-ci]` to ensure CI passes first
+  - Concurrency prevents multiple deploys to same branch
+  - Environment: production enables GitHub environment protection rules
+---
+
+## [Sat Mar 8 17:19 CET 2026] - STORY-007
+- Added Content-Security-Policy header to next.config.mjs:
+  - default-src 'self'
+  - script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com
+  - style-src 'self' 'unsafe-inline' (Tailwind requirement)
+  - img-src 'self' data: blob: https: (charts, avatars)
+  - font-src 'self' https://fonts.gstatic.com data:
+  - connect-src 'self' https://api.stripe.com https://js.stripe.com
+  - frame-src https://js.stripe.com https://hooks.stripe.com
+  - object-src 'none', base-uri 'self', form-action 'self', frame-ancestors 'none'
+- Added Strict-Transport-Security header (HSTS) with 1 year max-age
+- CORS not needed - app uses same-origin tRPC API
+- CSP allows Stripe payments (js.stripe.com, api.stripe.com)
+- **Files changed:** next.config.mjs
+- **Commit:** eb19c85
+- **Learnings:**
+  - Stripe requires js.stripe.com in script-src, connect-src, and frame-src
+  - Tailwind CSS requires 'unsafe-inline' in style-src
+  - Google Fonts via Next.js may need fonts.gstatic.com in font-src
+---
