@@ -140,6 +140,164 @@ function useDarkMode() {
   return { isDark, toggle };
 }
 
+// ============================================
+// RISK DASHBOARD - Cálculos y validaciones
+// ============================================
+interface RiskWarning {
+  id: string;
+  severity: "low" | "medium" | "high" | "critical";
+  message: string;
+  detail?: string;
+}
+
+interface RiskMetrics {
+  overallRisk: "low" | "medium" | "high" | "critical";
+  maxExposureEUR: number;
+  maxPotentialLossEUR: number;
+  estimatedMarginEUR: number;
+  riskRewardRatio: number;
+  warnings: RiskWarning[];
+}
+
+// XAUUSD: 1 lote = €100k contrato, 1 pip ≈ €10 para XAUUSD
+const PIP_VALUE_PER_LOT_XAUUSD = 10; // €10 por pip por lote
+const MARGIN_REQUIREMENT_PERCENT = 1; // 1% margin típico para XAUUSD
+
+function calculateRiskMetrics(config: BacktestConfig): RiskMetrics {
+  const warnings: RiskWarning[] = [];
+  let overallRisk: RiskMetrics["overallRisk"] = "low";
+
+  // 1. Calcular exposición máxima (maxLevels × lotajeBase × valor pip máximo)
+  // Para un grid, los lotes totales se calculan en base al último nivel
+  // Suma de lotes: lotajeBase × (1 + 2 + ... + maxLevels) = lotajeBase × maxLevels×(maxLevels+1)/2
+  // Simplificación: maxLevels × lotajeBase como aproximación conservadora
+  const totalLotsIfMaxed = config.maxLevels * config.lotajeBase;
+
+  // Exposición en pips: desde entrada hasta último nivel
+  const maxDrawdownPips = config.pipsDistance * config.maxLevels;
+
+  // Exposición máxima en EUR = lotes × pips × valor pip
+  const maxExposureEUR = totalLotsIfMaxed * maxDrawdownPips * PIP_VALUE_PER_LOT_XAUUSD / 100; // /100 para ajustar escala
+
+  // 2. Calcular pérdida máxima potencial si el grid se llena completamente
+  // Pérdida aproximada = (pips hasta maxLevel - TP) × lotes totales
+  const netLossPips = Math.max(0, maxDrawdownPips - config.takeProfitPips);
+  const maxPotentialLossEUR = totalLotsIfMaxed * netLossPips * PIP_VALUE_PER_LOT_XAUUSD / 100;
+
+  // 3. Margen requerido estimado
+  const estimatedMarginEUR = totalLotsIfMaxed * 100000 * (MARGIN_REQUIREMENT_PERCENT / 100);
+
+  // 4. Ratio riesgo/retorno (simplificado)
+  // Ganancia por TP = takeProfitPips × lotajeBase × pipValue
+  const potentialGainEUR = config.lotajeBase * config.takeProfitPips * PIP_VALUE_PER_LOT_XAUUSD / 100;
+  const riskRewardRatio = potentialGainEUR > 0 ? maxPotentialLossEUR / potentialGainEUR : 0;
+
+  // ====== VALIDACIONES DE RIESGO ======
+
+  // CRÍTICO: Exposición > €5000
+  if (maxExposureEUR > 5000) {
+    warnings.push({
+      id: "high-exposure",
+      severity: "critical",
+      message: `Exposición máxima €${maxExposureEUR.toFixed(0)} supera €5000`,
+      detail: `maxLevels (${config.maxLevels}) × lotajeBase (${config.lotajeBase}) genera exposición elevada`,
+    });
+    overallRisk = "critical";
+  } else if (maxExposureEUR > 2000) {
+    warnings.push({
+      id: "medium-exposure",
+      severity: "medium",
+      message: `Exposición máxima €${maxExposureEUR.toFixed(0)}`,
+      detail: "Considera reducir maxLevels o lotajeBase",
+    });
+    if (overallRisk === "low") overallRisk = "medium";
+  }
+
+  // CRÍTICO: maxLevels > 15 con lotes > 0.2 (riesgo de margin call)
+  if (config.maxLevels > 15 && config.lotajeBase > 0.2) {
+    warnings.push({
+      id: "margin-call-risk",
+      severity: "critical",
+      message: "Alto riesgo de margin call",
+      detail: `${config.maxLevels} niveles con lotes de ${config.lotajeBase} requiere mucho margen`,
+    });
+    overallRisk = "critical";
+  } else if (config.maxLevels > 10 && config.lotajeBase > 0.15) {
+    warnings.push({
+      id: "elevated-levels",
+      severity: "medium",
+      message: "Niveles elevados con lotes medios",
+      detail: "Monitoriza el margen disponible",
+    });
+    if (overallRisk === "low") overallRisk = "medium";
+  }
+
+  // ALTO: Sin SL + trailingSL bajo (<30%)
+  if (!config.useStopLoss && (!config.useTrailingSL || (config.trailingSLPercent ?? 0) < 30)) {
+    warnings.push({
+      id: "unlimited-risk",
+      severity: "high",
+      message: "Pérdidas potencialmente ilimitadas",
+      detail: "Sin Stop Loss ni Trailing SL adecuado, el riesgo es muy alto",
+    });
+    if (overallRisk !== "critical") overallRisk = "high";
+  }
+
+  // MEDIO: Grid muy denso (pipsDistance < 8)
+  if (config.pipsDistance < 8) {
+    warnings.push({
+      id: "dense-grid",
+      severity: "medium",
+      message: "Grid muy denso, muchas operaciones cercanas",
+      detail: `${config.pipsDistance} pips entre niveles puede generar sobre-trading`,
+    });
+    if (overallRisk === "low") overallRisk = "medium";
+  }
+
+  // BAJO: Capital insuficiente para la exposición
+  const capital = config.initialCapital ?? 10000;
+  if (maxExposureEUR > capital * 0.5) {
+    warnings.push({
+      id: "capital-warning",
+      severity: "low",
+      message: `Exposición > 50% del capital`,
+      detail: `€${maxExposureEUR.toFixed(0)} de €${capital} disponibles`,
+    });
+  }
+
+  return {
+    overallRisk,
+    maxExposureEUR,
+    maxPotentialLossEUR,
+    estimatedMarginEUR,
+    riskRewardRatio,
+    warnings,
+  };
+}
+
+// Componente para mostrar badge de riesgo
+function RiskBadge({ level }: { level: RiskMetrics["overallRisk"] }) {
+  const styles = {
+    low: "bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30",
+    medium: "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30",
+    high: "bg-orange-500/20 text-orange-700 dark:text-orange-400 border-orange-500/30",
+    critical: "bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30",
+  };
+
+  const labels = {
+    low: "Riesgo Bajo",
+    medium: "Riesgo Medio",
+    high: "Riesgo Alto",
+    critical: "⚠️ Riesgo Crítico",
+  };
+
+  return (
+    <Badge className={`${styles[level]} border font-semibold px-3 py-1`}>
+      {labels[level]}
+    </Badge>
+  );
+}
+
 export default function BacktesterPage() {
   const [config, setConfig] = useState<BacktestConfig>(defaultConfig);
   const [signalLimit, setSignalLimit] = useState(100);
@@ -866,6 +1024,109 @@ export default function BacktesterPage() {
                 </p>
               </div>
             )}
+
+            {/* ====== PANEL DE RIESGO - VALIDACIONES PRE-EJECUCIÓN ====== */}
+            {(() => {
+              const riskMetrics = calculateRiskMetrics(config);
+              const borderColors = {
+                low: "border-green-500/30",
+                medium: "border-yellow-500/30",
+                high: "border-orange-500/30",
+                critical: "border-red-500/50",
+              };
+              const bgColors = {
+                low: "bg-green-500/5",
+                medium: "bg-yellow-500/5",
+                high: "bg-orange-500/5",
+                critical: "bg-red-500/10",
+              };
+
+              return (
+                <div className={`p-3 rounded-lg border ${borderColors[riskMetrics.overallRisk]} ${bgColors[riskMetrics.overallRisk]} transition-all duration-300`}>
+                  {/* Header con badge de riesgo */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Shield className={`w-4 h-4 ${
+                        riskMetrics.overallRisk === "critical" ? "text-red-500" :
+                        riskMetrics.overallRisk === "high" ? "text-orange-500" :
+                        riskMetrics.overallRisk === "medium" ? "text-yellow-500" : "text-green-500"
+                      }`} />
+                      <span className="text-xs font-semibold text-muted-foreground">Análisis de Riesgo</span>
+                    </div>
+                    <RiskBadge level={riskMetrics.overallRisk} />
+                  </div>
+
+                  {/* Métricas de riesgo */}
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    <div className="text-center p-2 bg-background/50 rounded-md">
+                      <div className="text-[10px] text-muted-foreground uppercase">Exposición máx.</div>
+                      <div className={`text-sm font-bold ${
+                        riskMetrics.maxExposureEUR > 5000 ? "text-red-500" :
+                        riskMetrics.maxExposureEUR > 2000 ? "text-yellow-500" : "text-green-500"
+                      }`}>
+                        €{riskMetrics.maxExposureEUR.toFixed(0)}
+                      </div>
+                    </div>
+                    <div className="text-center p-2 bg-background/50 rounded-md">
+                      <div className="text-[10px] text-muted-foreground uppercase">Pérdida máx.</div>
+                      <div className={`text-sm font-bold ${
+                        riskMetrics.maxPotentialLossEUR > 1000 ? "text-red-500" : "text-orange-500"
+                      }`}>
+                        €{riskMetrics.maxPotentialLossEUR.toFixed(0)}
+                      </div>
+                    </div>
+                    <div className="text-center p-2 bg-background/50 rounded-md">
+                      <div className="text-[10px] text-muted-foreground uppercase">Margen req.</div>
+                      <div className="text-sm font-bold text-blue-500">
+                        €{riskMetrics.estimatedMarginEUR.toFixed(0)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Advertencias */}
+                  {riskMetrics.warnings.length > 0 && (
+                    <div className="space-y-1.5">
+                      {riskMetrics.warnings.map((warning) => (
+                        <div
+                          key={warning.id}
+                          className={`flex items-start gap-2 p-2 rounded-md text-xs ${
+                            warning.severity === "critical" ? "bg-red-500/10 border border-red-500/20" :
+                            warning.severity === "high" ? "bg-orange-500/10 border border-orange-500/20" :
+                            warning.severity === "medium" ? "bg-yellow-500/10 border border-yellow-500/20" :
+                            "bg-muted/50 border border-border/30"
+                          }`}
+                        >
+                          {warning.severity === "critical" && <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />}
+                          {warning.severity === "high" && <AlertCircle className="w-3.5 h-3.5 text-orange-500 flex-shrink-0 mt-0.5" />}
+                          {warning.severity === "medium" && <AlertCircle className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0 mt-0.5" />}
+                          {warning.severity === "low" && <AlertCircle className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />}
+                          <div>
+                            <div className={`font-medium ${
+                              warning.severity === "critical" ? "text-red-600 dark:text-red-400" :
+                              warning.severity === "high" ? "text-orange-600 dark:text-orange-400" :
+                              warning.severity === "medium" ? "text-yellow-600 dark:text-yellow-400" : ""
+                            }`}>
+                              {warning.message}
+                            </div>
+                            {warning.detail && (
+                              <div className="text-muted-foreground text-[10px] mt-0.5">{warning.detail}</div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Mensaje si no hay advertencias */}
+                  {riskMetrics.warnings.length === 0 && (
+                    <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 p-2 bg-green-500/5 rounded-md">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Configuración de riesgo aceptable</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Botón Ejecutar Backtest - GRANDE (oculto en mobile, hay sticky) */}
             <Button
