@@ -16,6 +16,7 @@ interface SettingsPanelProps {
     trailingSLPercent?: number;
     restrictionType?: "RIESGO" | "SIN_PROMEDIOS" | "SOLO_1_PROMEDIO";
     signalsSource?: string;
+    signalsSourceType?: "csv" | "supabase";
     initialCapital?: number;
     useRealPrices?: boolean;
     filters?: {
@@ -45,6 +46,8 @@ export function SettingsPanel({
   onExecute,
   isExecuting,
 }: SettingsPanelProps) {
+  const sourceType = config.signalsSourceType || "csv";
+
   return (
     <div className="p-4 space-y-6">
       {/* Grid Layout - responsive */}
@@ -53,21 +56,93 @@ export function SettingsPanel({
         <div className="space-y-4">
           <SectionTitle>Fuente de Datos</SectionTitle>
 
-          {/* Signal Source */}
-          <InputGroup label="Signal Source" id="signal-source">
-            <select
-              id="signal-source"
-              className="mt5-select"
-              value={config.signalsSource}
-              onChange={(e) => onUpdateConfig("signalsSource", e.target.value)}
-            >
-              {signalSources?.map((s) => (
-                <option key={s.file} value={s.file}>
-                  {s.file} ({s.total} signals)
-                </option>
-              ))}
-            </select>
-          </InputGroup>
+          {/* Source Type Toggle */}
+          <div className="space-y-2">
+            <div className="text-xs text-[#888888]">Tipo de Fuente</div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onUpdateConfig("signalsSourceType", "csv")}
+                className={cn(
+                  "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
+                  sourceType === "csv"
+                    ? "bg-[#0078D4] text-white"
+                    : "bg-[#333333] text-[#888888] hover:bg-[#444444]"
+                )}
+              >
+                📁 CSV Local
+              </button>
+              <button
+                onClick={() => onUpdateConfig("signalsSourceType", "supabase")}
+                className={cn(
+                  "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
+                  sourceType === "supabase"
+                    ? "bg-[#0078D4] text-white"
+                    : "bg-[#333333] text-[#888888] hover:bg-[#444444]"
+                )}
+              >
+                🗄️ Supabase
+              </button>
+            </div>
+          </div>
+
+          {/* CSV Source Selector (solo si sourceType es csv) */}
+          {sourceType === "csv" && (
+            <InputGroup label="Signal Source" id="signal-source">
+              <select
+                id="signal-source"
+                className="mt5-select"
+                value={config.signalsSource}
+                onChange={(e) => onUpdateConfig("signalsSource", e.target.value)}
+              >
+                {signalSources?.map((s) => (
+                  <option key={s.file} value={s.file}>
+                    {s.file} ({s.total} signals)
+                  </option>
+                ))}
+              </select>
+            </InputGroup>
+          )}
+
+          {/* Supabase Date Range (solo si sourceType es supabase) */}
+          {sourceType === "supabase" && (
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <InputGroup label="Fecha Desde" id="date-from">
+                  <input
+                    id="date-from"
+                    type="date"
+                    className="mt5-input"
+                    value={config.filters?.dateFrom || ""}
+                    onChange={(e) =>
+                      onUpdateConfig("filters", {
+                        ...config.filters,
+                        dateFrom: e.target.value,
+                      })
+                    }
+                  />
+                </InputGroup>
+                <InputGroup label="Fecha Hasta" id="date-to">
+                  <input
+                    id="date-to"
+                    type="date"
+                    className="mt5-input"
+                    value={config.filters?.dateTo || ""}
+                    onChange={(e) =>
+                      onUpdateConfig("filters", {
+                        ...config.filters,
+                        dateTo: e.target.value,
+                      })
+                    }
+                  />
+                </InputGroup>
+              </div>
+              {signalsInfo && (
+                <div className="text-xs text-[#888888] bg-[#333333] p-2 rounded">
+                  <div>Rango disponible: {signalsInfo.dateRange?.start ? new Date(signalsInfo.dateRange.start).toLocaleDateString() : "N/A"} - {signalsInfo.dateRange?.end ? new Date(signalsInfo.dateRange.end).toLocaleDateString() : "N/A"}</div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Stats de señales */}
           {signalsInfo && (

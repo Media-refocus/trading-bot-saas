@@ -79,13 +79,10 @@ interface BacktestConfig {
   trailingSLPercent?: number;
   restrictionType?: "RIESGO" | "SIN_PROMEDIOS" | "SOLO_1_PROMEDIO";
   signalsSource?: string;
+  signalsSourceType?: "csv" | "supabase";
   initialCapital?: number;
   useRealPrices?: boolean;
   filters?: BacktestFilters;
-  // Nueva opción: fuente de datos
-  dataSource?: "csv" | "supabase";
-  dateFrom?: string;  // Para Supabase
-  dateTo?: string;    // Para Supabase
 }
 
 const defaultConfig: BacktestConfig = {
@@ -99,11 +96,9 @@ const defaultConfig: BacktestConfig = {
   useTrailingSL: true,
   trailingSLPercent: 50,
   signalsSource: "signals_simple.csv",
+  signalsSourceType: "csv",
   initialCapital: 10000,
   useRealPrices: false,
-  dataSource: "supabase",
-  dateFrom: "2024-01-01", // Desde inicio de señales históricas
-  dateTo: new Date().toISOString().slice(0, 10), // Hoy
 };
 
 // Dark mode toggle helper
@@ -417,85 +412,43 @@ export default function BacktesterPage() {
 
   const handleExecute = async () => {
     try {
-      // Si la fuente es Supabase, usar la nueva API REST
-      if (config.dataSource === "supabase") {
-        if (!config.dateFrom || !config.dateTo) {
+      const sourceType = config.signalsSourceType || "csv";
+
+      // Si es Supabase, validar que hay fechas
+      if (sourceType === "supabase") {
+        if (!config.filters?.dateFrom || !config.filters?.dateTo) {
           alert("Debes especificar fecha desde y hasta para usar Supabase");
           return;
         }
-
-        setSupabaseLoading(true);
-        setSupabaseError(null);
-        setSupabaseResult(null);
-
-        // Llamar a la nueva API REST
-        const response = await fetch("/api/backtest", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            strategyName: config.strategyName,
-            lotajeBase: config.lotajeBase,
-            numOrders: config.numOrders,
-            pipsDistance: config.pipsDistance,
-            maxLevels: config.maxLevels,
-            takeProfitPips: config.takeProfitPips,
-            stopLossPips: config.stopLossPips,
-            useStopLoss: config.useStopLoss,
-            useTrailingSL: config.useTrailingSL,
-            trailingSLPercent: config.trailingSLPercent,
-            restrictionType: config.restrictionType,
-            initialCapital: config.initialCapital,
-            dateFrom: config.dateFrom,
-            dateTo: config.dateTo,
-            filters: config.filters,
-            useRealPrices: config.useRealPrices,
-            signalLimit,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Error ejecutando backtest");
-        }
-
-        const data = await response.json();
-
-        // Guardar resultado en estado local (no tRPC)
-        setSupabaseResult({
-          jobId: data.jobId || `supabase_${Date.now()}`,
-          status: data.status,
-          results: data.results,
-          fromCache: false,
-          elapsedMs: data.elapsedMs,
-          config: {
-            ...config,
-            filters: config.filters ? {
-              ...config.filters,
-              dateFrom: config.filters.dateFrom ? new Date(config.filters.dateFrom) : undefined,
-              dateTo: config.filters.dateTo ? new Date(config.filters.dateTo) : undefined,
-            } : undefined,
-          },
-          debug: data.meta,
-        });
-
-        setSupabaseLoading(false);
-        setSelectedTradeIndex(null);
-        setSaveSuccess(false);
-        return;
       }
 
-      // Comportamiento original: usar tRPC con CSV
+      // Usar tRPC unificado para ambas fuentes
       const processedConfig = {
         ...config,
+        signalsSourceType: sourceType,
         filters: config.filters ? {
           ...config.filters,
           dateFrom: config.filters.dateFrom ? new Date(config.filters.dateFrom) : undefined,
           dateTo: config.filters.dateTo ? new Date(config.filters.dateTo) : undefined,
         } : undefined,
       };
-      await executeBacktest.mutateAsync({ config: processedConfig, signalLimit });
+
+      setSupabaseLoading(sourceType === "supabase");
+      setSupabaseError(null);
+      setSupabaseResult(null);
+
+      const result = await executeBacktest.mutateAsync({ config: processedConfig, signalLimit });
+
+      // Si hay error en el resultado (Supabase sin señales)
+      if (result.status === "error") {
+        setSupabaseError(result.message || result.error || "Error desconocido");
+        setSupabaseLoading(false);
+        return;
+      }
+
       setSelectedTradeIndex(null);
       setSaveSuccess(false);
+      setSupabaseLoading(false);
     } catch (error) {
       console.error("Error ejecutando backtest:", error);
       setSupabaseLoading(false);
@@ -964,9 +917,9 @@ export default function BacktesterPage() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => updateConfig("dataSource", "csv")}
+                  onClick={() => updateConfig("signalsSourceType", "csv")}
                   className={`p-2.5 rounded-lg text-xs font-medium transition-all ${
-                    config.dataSource !== "supabase"
+                    config.signalsSourceType !== "supabase"
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "bg-muted/50 hover:bg-muted"
                   }`}
@@ -978,9 +931,9 @@ export default function BacktesterPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => updateConfig("dataSource", "supabase")}
+                  onClick={() => updateConfig("signalsSourceType", "supabase")}
                   className={`p-2.5 rounded-lg text-xs font-medium transition-all ${
-                    config.dataSource === "supabase"
+                    config.signalsSourceType === "supabase"
                       ? "bg-green-600 text-white shadow-sm"
                       : "bg-muted/50 hover:bg-muted"
                   }`}
@@ -994,7 +947,7 @@ export default function BacktesterPage() {
             </div>
 
             {/* Campos de fecha para Supabase */}
-            {config.dataSource === "supabase" && (
+            {config.signalsSourceType === "supabase" && (
               <div className="space-y-2 p-3 rounded-lg border border-green-500/20 bg-green-500/5 animate-fade-in">
                 <Label className="text-xs text-green-600 dark:text-green-400 uppercase tracking-wide">
                   Rango de fechas (Supabase)
@@ -1005,8 +958,8 @@ export default function BacktesterPage() {
                     <Input
                       type="date"
                       className="h-9 text-xs min-h-[36px]"
-                      value={config.dateFrom || ""}
-                      onChange={(e) => updateConfig("dateFrom", e.target.value)}
+                      value={config.filters?.dateFrom || ""}
+                      onChange={(e) => updateConfig("filters", { ...config.filters, dateFrom: e.target.value })}
                     />
                   </div>
                   <div className="space-y-1">
@@ -1014,14 +967,16 @@ export default function BacktesterPage() {
                     <Input
                       type="date"
                       className="h-9 text-xs min-h-[36px]"
-                      value={config.dateTo || ""}
-                      onChange={(e) => updateConfig("dateTo", e.target.value)}
+                      value={config.filters?.dateTo || ""}
+                      onChange={(e) => updateConfig("filters", { ...config.filters, dateTo: e.target.value })}
                     />
                   </div>
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  Las señales se leerán de la tabla Signal en Supabase/PostgreSQL
-                </p>
+                {signalsInfo.data?.dateRange && (
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Disponible: {signalsInfo.data.dateRange.start ? new Date(signalsInfo.data.dateRange.start).toLocaleDateString() : "N/A"} - {signalsInfo.data.dateRange.end ? new Date(signalsInfo.data.dateRange.end).toLocaleDateString() : "N/A"}
+                  </p>
+                )}
               </div>
             )}
 

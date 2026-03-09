@@ -92,8 +92,9 @@ const BacktestConfigSchema = z.object({
   useTrailingSL: z.boolean().optional().default(true),
   trailingSLPercent: z.number().min(10).max(90).optional().default(50),
   restrictionType: z.enum(["RIESGO", "SIN_PROMEDIOS", "SOLO_1_PROMEDIO"]).optional(),
-  // Fuente de señales
+  // Fuente de señales: "csv" usa archivos locales, "supabase" usa la tabla Signal
   signalsSource: z.string().optional().default("signals_simple.csv"),
+  signalsSourceType: z.enum(["csv", "supabase"]).optional().default("csv"),
   useRealPrices: z.boolean().optional().default(true), // Habilitado para tests con pocas señales
   // Capital inicial
   initialCapital: z.number().min(100).max(10000000).optional().default(10000),
@@ -128,6 +129,54 @@ function generateSyntheticTicksForSignal(
   );
 }
 
+/**
+ * Carga señales desde Supabase (tabla Signal) para un tenant
+ * Convierte el formato Prisma al formato TradingSignal del backtest engine
+ */
+async function loadSignalsFromSupabase(
+  tenantId: string,
+  filters?: {
+    dateFrom?: Date;
+    dateTo?: Date;
+  }
+): Promise<TradingSignal[]> {
+  const where: any = { tenantId };
+
+  // Aplicar filtros de fecha
+  if (filters?.dateFrom || filters?.dateTo) {
+    where.receivedAt = {};
+    if (filters.dateFrom) where.receivedAt.gte = filters.dateFrom;
+    if (filters.dateTo) where.receivedAt.lte = filters.dateTo;
+  }
+
+  const signals = await prisma.signal.findMany({
+    where,
+    orderBy: { receivedAt: "asc" },
+    // Solo señales con precio válido
+    select: {
+      id: true,
+      side: true,
+      price: true,
+      symbol: true,
+      receivedAt: true,
+      isCloseSignal: true,
+    },
+  });
+
+  // Convertir a formato TradingSignal
+  return signals
+    .filter((s) => s.price && s.price > 0)
+    .map((s) => ({
+      id: s.id,
+      timestamp: s.receivedAt,
+      side: s.side as Side,
+      entryPrice: s.price!,
+      closeTimestamp: undefined, // No tenemos close timestamp en Signal
+      rangeId: s.id,
+      confidence: 0.95,
+    }));
+}
+
 // ==================== ROUTER ====================
 
 export const backtesterRouter = router({
@@ -147,17 +196,23 @@ export const backtesterRouter = router({
         signalLimit: z.number().min(1).max(10000).optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const jobId = `backtest_${Date.now()}`;
       const startTime = Date.now();
 
       try {
         // Verificar cache de resultados primero
         const signalsSource = input.config.signalsSource || "signals_simple.csv";
-        const cachedResult = getCachedResult(input.config as BacktestConfig, signalsSource);
+        const sourceType = input.config.signalsSourceType || "csv";
+
+        // Cache key incluye el tipo de fuente
+        const cacheKey = sourceType === "supabase"
+          ? `supabase_${input.config.filters?.dateFrom}_${input.config.filters?.dateTo}`
+          : signalsSource;
+        const cachedResult = getCachedResult(input.config as BacktestConfig, cacheKey);
 
         if (cachedResult) {
-          console.log(`[Backtester] Resultado desde cache: ${hashConfig(input.config as BacktestConfig, signalsSource)}`);
+          console.log(`[Backtester] Resultado desde cache: ${hashConfig(input.config as BacktestConfig, cacheKey)}`);
           return {
             jobId,
             status: "completed",
@@ -171,16 +226,62 @@ export const backtesterRouter = router({
         const dbReady = await isTicksDBReady();
         const wantsRealPrices = input.config.useRealPrices === true;
 
-        // Cargar senales
-        const signalsPath = path.join(process.cwd(), signalsSource);
-        let signals = await loadSignalsFromFile(signalsPath);
-        console.log(`[Backtester] Cargadas ${signals.length} senales desde ${signalsSource}`);
+        // Cargar senales según el tipo de fuente
+        let signals: TradingSignal[] = [];
+
+        if (sourceType === "supabase") {
+          // Obtener tenantId del contexto (requiere autenticación)
+          const session = (ctx as any).session;
+          if (!session?.user?.id) {
+            throw new Error("Autenticación requerida para usar fuente Supabase");
+          }
+
+          const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { tenantId: true },
+          });
+
+          if (!user?.tenantId) {
+            throw new Error("Usuario sin tenant asociado");
+          }
+
+          // Cargar desde Supabase con filtros de fecha
+          const dateFrom = input.config.filters?.dateFrom
+            ? new Date(input.config.filters.dateFrom)
+            : undefined;
+          const dateTo = input.config.filters?.dateTo
+            ? new Date(input.config.filters.dateTo)
+            : undefined;
+
+          signals = await loadSignalsFromSupabase(user.tenantId, { dateFrom, dateTo });
+          console.log(`[Backtester] Cargadas ${signals.length} señales desde Supabase`);
+        } else {
+          // Cargar desde archivo CSV (comportamiento original)
+          const signalsPath = path.join(process.cwd(), signalsSource);
+          signals = await loadSignalsFromFile(signalsPath);
+          console.log(`[Backtester] Cargadas ${signals.length} senales desde ${signalsSource}`);
+        }
+
         if (signals.length > 0) {
           console.log(`[Backtester] Primera senal: ${signals[0].timestamp.toISOString()}, side: ${signals[0].side}`);
           console.log(`[Backtester] Ultima senal: ${signals[signals.length-1].timestamp.toISOString()}, side: ${signals[signals.length-1].side}`);
         }
 
-        // Aplicar filtros
+        // Si no hay señales, devolver error informativo
+        if (signals.length === 0) {
+          return {
+            jobId,
+            status: "error",
+            error: "No se encontraron señales",
+            message: sourceType === "supabase"
+              ? "No hay señales en la tabla Signal para el rango de fechas seleccionado. Verifica que hayas importado señales o cambia el rango de fechas."
+              : "El archivo CSV no contiene señales válidas. Verifica que el archivo existe y tiene el formato correcto.",
+            sourceType,
+            elapsedMs: Date.now() - startTime,
+          };
+        }
+
+        // Aplicar filtros adicionales (días de semana, hora, sesión)
         if (input.config.filters) {
           const beforeFilter = signals.length;
           signals = filterSignals(signals, input.config.filters as any);
