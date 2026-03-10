@@ -59,6 +59,7 @@ import {
 } from "@/components/ui/tooltip";
 import { PerformanceHeatmap, SegmentationHeatmap } from "@/components/backtester/performance-heatmap";
 import { AutoTuningSuggestions, AutoTuningConfig } from "@/components/backtester/auto-tuning-suggestions";
+import { ExecutionOverlay } from "@/components/backtester/progress-overlay";
 
 interface BacktestFilters {
   dateFrom?: string;
@@ -1627,26 +1628,78 @@ export default function BacktesterPage() {
               </div>
             ) : (
               <div className="text-center py-12 animate-fade-in">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 mb-4">
-                  <BarChart3 className="w-8 h-8 text-primary" />
+                {/* Icono de chart con gradiente */}
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 via-accent/10 to-green-500/10 mb-5 shadow-lg shadow-primary/10">
+                  <BarChart3 className="w-10 h-10 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">¡Ejecuta tu primer backtest!</h3>
-                <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-6">
-                  Configura los parámetros de la estrategia y presiona el botón para ver los resultados
+
+                {/* Título y descripción */}
+                <h3 className="text-xl font-bold mb-2">Configura los parámetros y ejecuta tu primer backtest</h3>
+                <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
+                  Ajusta los parámetros del grid y presiona el botón para simular tu estrategia con datos históricos
                 </p>
-                <div className="flex flex-col items-center gap-3">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg">
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                    <span>Tip: Empieza con los valores por defecto</span>
+
+                {/* Quick Start Presets */}
+                <div className="mb-6">
+                  <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wide font-medium">Quick Start - Elige un preset:</p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <button
+                      onClick={() => {
+                        updateConfig("pipsDistance", 15);
+                        updateConfig("maxLevels", 4);
+                        updateConfig("takeProfitPips", 25);
+                        updateConfig("lotajeBase", 0.1);
+                        updateConfig("useTrailingSL", true);
+                        updateConfig("trailingSLPercent", 50);
+                      }}
+                      className="px-4 py-2.5 text-xs font-medium rounded-lg border border-green-500/30 bg-green-500/10 text-green-600 hover:bg-green-500/20 hover:border-green-500/50 transition-all shadow-sm hover:shadow-md hover:shadow-green-500/10"
+                    >
+                      🛡️ Conservador
+                    </button>
+                    <button
+                      onClick={() => {
+                        updateConfig("pipsDistance", 10);
+                        updateConfig("maxLevels", 6);
+                        updateConfig("takeProfitPips", 20);
+                        updateConfig("lotajeBase", 0.1);
+                        updateConfig("useTrailingSL", true);
+                        updateConfig("trailingSLPercent", 50);
+                      }}
+                      className="px-4 py-2.5 text-xs font-medium rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 hover:border-amber-500/50 transition-all shadow-sm hover:shadow-md hover:shadow-amber-500/10"
+                    >
+                      ⚖️ Moderado
+                    </button>
+                    <button
+                      onClick={() => {
+                        updateConfig("pipsDistance", 8);
+                        updateConfig("maxLevels", 8);
+                        updateConfig("takeProfitPips", 15);
+                        updateConfig("lotajeBase", 0.15);
+                        updateConfig("useTrailingSL", true);
+                        updateConfig("trailingSLPercent", 40);
+                      }}
+                      className="px-4 py-2.5 text-xs font-medium rounded-lg border border-red-500/30 bg-red-500/10 text-red-600 hover:bg-red-500/20 hover:border-red-500/50 transition-all shadow-sm hover:shadow-md hover:shadow-red-500/10"
+                    >
+                      🚀 Agresivo
+                    </button>
                   </div>
-                  <Button
-                    onClick={handleExecute}
-                    disabled={isBacktestPending}
-                    className="gap-2"
-                  >
-                    <Play className="w-4 h-4" />
-                    Ejecutar Backtest
-                  </Button>
+                </div>
+
+                {/* Botón CTA prominente */}
+                <Button
+                  onClick={handleExecute}
+                  disabled={isBacktestPending}
+                  size="lg"
+                  className="gap-2 px-8 h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:translate-y-[-1px]"
+                >
+                  <Play className="w-5 h-5" />
+                  Ejecutar Backtest
+                </Button>
+
+                {/* Tip */}
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground mt-4">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Tip: Usa ticks reales para mayor precisión (más lento)</span>
                 </div>
               </div>
             )}
@@ -1978,8 +2031,14 @@ export default function BacktesterPage() {
         )}
       </Button>
     </div>
+
+    {/* Execution Overlay - Loading state durante backtest */}
+    <ExecutionOverlay
+      isExecuting={isBacktestPending}
+      progress={isBacktestPending ? 50 : 0}
+      currentStep={isBacktestPending ? `Ejecutando backtest con ${signalLimit} señales...` : undefined}
+    />
     </>
-  );
 }
 
 // Componentes auxiliares mejorados

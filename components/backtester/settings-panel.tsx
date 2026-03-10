@@ -2,6 +2,56 @@
 
 import { cn } from "@/lib/utils";
 import { AutoTuningSuggestions, AutoTuningConfig } from "./auto-tuning-suggestions";
+import { HelpCircle, Zap } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+// Presets de configuración
+const PRESETS = [
+  {
+    name: "Conservador",
+    description: "Bajo riesgo, pocas operaciones",
+    config: {
+      pipsDistance: 15,
+      maxLevels: 3,
+      takeProfitPips: 25,
+      lotajeBase: 0.05,
+      useTrailingSL: true,
+      trailingSLPercent: 60,
+    },
+    color: "bg-green-500/10 border-green-500/30 text-green-600 hover:bg-green-500/20",
+  },
+  {
+    name: "Moderado",
+    description: "Balance entre riesgo y beneficio",
+    config: {
+      pipsDistance: 10,
+      maxLevels: 5,
+      takeProfitPips: 20,
+      lotajeBase: 0.1,
+      useTrailingSL: true,
+      trailingSLPercent: 50,
+    },
+    color: "bg-amber-500/10 border-amber-500/30 text-amber-600 hover:bg-amber-500/20",
+  },
+  {
+    name: "Agresivo",
+    description: "Alto riesgo, máxima exposición",
+    config: {
+      pipsDistance: 8,
+      maxLevels: 8,
+      takeProfitPips: 15,
+      lotajeBase: 0.15,
+      useTrailingSL: true,
+      trailingSLPercent: 40,
+    },
+    color: "bg-red-500/10 border-red-500/30 text-red-600 hover:bg-red-500/20",
+  },
+];
 
 interface SettingsPanelProps {
   config: {
