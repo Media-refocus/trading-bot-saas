@@ -27,3 +27,7 @@ export {
   PerformanceHeatmap,
   SegmentationHeatmap,
 } from "./performance-heatmap";
+export {
+  AutoTuningSuggestions,
+  type AutoTuningConfig,
+} from "./auto-tuning-suggestions";
