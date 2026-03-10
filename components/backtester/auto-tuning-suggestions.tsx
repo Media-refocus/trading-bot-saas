@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { trpc } from "@/lib/trpc";
+import { api } from "@/lib/api";
 import { Loader2, Sparkles, TrendingUp, Target, Gauge } from "lucide-react";
 
 interface AutoTuningSuggestionsProps {

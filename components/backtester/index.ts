@@ -23,3 +23,7 @@ export {
   downloadCSV,
   type BacktestResultHistory,
 } from "./result-panel";
+export {
+  PerformanceHeatmap,
+  SegmentationHeatmap,
+} from "./performance-heatmap";

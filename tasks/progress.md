@@ -38,23 +38,28 @@ _Última actualización: 2026-03-10_
   - Integrado en panel de resultados del backtester
   - Sesiones UTC: Asia (00-08), Europe (08-16), USA (16-24)
 
+- [x] **Auto-tuning sugerencias** → commit `pending`
+  - Componente `AutoTuningSuggestions` con Top 3 configs
+  - Score compuesto: Win Rate (35%) + Profit Factor (35%) + Sharpe Ratio (30%)
+  - Análisis de backtests históricos agrupados por config
+  - Botón "Apply" con one-click para aplicar configuración
+  - Badge de consistencia (número de backtests con misma config)
+  - Métricas visuales: Win Rate, Profit Factor, Sharpe Ratio
+  - Integrado en panel de configuración del backtester
+
 ---
 
 ### Pendientes 🔴
 
-- [ ] **Auto-tuning sugerencias** → **NEXT**
-
-- [ ] **Auto-tuning sugerencias**
-  - Analizar histórico de backtests del usuario
-  - Sugerir configs basadas en métricas pasadas
-  - Mostrar recomendaciones en panel de configuración
-  - Botón "Aplicar configuración recomendada"
+- [ ] **Performance optimization** (opcional)
+  - Cachear resultados de auto-tuning
+  - Lazy loading del componente
 
 ---
 
 ## Próximos pasos
 
-1. **Auto-tuning sugerencias** (prioridad media - UX mejorada)
+1. **Sprint complete** - Auditoría backtester finalizada
 
 ---
 

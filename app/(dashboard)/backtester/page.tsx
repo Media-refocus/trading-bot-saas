@@ -57,7 +57,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { PerformanceHeatmap } from "@/components/backtester/performance-heatmap";
+import { PerformanceHeatmap, SegmentationHeatmap } from "@/components/backtester/performance-heatmap";
 import { AutoTuningSuggestions, AutoTuningConfig } from "@/components/backtester/auto-tuning-suggestions";
 
 interface BacktestFilters {
@@ -1527,8 +1527,8 @@ export default function BacktesterPage() {
                 )}
 
                 {/* Performance Heatmap - Day/Session/Month analysis */}
-                {results.tradeDetails && results.tradeDetails.length > 0 && (
-                  <PerformanceHeatmap trades={results.tradeDetails} />
+                {results.segmentation && (
+                  <SegmentationHeatmap segmentation={results.segmentation} />
                 )}
 
                 {/* Guardar estrategia */}
