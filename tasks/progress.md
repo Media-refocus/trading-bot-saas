@@ -1,6 +1,6 @@
 # TBS - Progress Tracker
 
-_Última actualización: 2026-03-10_
+_Última actualización: 2026-03-10 (heatmap integrado)_
 
 ## Sprint Actual: Auditoría Backtester
 
@@ -31,14 +31,15 @@ _Última actualización: 2026-03-10_
   - Botón "Export CSV" en deals table toolbar
   - Excel-compatible CSV export
 
-- [x] **Heatmap rendimiento** → commit `pending`
-  - Componente `PerformanceHeatmap` con 3 vistas: Day/Session/Month
-  - Colores por intensidad de win rate (rojo→amarillo→verde)
+- [x] **Heatmap rendimiento** → commits `a5dfeec`, `b385181`
+  - Componente `PerformanceHeatmap` + `SegmentationHeatmap` con 3 vistas: Day/Session/Month
+  - Colores por intensidad de win rate (rojo=pérdida → amarillo=neutral → verde=profit)
   - Tooltips con detalles: win rate, trades, wins/losses, profit
-  - Integrado en panel de resultados del backtester
+  - Integrado en backtester page usando datos de segmentación pre-calculados
   - Sesiones UTC: Asia (00-08), Europe (08-16), USA (16-24)
+  - Exportado en `components/backtester/index.ts`
 
-- [x] **Auto-tuning sugerencias** → commit `pending`
+- [x] **Auto-tuning sugerencias** → commit `a5dfeec`
   - Componente `AutoTuningSuggestions` con Top 3 configs
   - Score compuesto: Win Rate (35%) + Profit Factor (35%) + Sharpe Ratio (30%)
   - Análisis de backtests históricos agrupados por config

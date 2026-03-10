@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { api } from "@/lib/api";
+import { trpc } from "@/lib/trpc";
 import { Loader2, Sparkles, TrendingUp, Target, Gauge } from "lucide-react";
 
 interface AutoTuningSuggestionsProps {
@@ -37,7 +37,7 @@ interface Suggestion {
 }
 
 export function AutoTuningSuggestions({ onApplyConfig }: AutoTuningSuggestionsProps) {
-  const { data, isLoading, error } = api.backtester.getAutoTuningSuggestions.useQuery();
+  const { data, isLoading, error } = trpc.backtester.getAutoTuningSuggestions.useQuery();
 
   if (isLoading) {
     return (
