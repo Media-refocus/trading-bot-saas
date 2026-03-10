@@ -4,7 +4,7 @@ _Última actualización: 2026-03-10 (heatmap integrado)_
 
 ## Sprint Actual: Auditoría Backtester
 
-- **Estado:** `in-progress`
+- **Estado:** `completed`
 - **Inicio:** 2026-03-08
 - **Fuente:** Auditoría completa por Vegeta, propuestas de mejora UI/UX
 
