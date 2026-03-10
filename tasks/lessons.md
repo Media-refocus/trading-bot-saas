@@ -4,9 +4,13 @@
 | Fecha | Error | Cómo evitarlo |
 |-------|-------|---------------|
 | 2026-03-10 | `return (` sin `)` de cierre en componente JSX grande | El error "Expected ',', got '}'" indica paréntesis sin cerrar. Verificar que `return (` tenga su `);` antes del `}` final del componente |
+| 2026-03-11 | JSON anidado en MQL5 requiere parser manual | MQL5 no tiene librería JSON nativa. Usar `ExtractObject()` + `ParseDoubleField()` para objetos anidados |
 
 ## Patrones que Funcionan
--
+- **Grid en MQL5:** Usar array de structs GridLevel con isOpen/price/ticket para trackear estado
+- **Refresh config:** Usar datetime g_lastConfigRefresh + OnTick() para refrescar cada 5 min
+- **Parsing JSON anidado:** Extraer sub-objeto con `ExtractObject(json, "key")` luego parsear campos
+- **Grid pricing:** BUY niveles abajo (price - step), SELL niveles arriba (price + step)
 
 ## Anti-patrones a Evitar
 -

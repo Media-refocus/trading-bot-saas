@@ -4,14 +4,29 @@
 //|                                        https://refocus.agency    |
 //+------------------------------------------------------------------+
 //
+// CHANGELOG:
+// 2026-03-11 v1.1: Grid Management + Remote Config
+//   - LoadRemoteConfig() carga config desde /api/bot/config
+//   - GridLevel[] struct para trackear niveles abiertos
+//   - InitializeGrid() calcula precios de niveles según restrictionType
+//   - OpenGridLevel() abre órdenes en cada nivel
+//   - CheckGridLevels() detecta cuando toca abrir nuevo nivel
+//   - CloseAllGridLevels() cierra todo el grid
+//
 // INSTALACIÓN:
 //  1. Copia este archivo en: MetaTrader5/MQL5/Experts/TBSSignalEA.mq5
 //  2. Compila con MetaEditor (F7)
 //  3. Arrastra el EA al gráfico XAUUSD (cualquier timeframe)
 //  4. En MT5: Herramientas > Opciones > Asesores Expertos
-//     → Activar "Permitir solicitudes Web para URL listadas"
-//     → Añadir: https://trading-bot-saas.vercel.app
-//  5. Introduce tu ApiKey del dashboard TBS
+//     - Activa "Permitir WebRequest hacia las siguientes URLs"
+//     - Añade: https://trading-saas.vercel.app
+//  5. Configura API Key en los inputs del EA
+//
+// USO:
+//  - El EA consulta /api/bot/config al iniciar
+//  - Carga gridStepPips, gridMaxLevels, gridLot, etc.
+//  - Al recibir señal con restrictionType, inicializa grid
+//  - Abre niveles automáticamente cuando precio llega
 //
 // SEGURIDAD:
 //  - El EA envía tu número de cuenta MT5 en cada request
@@ -22,7 +37,7 @@
 
 #property copyright "Refocus Agency"
 #property link      "https://refocus.agency"
-#property version   "1.00"
+#property version   "1.10"
 #property strict
 
 #include <Trade\Trade.mqh>
@@ -31,17 +46,60 @@
 input string ApiKey         = "";                                          // API Key (del dashboard TBS)
 input string ServerUrl      = "https://trading-bot-saas.vercel.app";      // URL del servidor
 input string EASymbol       = "XAUUSD";                                   // Símbolo a operar
-input double LotSize        = 0.01;                                        // Tamaño de lote
-input int    Slippage       = 3;                                           // Slippage máximo (pips)
-input int    MagicNumber    = 20260101;                                    // Magic number único
-input int    PollSeconds    = 2;                                           // Intervalo de consulta señales (segundos)
-input int    HeartbeatSeconds = 30;                                        // Intervalo de heartbeat (segundos)
+input double LotSize        = 0.01;                                       // Tamaño de lote (fallback si config remota falla)
+input int    Slippage       = 3;                                          // Slippage máximo (pips)
+input int    MagicNumber    = 20260101;                                   // Magic number único
+input int    PollSeconds    = 2;                                          // Intervalo de consulta señales (segundos)
+input int    HeartbeatSeconds = 30;                                       // Intervalo de heartbeat (segundos)
+
+//--- Structs para configuración remota
+struct BotConfig {
+   // Entry params
+   double   entryLot;
+   int      entryNumOrders;
+   int      entryTrailingActivate;
+   int      entryTrailingStep;
+   int      entryTrailingBack;
+   int      entryTrailingBuffer;
+
+   // Grid params
+   int      gridStepPips;
+   double   gridLot;
+   int      gridMaxLevels;
+   int      gridNumOrders;
+   int      gridTolerancePips;
+
+   // Restrictions
+   string   restrictionType;
+   int      maxLevels;
+   double   dailyLossLimitPercent;
+};
+
+struct GridLevel {
+   int      level;
+   double   price;
+   double   lotSize;
+   ulong    ticket;
+   bool     isOpen;
+   datetime openedAt;
+};
 
 //--- Globales
-datetime g_lastPollTime     = 0;
-datetime g_lastHeartbeatTime = 0;
-string   g_lastSignalId     = "";
+datetime g_lastPollTime        = 0;
+datetime g_lastHeartbeatTime   = 0;
+datetime g_lastConfigRefresh   = 0;
+string   g_lastSignalId        = "";
 CTrade   g_trade;
+
+// Config remota
+BotConfig g_botConfig;
+
+// Grid management
+GridLevel g_gridLevels[20];       // Max 20 niveles
+string    g_currentSignalId      = "";
+int       g_currentDirection     = 0;  // 1=BUY, -1=SELL
+double    g_gridBasePrice        = 0.0;
+int       g_gridMaxLevelsActive  = 0;
 
 //+------------------------------------------------------------------+
 //| Expert initialization                                             |
@@ -60,8 +118,38 @@ int OnInit()
    g_trade.SetTypeFilling(ORDER_FILLING_IOC); // IOC para evitar requotes
 
    Print("TBS EA iniciado | Cuenta: ", IntegerToString(AccountInfoInteger(ACCOUNT_LOGIN)), " | Servidor: ", ServerUrl);
-   Print("TBS EA | Symbol: ", EASymbol, " | Lot: ", LotSize, " | Magic: ", MagicNumber);
-   Print("TBS EA | Heartbeat cada: ", HeartbeatSeconds, " segundos");
+   Print("TBS EA | Symbol: ", EASymbol, " | Magic: ", MagicNumber);
+
+   // Inicializar grid levels
+   for(int i = 0; i < ArraySize(g_gridLevels); i++)
+   {
+      g_gridLevels[i].level = i;
+      g_gridLevels[i].isOpen = false;
+      g_gridLevels[i].ticket = 0;
+      g_gridLevels[i].price = 0.0;
+      g_gridLevels[i].lotSize = 0.0;
+      g_gridLevels[i].openedAt = 0;
+   }
+
+   // Cargar configuración remota
+   if(!LoadRemoteConfig())
+   {
+      Print("TBS EA | WARNING: No se pudo cargar config remota, usando valores por defecto");
+      Print("TBS EA | entryLot: ", LotSize, " | gridStepPips: 10 | gridMaxLevels: 4");
+      // Set defaults
+      g_botConfig.entryLot = LotSize;
+      g_botConfig.gridStepPips = 10;
+      g_botConfig.gridMaxLevels = 4;
+      g_botConfig.gridLot = LotSize;
+      g_botConfig.entryNumOrders = 1;
+      g_botConfig.maxLevels = 4;
+   }
+   else
+   {
+      Print("TBS EA | Config remota cargada OK");
+      Print("TBS EA | entryLot: ", g_botConfig.entryLot, " | gridStepPips: ", g_botConfig.gridStepPips);
+      Print("TBS EA | gridMaxLevels: ", g_botConfig.gridMaxLevels, " | restrictionType: ", g_botConfig.restrictionType);
+   }
 
    // Test de conectividad inicial
    if(!TestConnection())
@@ -89,6 +177,13 @@ void OnTick()
 {
    datetime now = TimeCurrent();
 
+   // Refrescar config cada 5 minutos
+   if(now - g_lastConfigRefresh >= 300)
+   {
+      LoadRemoteConfig();
+      g_lastConfigRefresh = now;
+   }
+
    // Heartbeat cada N segundos
    if(now - g_lastHeartbeatTime >= HeartbeatSeconds)
    {
@@ -96,12 +191,247 @@ void OnTick()
       SendHeartbeat();
    }
 
+   // Check si toca abrir nuevo nivel de grid
+   CheckGridLevels();
+
    // Polling de señales cada N segundos
    if(now - g_lastPollTime < PollSeconds)
       return;
 
    g_lastPollTime = now;
    PollSignals();
+}
+
+//+------------------------------------------------------------------+
+//| Carga configuración desde /api/bot/config                         |
+//+------------------------------------------------------------------+
+bool LoadRemoteConfig()
+{
+   string headers = BuildHeaders();
+   char   data[], result[];
+   string resultHeaders;
+
+   int res = WebRequest("GET", ServerUrl + "/api/bot/config", headers, 5000, data, result, resultHeaders);
+
+   if(res != 200)
+   {
+      Print("TBS EA | Error cargando config: HTTP ", res);
+      return false;
+   }
+
+   string json = CharArrayToString(result);
+
+   // Extraer sub-objetos JSON
+   string entryObj = ExtractObject(json, "entry");
+   string gridObj = ExtractObject(json, "grid");
+   string restrictionsObj = ExtractObject(json, "restrictions");
+
+   // Parsear entry params
+   g_botConfig.entryLot = ParseDoubleField(entryObj, "lot");
+   g_botConfig.entryNumOrders = ParseIntField(entryObj, "numOrders");
+
+   // Parsear trailing si existe
+   string trailingObj = ExtractObject(entryObj, "trailing");
+   if(trailingObj != "")
+   {
+      g_botConfig.entryTrailingActivate = ParseIntField(trailingObj, "activate");
+      g_botConfig.entryTrailingStep = ParseIntField(trailingObj, "step");
+      g_botConfig.entryTrailingBack = ParseIntField(trailingObj, "back");
+      g_botConfig.entryTrailingBuffer = ParseIntField(trailingObj, "buffer");
+   }
+
+   // Parsear grid params
+   g_botConfig.gridStepPips = ParseIntField(gridObj, "stepPips");
+   g_botConfig.gridLot = ParseDoubleField(gridObj, "lot");
+   g_botConfig.gridMaxLevels = ParseIntField(gridObj, "maxLevels");
+   g_botConfig.gridNumOrders = ParseIntField(gridObj, "numOrders");
+   g_botConfig.gridTolerancePips = ParseIntField(gridObj, "tolerancePips");
+
+   // Parsear restrictions
+   g_botConfig.restrictionType = ParseStringField(restrictionsObj, "type");
+   g_botConfig.maxLevels = ParseIntField(restrictionsObj, "maxLevels");
+
+   return true;
+}
+
+//+------------------------------------------------------------------+
+//| Inicializa grid de niveles                                        |
+//+------------------------------------------------------------------+
+void InitializeGrid(string id, string side, double basePrice, int maxLevels)
+{
+   g_currentSignalId = id;
+   g_currentDirection = (side == "BUY") ? 1 : -1;
+   g_gridBasePrice = basePrice;
+   g_gridMaxLevelsActive = MathMin(maxLevels, ArraySize(g_gridLevels));
+
+   // Reset todos los niveles
+   for(int i = 0; i < ArraySize(g_gridLevels); i++)
+   {
+      g_gridLevels[i].level = i;
+      g_gridLevels[i].isOpen = false;
+      g_gridLevels[i].ticket = 0;
+      g_gridLevels[i].price = 0.0;
+      g_gridLevels[i].lotSize = 0.0;
+      g_gridLevels[i].openedAt = 0;
+   }
+
+   // Calcular precios de grid
+   // stepPips en puntos (0.01 para XAUUSD)
+   double step = g_botConfig.gridStepPips * 0.01;
+
+   for(int i = 0; i < g_gridMaxLevelsActive; i++)
+   {
+      // BUY: niveles abajo del precio base (promedio a la baja)
+      // SELL: niveles arriba del precio base (promedio al alta)
+      g_gridLevels[i].price = basePrice + (i * step * g_currentDirection * -1);
+      g_gridLevels[i].lotSize = g_botConfig.gridLot;
+   }
+
+   Print("TBS EA | Grid inicializado: ", g_gridMaxLevelsActive, " niveles");
+   Print("TBS EA | Base price: ", basePrice, " | Step: ", g_botConfig.gridStepPips, " pips");
+   for(int i = 0; i < g_gridMaxLevelsActive; i++)
+   {
+      Print("TBS EA | Nivel ", i, " @ ", g_gridLevels[i].price);
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Abre un nivel específico del grid                                 |
+//+------------------------------------------------------------------+
+bool OpenGridLevel(int levelIndex, double price)
+{
+   if(levelIndex >= ArraySize(g_gridLevels))
+      return false;
+
+   if(g_gridLevels[levelIndex].isOpen)
+   {
+      Print("TBS EA | Nivel ", levelIndex, " ya está abierto");
+      return false;
+   }
+
+   double lotSize = g_gridLevels[levelIndex].lotSize;
+   string symbol = EASymbol;
+
+   // Obtener precios actuales
+   double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
+   double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
+
+   // Abrir orden
+   bool success = false;
+   if(g_currentDirection == 1) // BUY
+   {
+      success = g_trade.Buy(lotSize, symbol, ask, 0, 0, "TBS Grid L" + IntegerToString(levelIndex));
+   }
+   else // SELL
+   {
+      success = g_trade.Sell(lotSize, symbol, bid, 0, 0, "TBS Grid L" + IntegerToString(levelIndex));
+   }
+
+   if(success)
+   {
+      g_gridLevels[levelIndex].isOpen = true;
+      g_gridLevels[levelIndex].ticket = g_trade.ResultOrder();
+      g_gridLevels[levelIndex].openedAt = TimeCurrent();
+
+      Print("TBS EA | Nivel ", levelIndex, " abierto @ ", price, " | Ticket: ", g_gridLevels[levelIndex].ticket);
+
+      // Enviar trade event al servidor
+      string side = (g_currentDirection == 1) ? "BUY" : "SELL";
+      double execPrice = (g_currentDirection == 1) ? ask : bid;
+      SendTradeEvent(g_currentSignalId, "OPEN", side, symbol, lotSize, execPrice, 0, 0, 0, g_gridLevels[levelIndex].ticket, levelIndex);
+   }
+   else
+   {
+      Print("TBS EA | Error abriendo nivel ", levelIndex, ": ", g_trade.ResultRetcode(), " | ", g_trade.ResultRetcodeDescription());
+   }
+
+   return success;
+}
+
+//+------------------------------------------------------------------+
+//| Verifica si toca abrir algún nivel de grid                        |
+//+------------------------------------------------------------------+
+void CheckGridLevels()
+{
+   if(g_currentSignalId == "" || g_currentDirection == 0)
+      return;
+
+   double bid = SymbolInfoDouble(EASymbol, SYMBOL_BID);
+   double ask = SymbolInfoDouble(EASymbol, SYMBOL_ASK);
+   double tolerance = g_botConfig.gridTolerancePips * 0.01; // Convertir a precio
+
+   for(int i = 0; i < g_gridMaxLevelsActive; i++)
+   {
+      if(g_gridLevels[i].isOpen)
+         continue;
+
+      if(g_gridLevels[i].price == 0.0)
+         continue;
+
+      bool shouldOpen = false;
+
+      // BUY: abrir nivel cuando precio baja hasta nivel (con tolerancia)
+      if(g_currentDirection == 1)
+      {
+         if(bid <= g_gridLevels[i].price + tolerance)
+            shouldOpen = true;
+      }
+      // SELL: abrir nivel cuando precio sube hasta nivel (con tolerancia)
+      else
+      {
+         if(ask >= g_gridLevels[i].price - tolerance)
+            shouldOpen = true;
+      }
+
+      if(shouldOpen)
+      {
+         Print("TBS EA | Precio alcanzó nivel ", i, " (target: ", g_gridLevels[i].price, ", bid: ", bid, ", ask: ", ask, ")");
+         OpenGridLevel(i, g_gridLevels[i].price);
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Cierra todos los niveles del grid                                 |
+//+------------------------------------------------------------------+
+void CloseAllGridLevels()
+{
+   int closedCount = 0;
+
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+   {
+      if(PositionSelectByTicket(PositionGetTicket(i)))
+      {
+         if(PositionGetInteger(POSITION_MAGIC) == MagicNumber)
+         {
+            ulong ticket = PositionGetInteger(POSITION_TICKET);
+            if(g_trade.PositionClose(ticket))
+            {
+               closedCount++;
+               Print("TBS EA | Posición cerrada | Ticket: ", IntegerToString(ticket));
+            }
+            else
+            {
+               Print("TBS EA | Error cerrando posición ", IntegerToString(ticket), ": ", g_trade.ResultRetcode());
+            }
+         }
+      }
+   }
+
+   // Reset grid state
+   g_currentSignalId = "";
+   g_currentDirection = 0;
+   g_gridBasePrice = 0.0;
+   g_gridMaxLevelsActive = 0;
+
+   for(int i = 0; i < ArraySize(g_gridLevels); i++)
+   {
+      g_gridLevels[i].isOpen = false;
+      g_gridLevels[i].ticket = 0;
+      g_gridLevels[i].price = 0.0;
+   }
+
+   Print("TBS EA | Grid cerrado | ", closedCount, " posición(es) cerrada(s)");
 }
 
 //+------------------------------------------------------------------+
@@ -308,6 +638,7 @@ void ProcessSingleSignal(string signalObj)
    string side       = ParseStringField(signalObj, "side");  // "BUY" o "SELL"
    double price      = ParseDoubleField(signalObj, "price");
    string symbol     = ParseStringField(signalObj, "symbol");
+   int maxLevels     = ParseIntField(signalObj, "max_levels");
 
    if(signalId == "" || signalType == "")
    {
@@ -324,9 +655,23 @@ void ProcessSingleSignal(string signalObj)
    bool success = false;
 
    if(signalType == "ENTRY")
-      success = ExecuteEntry(signalId, side, price, symbol);
+   {
+      // Verificar si hay grid activo previo y cerrarlo
+      if(g_currentSignalId != "")
+      {
+         Print("TBS EA | Cerrando grid previo antes de nueva señal");
+         CloseAllGridLevels();
+      }
+
+      // Inicializar grid y abrir nivel 0
+      InitializeGrid(signalId, side, price, maxLevels > 0 ? maxLevels : g_botConfig.gridMaxLevels);
+      success = OpenGridLevel(0, price);
+   }
    else if(signalType == "CLOSE")
-      success = ExecuteClose(signalId, symbol);
+   {
+      CloseAllGridLevels();
+      success = true;
+   }
 
    if(success)
    {
@@ -336,20 +681,19 @@ void ProcessSingleSignal(string signalObj)
 }
 
 //+------------------------------------------------------------------+
-//| Ejecuta una orden de entrada                                      |
+//| Ejecuta una orden de entrada (DEPRECATED - usar OpenGridLevel)    |
 //+------------------------------------------------------------------+
 bool ExecuteEntry(string signalId, string side, double price, string symbol)
 {
+   // Esta función ya no se usa directamente, mantenida para compatibilidad
+   // El grid se maneja con OpenGridLevel
    ENUM_ORDER_TYPE orderType = (side == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
    string sym = (symbol == "") ? EASymbol : symbol;
 
-   // Obtener precios actuales
    double ask = SymbolInfoDouble(sym, SYMBOL_ASK);
    double bid = SymbolInfoDouble(sym, SYMBOL_BID);
-
    double orderPrice = (orderType == ORDER_TYPE_BUY) ? ask : bid;
 
-   // Ejecutar orden usando CTrade
    bool result;
    if(orderType == ORDER_TYPE_BUY)
       result = g_trade.Buy(LotSize, sym, orderPrice, 0, 0, "TBS Signal");
@@ -365,8 +709,7 @@ bool ExecuteEntry(string signalId, string side, double price, string symbol)
    ulong ticket = g_trade.ResultOrder();
    Print("TBS EA | Orden abierta OK | Ticket: ", IntegerToString(ticket), " | ", side, " @ ", orderPrice);
 
-   // Enviar trade event al servidor
-   SendTradeEvent(signalId, "OPEN", side, sym, LotSize, orderPrice, 0, 0, 0, ticket);
+   SendTradeEvent(signalId, "OPEN", side, sym, LotSize, orderPrice, 0, 0, 0, ticket, 0);
 
    return(true);
 }
@@ -376,6 +719,8 @@ bool ExecuteEntry(string signalId, string side, double price, string symbol)
 //+------------------------------------------------------------------+
 bool ExecuteClose(string signalId, string symbol)
 {
+   // Esta función ya no se usa directamente, mantenida para compatibilidad
+   // El grid se cierra con CloseAllGridLevels
    string sym = (symbol == "") ? EASymbol : symbol;
    bool closed = false;
 
@@ -392,29 +737,25 @@ bool ExecuteClose(string signalId, string symbol)
          long type = PositionGetInteger(POSITION_TYPE);
          double lots = PositionGetDouble(POSITION_VOLUME);
          double openPrice = PositionGetDouble(POSITION_PRICE_OPEN);
-         double profit = PositionGetDouble(POSITION_PROFIT);
+         double profit = PositionGetDouble(ACCOUNT_PROFIT);
 
-         // Obtener precio actual para cerrar
          double closePrice = (type == POSITION_TYPE_BUY)
             ? SymbolInfoDouble(sym, SYMBOL_BID)
             : SymbolInfoDouble(sym, SYMBOL_ASK);
 
-         // Calcular pips
          double pips = 0.0;
          if(type == POSITION_TYPE_BUY)
             pips = (closePrice - openPrice) / 0.01;
          else
             pips = (openPrice - closePrice) / 0.01;
 
-         // Cerrar posición
          if(g_trade.PositionClose(ticket))
          {
             Print("TBS EA | Orden cerrada OK | Ticket: ", IntegerToString(ticket));
             closed = true;
 
-            // Enviar trade event al servidor
             string side = (type == POSITION_TYPE_BUY) ? "BUY" : "SELL";
-            SendTradeEvent(signalId, "CLOSE", side, sym, lots, openPrice, closePrice, profit, pips, ticket);
+            SendTradeEvent(signalId, "CLOSE", side, sym, lots, openPrice, closePrice, profit, pips, ticket, 0);
          }
          else
          {
@@ -456,7 +797,7 @@ void AckSignal(string signalId)
 //+------------------------------------------------------------------+
 void SendTradeEvent(string signalId, string type, string side, string symbol,
                     double lots, double openPrice, double closePrice,
-                    double profit, double pips, ulong ticket)
+                    double profit, double pips, ulong ticket, int level = 0)
 {
    string headers = BuildHeaders();
    char   data[], result[];
@@ -469,16 +810,17 @@ void SendTradeEvent(string signalId, string type, string side, string symbol,
    json += "\"side\":\"" + side + "\",";
    json += "\"symbol\":\"" + symbol + "\",";
    json += "\"lots\":" + DoubleToString(lots, 2) + ",";
-   json += "\"openPrice\":" + DoubleToString(openPrice, 2) + ",";
+   json += "\"openPrice\":" + DoubleToString(openPrice, 5) + ",";
+   json += "\"ticket\":" + IntegerToString(ticket) + ",";
+   json += "\"level\":" + IntegerToString(level);
 
    if(type == "CLOSE")
    {
-      json += "\"closePrice\":" + DoubleToString(closePrice, 2) + ",";
+      json += ",\"closePrice\":" + DoubleToString(closePrice, 5) + ",";
       json += "\"profit\":" + DoubleToString(profit, 2) + ",";
-      json += "\"pips\":" + DoubleToString(pips, 1) + ",";
+      json += "\"pips\":" + DoubleToString(pips, 1);
    }
 
-   json += "\"ticket\":" + IntegerToString(ticket);
    json += "}";
 
    StringToCharArray(json, data, 0, WHOLE_ARRAY);
@@ -487,7 +829,7 @@ void SendTradeEvent(string signalId, string type, string side, string symbol,
    int res = WebRequest("POST", ServerUrl + "/api/bot/trade", headers, 5000, data, result, resultHeaders);
 
    if(res == 200)
-      Print("TBS EA | Trade event enviado OK | ", type, " ", ticket);
+      Print("TBS EA | Trade event enviado OK | ", type, " ", ticket, " L", level);
    else
       Print("TBS EA | Error enviando trade event: HTTP ", res);
 }
@@ -495,6 +837,72 @@ void SendTradeEvent(string signalId, string type, string side, string symbol,
 //+------------------------------------------------------------------+
 //| Helpers de parsing JSON (sin librerías externas)                  |
 //+------------------------------------------------------------------+
+
+// Extrae un objeto anidado del JSON: { "entry": { "lot": 0.1 } } → { "lot": 0.1 }
+string ExtractObject(string json, string key)
+{
+   string search = "\"" + key + "\":";
+   int start = StringFind(json, search);
+   if(start < 0) return("");
+
+   start += StringLen(search);
+
+   // Skip whitespace
+   while(start < StringLen(json))
+   {
+      ushort c = StringGetCharacter(json, start);
+      if(c != ' ' && c != '\t' && c != '\n' && c != '\r') break;
+      start++;
+   }
+
+   if(start >= StringLen(json)) return("");
+
+   // Si no empieza con {, es un valor primitivo (null, string, number)
+   if(StringGetCharacter(json, start) != '{')
+   {
+      // Para null o valores primitivos, retornar el substring hasta , o }
+      int end = start;
+      int len = StringLen(json);
+      while(end < len)
+      {
+         ushort c = StringGetCharacter(json, end);
+         if(c == ',' || c == '}') break;
+         end++;
+      }
+      return StringSubstr(json, start, end - start);
+   }
+
+   // Es un objeto, encontrar el cierre }
+   return ExtractObjectBlock(json, start);
+}
+
+// Extrae un bloque de objeto completo desde { hasta }
+string ExtractObjectBlock(string json, int start)
+{
+   if(StringGetCharacter(json, start) != '{') return("");
+
+   int depth = 0;
+   int len = StringLen(json);
+   int end = start;
+
+   for(int i = start; i < len; i++)
+   {
+      ushort c = StringGetCharacter(json, i);
+      if(c == '{') depth++;
+      else if(c == '}')
+      {
+         depth--;
+         if(depth == 0)
+         {
+            end = i;
+            break;
+         }
+      }
+   }
+
+   return StringSubstr(json, start, end - start + 1);
+}
+
 string ParseStringField(string json, string field)
 {
    string search = "\"" + field + "\":\"";

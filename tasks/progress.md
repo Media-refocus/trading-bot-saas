@@ -1,6 +1,32 @@
 # TBS - Progress Tracker
 
-_Última actualización: 2026-03-10 11:25 (auditoría UX/UI en progreso)_
+_Última actualización: 2026-03-11 (Grid Management + Config Remota)_
+
+---
+
+## Sprint Actual: Grid Management + Config Remota EA MT5 🚧
+
+- **Estado:** `in_progress`
+- **Inicio:** 2026-03-11
+- **Archivos:** `mt5/TBSSignalEA.mq5`
+
+### Tareas completadas:
+- [x] FASE 1: LoadRemoteConfig() desde /api/bot/config
+- [x] FASE 1: Struct BotConfig con todos los params
+- [x] FASE 1: Refresh cada 5 minutos en OnTick()
+- [x] FASE 2: Struct GridLevel para trackear niveles
+- [x] FASE 2: InitializeGrid() calcula precios de niveles
+- [x] FASE 2: OpenGridLevel() abre órdenes con "TBS Grid L0", "TBS Grid L1"...
+- [x] FASE 2: CheckGridLevels() detecta cuando toca abrir nuevo nivel
+- [x] FASE 2: CloseAllGridLevels() cierra todo el grid
+- [x] FASE 2: ProcessSingleSignal() modificado para grid
+- [x] SendTradeEvent() actualizado con campo "level"
+- [x] ExtractObject() para parsear JSON anidado
+
+### Validación pendiente:
+- [ ] Compilar en MetaEditor (MT5 Windows)
+- [ ] Test manual con señal ENTRY
+- [ ] Test manual con señal CLOSE
 
 ---
 
