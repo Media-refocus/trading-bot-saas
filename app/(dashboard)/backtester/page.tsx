@@ -60,7 +60,6 @@ import {
 } from "@/components/ui/tooltip";
 import { PerformanceHeatmap, SegmentationHeatmap } from "@/components/backtester/performance-heatmap";
 import { AutoTuningSuggestions, AutoTuningConfig } from "@/components/backtester/auto-tuning-suggestions";
-import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
 import { ExecutionOverlay } from "@/components/backtester/progress-overlay";
 
 interface BacktestFilters {
