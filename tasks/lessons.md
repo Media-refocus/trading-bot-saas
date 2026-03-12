@@ -7,6 +7,7 @@
 | 2026-03-11 | JSON anidado en MQL5 requiere parser manual | MQL5 no tiene librería JSON nativa. Usar `ExtractObject()` + `ParseDoubleField()` para objetos anidados |
 | 2026-03-12 | Editar código y dejar fragmentos duplicados que causan syntax errors | Siempre leer el contexto alrededor del cambio; verificar que no quedó código duplicado |
 | 2026-03-12 | Mover código que depende de variables definidas más adelante en el componente | Mantener el orden lógico: primero defines las variables, luego las usas |
+| 2026-03-12 | Merge con git crea imports duplicados si ambos branches modifican la misma sección | Después de un merge, verificar con `grep -n "import"` que no haya duplicados antes de hacer build |
 
 ## Patrones que Funcionan
 - **Grid en MQL5:** Usar array de structs GridLevel con isOpen/price/ticket para trackear estado
